@@ -1,8 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
+import 'constants.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  
+  try {
+    await Firebase.initializeApp();
+    
+    // Initialize Hive
+    await Hive.initFlutter();
+    
+    // Open the historical_cache box
+    await Hive.openBox(kHistoricalCacheBox);
+  } catch (e) {
+    // Log initialization error and rethrow to prevent app from starting in invalid state
+    debugPrint('Initialization error: $e');
+    rethrow;
+  }
+  
   runApp(const MainApp());
 }
 

@@ -248,15 +248,32 @@ class BacktestEngine {
     final strike = price;
 
     double premiumPerShare;
-    try {
-      if (optionPricing != null) {
+    if (optionPricing != null) {
+      try {
         premiumPerShare = optionPricing.priceEuropeanPut(
           spot: price,
           strike: strike,
           volatility: vol,
           timeToExpiryYears: tYears,
         );
-      } else {
+      } on ArgumentError catch (e) {
+        // Handle invalid numerical arguments (e.g., negative values)
+        debugPrint('Invalid arguments for option pricing (CSP), using heuristic: $e');
+        premiumPerShare = price * 0.02;
+      } on RangeError catch (e) {
+        // Handle mathematical domain errors
+        debugPrint('Math domain error in option pricing (CSP), using heuristic: $e');
+        premiumPerShare = price * 0.02;
+      }
+      // Other exceptions will propagate to surface real bugs in the pricing engine
+
+      // Validate the computed premium to guard against NaN, Infinity, or negative values
+      if (premiumPerShare.isNaN ||
+          premiumPerShare.isInfinite ||
+          premiumPerShare < 0) {
+        debugPrint(
+            'Received invalid option premium (CSP) from pricing engine '
+            '(value=$premiumPerShare); using heuristic.');
         premiumPerShare = price * 0.02;
       }
     } on ArgumentError catch (e, stackTrace) {
@@ -300,7 +317,7 @@ class BacktestEngine {
 
     // Early-assignment heuristic (deterministic, rare)
     if (shouldEarlyAssign(
-      symbol: configSymbolOrUnknown(notes),
+      symbol: configSymbolOrUnknown(),
       strike: strike,
       dte: csp.dte,
       isPut: true,
@@ -351,15 +368,21 @@ class BacktestEngine {
     final strike = price * 1.02; // 2% OTM
 
     double premiumPerShare;
-    try {
-      if (optionPricing != null) {
+    if (optionPricing != null) {
+      try {
         premiumPerShare = optionPricing.priceEuropeanCall(
           spot: price,
           strike: strike,
           volatility: vol,
           timeToExpiryYears: tYears,
         );
-      } else {
+      } on ArgumentError catch (e) {
+        // Handle invalid numerical arguments (e.g., negative values)
+        debugPrint('Invalid arguments for option pricing (CC), using heuristic: $e');
+        premiumPerShare = price * 0.015;
+      } on RangeError catch (e) {
+        // Handle mathematical domain errors
+        debugPrint('Math domain error in option pricing (CC), using heuristic: $e');
         premiumPerShare = price * 0.015;
       }
     } on ArgumentError catch (e, stackTrace) {
@@ -401,7 +424,7 @@ class BacktestEngine {
     final isITM = price > strike;
 
     if (shouldEarlyAssign(
-      symbol: configSymbolOrUnknown(notes),
+      symbol: configSymbolOrUnknown(),
       strike: strike,
       dte: cc.dte,
       isPut: false,
