@@ -53,6 +53,9 @@ class _MultiLinePainter extends CustomPainter {
   final List<List<double>> curves;
   final List<String> labels;
   final ThemeData theme;
+  
+  static const int _axisAlpha = 80;
+  static const int _tickAlpha = 140;
 
   _MultiLinePainter({required this.curves, required this.labels, required this.theme});
 
@@ -76,14 +79,14 @@ class _MultiLinePainter extends CustomPainter {
     }
 
     // draw axes lines
-    final axisPaint = Paint()..color = theme.colorScheme.onSurface.withAlpha(80);
+    final axisPaint = Paint()..color = theme.colorScheme.onSurface.withAlpha(_axisAlpha);
     final leftPadding = 44.0;
     final bottomPadding = 24.0;
     final w = size.width - leftPadding - 8;
     final h = size.height - bottomPadding - 8;
 
     // y ticks
-    final tpStyle = TextStyle(color: theme.colorScheme.onSurface.withAlpha(140), fontSize: 10);
+    final tpStyle = TextStyle(color: theme.colorScheme.onSurface.withAlpha(_tickAlpha), fontSize: 10);
     final tickCount = 4;
     for (int i = 0; i <= tickCount; i++) {
       final v = minY + (i * (maxY - minY) / tickCount);
@@ -106,7 +109,7 @@ class _MultiLinePainter extends CustomPainter {
 
       final path = Path();
       for (var i = 0; i < c.length; i++) {
-        final x = leftPadding + (i / (maxLen - 1 > 0 ? (maxLen - 1) : 1)) * w;
+        final x = leftPadding + (i / max(maxLen - 1, 1)) * w;
         final y = 8 + h - ((c[i] - minY) / (maxY - minY)) * h;
         if (i == 0) {
           path.moveTo(x, y);
