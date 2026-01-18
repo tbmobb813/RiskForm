@@ -1,4 +1,5 @@
-// ignore_for_file: subtype_of_sealed_class
+// Fake implementation extends sealed Hive Box class; ignore related analyzer warnings
+// ignore_for_file: subtype_of_sealed_class, must_be_immutable
 
 import 'package:hive/hive.dart';
 
@@ -29,5 +30,5 @@ class FakeBox implements Box {
   // Other Box methods not needed for these tests
   @override
   dynamic noSuchMethod(Invocation invocation) => 
-      throw UnimplementedError('${invocation.memberName} not implemented in FakeBox');
+      throw UnimplementedError('Method not implemented in FakeBox');
 }
