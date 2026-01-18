@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users' trade plans: only the owning user may read/write their plans.
+    match /users/{uid}/trade_plans/{planId} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Allow other safe reads if needed (add more rules here).
+    // User document (account info and other per-user metadata)
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}
