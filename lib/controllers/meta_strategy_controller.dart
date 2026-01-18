@@ -39,8 +39,14 @@ class MetaStrategyController {
     final hasShares = positions.any((p) => p.type == PositionType.shares && p.quantity >= 100);
     final hasOpenCc = positions.any((p) => p.type == PositionType.coveredCall && p.isOpen);
 
-    // Priority order
+    // Priority order (mirror WheelCycleController rules where history matters)
     if (hasOpenCsp) return WheelCycleState.cspOpen;
+
+    // Assigned: previously a CSP was open and now shares appear
+    if (hasShares && wheel.state == WheelCycleState.cspOpen) {
+      return WheelCycleState.assigned;
+    }
+
     if (hasShares && hasOpenCc) return WheelCycleState.ccOpen;
     if (hasShares && !hasOpenCc) return WheelCycleState.sharesOwned;
 

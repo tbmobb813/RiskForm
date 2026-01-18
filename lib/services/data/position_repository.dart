@@ -1,5 +1,10 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'repository_interface.dart';
 import '../../models/position.dart';
+
+final positionRepositoryProvider = Provider<PositionRepository>((ref) {
+  return PositionRepository();
+});
 
 class PositionRepository implements RepositoryInterface<Position> {
   @override
