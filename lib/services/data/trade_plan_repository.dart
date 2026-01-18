@@ -78,10 +78,16 @@ class TradePlanRepository {
     final previous = await _wheelService.getCycle(uid) ??
         WheelCycle(state: WheelCycleState.idle);
 
+    // If positions were inferred (from planner intent) we compute the new
+    // wheel cycle for UI feedback but avoid persisting it to Firestore.
+    final inferred = _positionsRepository.listAll().then((list) => list.isEmpty);
+    final bool positionsWereInferred = await inferred;
+
     await _wheelService.updateCycle(
       uid: uid,
       previous: previous,
       positions: positions,
+      persist: !positionsWereInferred,
     );
   }
 
