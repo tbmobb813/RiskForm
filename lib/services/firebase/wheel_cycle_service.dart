@@ -18,6 +18,7 @@ class WheelCycleService {
     required String uid,
     WheelCycle? previous,
     required List<Position> positions,
+    bool persist = true,
   }) async {
     final previousCycle = previous ??
         await getCycle(uid) ??
@@ -38,7 +39,9 @@ class WheelCycleService {
       cycleCount: _incrementCycleCount(previousCycle, newState),
     );
 
-    await saveCycle(uid, updated);
+    if (persist) {
+      await saveCycle(uid, updated);
+    }
     return updated;
   }
 
