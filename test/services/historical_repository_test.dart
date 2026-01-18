@@ -51,9 +51,10 @@ class FakeBox implements Box {
     _storage.clear();
   }
 
-  // Implement other Box methods as no-ops for testing
+  // Other Box methods not needed for these tests
   @override
-  dynamic noSuchMethod(Invocation invocation) => null;
+  dynamic noSuchMethod(Invocation invocation) => 
+      throw UnimplementedError('${invocation.memberName} not implemented in FakeBox');
 }
 
 void main() {
@@ -425,7 +426,7 @@ void main() {
             start: start,
             end: end,
           );
-        } catch (_) {
+        } on Exception {
           // Expected to fail
         }
 
