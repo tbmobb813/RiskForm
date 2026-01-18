@@ -60,12 +60,19 @@ class MetaStrategyController {
     }
   }
 
-  _NextActionResult _nextActionForIdle(
+  bool _hasSufficientBuyingPower(
     AccountSnapshot account,
     RiskProfile riskProfile,
   ) {
     final minRequired = account.accountSize * (riskProfile.maxRiskPerTradePercent / 100);
-    if (account.buyingPower < minRequired) {
+    return account.buyingPower >= minRequired;
+  }
+
+  _NextActionResult _nextActionForIdle(
+    AccountSnapshot account,
+    RiskProfile riskProfile,
+  ) {
+    if (!_hasSufficientBuyingPower(account, riskProfile)) {
       return _NextActionResult(
         action: "No new trade",
         reason: "Buying power is below your per-trade risk threshold.",
@@ -109,8 +116,7 @@ class MetaStrategyController {
     AccountSnapshot account,
     RiskProfile riskProfile,
   ) {
-    final minRequired = account.accountSize * (riskProfile.maxRiskPerTradePercent / 100);
-    if (account.buyingPower < minRequired) {
+    if (!_hasSufficientBuyingPower(account, riskProfile)) {
       return _NextActionResult(
         action: "Wait",
         reason: "Shares were called away, but buying power is below your risk threshold.",
