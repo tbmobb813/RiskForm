@@ -49,26 +49,24 @@ class OptionPricingEngine {
   }
 
   double _normCdf(double x) {
-    // Abramowitz-Stegun approximation (valid for x >= 0)
-    // For negative x, we use the symmetry property: Φ(-x) = 1 - Φ(x)
-    const p = 0.2316419;
-    const b1 = 0.319381530;
-    const b2 = -0.356563782;
-    const b3 = 1.781477937;
-    const b4 = -1.821255978;
-    const b5 = 1.330274429;
+    // Use an Abramowitz-Stegun based erf approximation for better accuracy:
+    // Φ(x) = 0.5 * (1 + erf(x / sqrt(2)))
+    double erfApprox(double z) {
+      final sign = z < 0 ? -1.0 : 1.0;
+      final a1 = 0.254829592;
+      final a2 = -0.284496736;
+      final a3 = 1.421413741;
+      final a4 = -1.453152027;
+      final a5 = 1.061405429;
+      final p = 0.3275911;
 
-    // Evaluate polynomial at |x| since approximation requires x >= 0
-    final t = 1.0 / (1.0 + p * x.abs());
-    final poly = b1 * t +
-        b2 * pow(t, 2) +
-        b3 * pow(t, 3) +
-        b4 * pow(t, 4) +
-        b5 * pow(t, 5);
-    final pdf = (1 / sqrt(2 * pi)) * exp(-0.5 * x * x);
-    final cdf = 1 - pdf * poly;
+      final absZ = z.abs();
+      final t = 1.0 / (1.0 + p * absZ);
+      final expTerm = exp(-absZ * absZ);
+      final y = 1.0 - (((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t) * expTerm;
+      return sign * y;
+    }
 
-    // Apply symmetry property for negative x: Φ(-x) = 1 - Φ(x)
-    return x >= 0 ? cdf : 1 - cdf;
+    return 0.5 * (1.0 + erfApprox(x / sqrt2));
   }
 }

@@ -56,7 +56,8 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Journal')),
-      body: Column(
+      body: ListView(
+        padding: EdgeInsets.zero,
         children: [
           Padding(
             padding: const EdgeInsets.all(16),
@@ -83,26 +84,26 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
               onChanged: (t) => setState(() => filter = t),
             ),
           ),
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: groups.length,
-              itemBuilder: (context, gi) {
-                final group = groups[gi];
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Text(
-                        group.key,
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    ...group.value.map((e) => _JournalListTile(key: ValueKey(e.id), entry: e)),
-                  ],
-                );
-              },
+          // Groups of journal entries
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: groups
+                  .map((group) => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            child: Text(
+                              group.key,
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          ...group.value.map((e) => _JournalListTile(key: ValueKey(e.id), entry: e)),
+                        ],
+                      ))
+                  .toList(),
             ),
           ),
         ],

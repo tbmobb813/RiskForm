@@ -4,7 +4,7 @@ This document provides a high‑level overview of the Planner MVP, including the
 
 ---
 
-# 1. Project Vision
+## 1. Project Vision
 
 The Planner MVP is a **discipline‑first trading platform** designed to help small‑account traders execute the Wheel strategy with:
 
@@ -23,7 +23,7 @@ The system models **time, state, and discipline**, not hype or dopamine.
 
 ---
 
-# 2. High‑Level Architecture
+## 2. High‑Level Architecture
 
 The system is built around five pillars:
 
@@ -59,7 +59,7 @@ The system is built around five pillars:
 
 ---
 
-# 3. Phase Breakdown
+## 3. Phase Breakdown
 
 ## Phase 1 — Planner, Engines, Persistence
 
@@ -118,7 +118,7 @@ The system is built around five pillars:
 
 ---
 
-# 4. Pre‑Coding Planning Decisions
+## 4. Pre‑Coding Planning Decisions
 
 Before implementation, we aligned on:
 
@@ -158,7 +158,7 @@ So Phase 1–3 were built with future scaling in mind.
 
 ---
 
-# 5. Current Status (End of Phase 3)
+## 5. Current Status (End of Phase 3)
 
 The system now includes:
 
@@ -175,7 +175,7 @@ Phase 3 is fully complete.
 
 ---
 
-# 6. Next Steps (Phase 4 Preview)
+## 6. Next Steps (Phase 4 Preview)
 
 Phase 4 will introduce:
 

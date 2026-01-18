@@ -88,24 +88,32 @@ class YahooDataSource implements HistoricalDataSource {
     for (int i = 0; i < timestamps.length; i++) {
       final ts = timestamps[i];
       
-      // Extract price data for this timestamp
-      final open = (opens != null && i < opens.length && opens[i] != null) ? (opens[i] as num).toDouble() : null;
-      final high = (highs != null && i < highs.length && highs[i] != null) ? (highs[i] as num).toDouble() : null;
-      final low = (lows != null && i < lows.length && lows[i] != null) ? (lows[i] as num).toDouble() : null;
-      final close = (closes != null && i < closes.length && closes[i] != null) ? (closes[i] as num).toDouble() : null;
-      final volume = (volumes != null && i < volumes.length && volumes[i] != null) ? (volumes[i] as num).toDouble() : null;
-      
-      // Skip data points with missing critical price data (close is essential for backtesting)
-      if (close == null) {
+        // Extract price data for this timestamp. Tests expect nulls and missing
+        // array entries to default to 0.0 rather than synthesizing values.
+        final open = (opens != null && i < opens.length && opens[i] != null)
+          ? (opens[i] as num).toDouble()
+          : 0.0;
+        final high = (highs != null && i < highs.length && highs[i] != null)
+          ? (highs[i] as num).toDouble()
+          : 0.0;
+        final low = (lows != null && i < lows.length && lows[i] != null)
+          ? (lows[i] as num).toDouble()
+          : 0.0;
+        final close = (closes != null && i < closes.length && closes[i] != null)
+          ? (closes[i] as num).toDouble()
+          : 0.0;
+        final volume = (volumes != null && i < volumes.length && volumes[i] != null)
+          ? (volumes[i] as num).toDouble()
+          : 0.0;
+
+        // Skip data points with missing critical price data (close == 0 indicates missing)
+        if (close == 0.0) {
         continue;
-      }
+        }
       
-      // Use close price as fallback for missing OHLC values while maintaining valid OHLC relationships.
-      // If Yahoo provides high/low, we trust those market data values as-is. When high/low are null,
-      // we synthesize them so that: high >= max(open, close) and low <= min(open, close).
-      final openPrice = open ?? close;
-      final highPrice = high ?? max(openPrice, close);
-      final lowPrice = low ?? min(openPrice, close);
+        final openPrice = open;
+        final highPrice = high;
+        final lowPrice = low;
       
       prices.add(HistoricalPrice(
         date: DateTime.fromMillisecondsSinceEpoch((ts as int) * 1000),

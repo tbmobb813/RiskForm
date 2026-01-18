@@ -18,19 +18,26 @@ class WheelCycleController {
       (p) => p.type == PositionType.coveredCall && p.isOpen,
     );
 
-    // 1. CSP open
-    if (hasCsp) return WheelCycleState.cspOpen;
-
-    // 2. Assigned
-    if (!hasCsp && hasShares && previous.state == WheelCycleState.cspOpen) {
+    // If shares appear and the previous wheel state was a CSP open,
+    // that's an assignment even if a transient CSP position is still present.
+    if (hasShares && previous.state == WheelCycleState.cspOpen) {
       return WheelCycleState.assigned;
     }
 
-    // 3. Shares owned
+    // If a CSP is currently open and the previous wheel state was idle,
+    // prefer reporting the CSP as taking priority over shares. This mirrors
+    // the UX expectation that an actively opened CSP is the primary state
+    // when no prior wheel state indicates a run in progress.
+    if (hasCsp && previous.state == WheelCycleState.idle) {
+      return WheelCycleState.cspOpen;
+    }
+
+    // If shares are present, prefer shares/covered-call states next.
+    if (hasShares && hasCc) return WheelCycleState.ccOpen;
     if (hasShares && !hasCc) return WheelCycleState.sharesOwned;
 
-    // 4. CC open
-    if (hasShares && hasCc) return WheelCycleState.ccOpen;
+    // Fallback: if a CSP is present, report it.
+    if (hasCsp) return WheelCycleState.cspOpen;
 
     // 5. Called away
     if (previous.state == WheelCycleState.ccOpen && !hasShares && !hasCc) {
