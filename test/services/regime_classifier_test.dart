@@ -22,7 +22,7 @@ void main() {
         final prices = _generatePrices(
           startPrice: 100.0,
           count: 20,
-          dailyReturn: 0.004, // 4% over 10 days = ~4% return
+          dailyReturn: 0.004, // ~4.1% over 10 days (compound return)
         );
 
         final segments = classifier.classify(prices);
@@ -57,7 +57,7 @@ void main() {
         final prices = _generatePrices(
           startPrice: 100.0,
           count: 30,
-          dailyReturn: 0.005, // ~5% over 10 days
+          dailyReturn: 0.005, // ~5.1% over 10 days (compound return)
         );
 
         final segments = classifier.classify(prices);
@@ -72,7 +72,7 @@ void main() {
         final prices = _generatePrices(
           startPrice: 100.0,
           count: 20,
-          dailyReturn: -0.004, // -4% over 10 days
+          dailyReturn: -0.004, // ~-3.9% over 10 days (compound return)
         );
 
         final segments = classifier.classify(prices);
@@ -107,7 +107,7 @@ void main() {
         final prices = _generatePrices(
           startPrice: 100.0,
           count: 30,
-          dailyReturn: -0.005, // ~-5% over 10 days
+          dailyReturn: -0.005, // ~-4.9% over 10 days (compound return)
         );
 
         final segments = classifier.classify(prices);
@@ -356,7 +356,7 @@ void main() {
         final prices = _generatePrices(
           startPrice: 100.0,
           count: 10,
-          dailyReturn: 0.01, // 5% over 5 days
+          dailyReturn: 0.01, // ~5.1% over 5 days (compound return)
         );
 
         final segments = customClassifier.classify(prices);
