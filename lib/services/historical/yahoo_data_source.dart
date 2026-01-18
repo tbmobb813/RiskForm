@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:http/http.dart' as http;
 
 import '../../models/historical/historical_price.dart';
@@ -59,12 +60,17 @@ class YahooDataSource implements HistoricalDataSource {
         continue;
       }
       
-      // Use close price as fallback for missing OHLC values to maintain valid price relationships
+      // Use close price as fallback for missing OHLC values while maintaining valid OHLC relationships
+      // High must be >= max(open, close), Low must be <= min(open, close)
+      final openPrice = open ?? close;
+      final highPrice = high ?? max(openPrice, close);
+      final lowPrice = low ?? min(openPrice, close);
+      
       prices.add(HistoricalPrice(
         date: DateTime.fromMillisecondsSinceEpoch((ts as int) * 1000),
-        open: open ?? close,
-        high: high ?? close,
-        low: low ?? close,
+        open: openPrice,
+        high: highPrice,
+        low: lowPrice,
         close: close,
         volume: volume ?? 0.0,
       ));
