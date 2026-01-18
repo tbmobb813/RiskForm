@@ -34,7 +34,8 @@ class WheelCycleService {
 
     final updated = previousCycle.copyWith(
       state: newState,
-      lastTransition: newState != previousCycle.state ? DateTime.now() : previousCycle.lastTransition,
+      lastTransition: newState != previousCycle.state ? DateTime.now() : null,
+      updateLastTransition: newState != previousCycle.state,
       cycleCount: _incrementCycleCount(previousCycle, newState),
     );
 
@@ -61,10 +62,24 @@ class WheelCycleService {
 
     final data = doc.data()!;
     return WheelCycle(
-      state: WheelCycleState.values[data["state"]],
+      state: _deserializeState(data["state"]),
       lastTransition: (data["lastTransition"] as Timestamp?)?.toDate(),
       cycleCount: data["cycleCount"] ?? 0,
     );
+  }
+
+  WheelCycleState _deserializeState(dynamic value) {
+    if (value is String) {
+      return WheelCycleState.values.firstWhere(
+        (e) => e.name == value,
+        orElse: () => WheelCycleState.idle,
+      );
+    }
+    // Fallback for legacy integer-based storage
+    if (value is int) {
+      return WheelCycleState.values[value];
+    }
+    return WheelCycleState.idle;
   }
 
   Future<void> saveCycle(String uid, WheelCycle cycle) async {
@@ -74,7 +89,7 @@ class WheelCycleService {
         .collection("wheel")
         .doc("cycle")
         .set({
-      "state": cycle.state.index,
+      "state": cycle.state.name,
       "lastTransition": cycle.lastTransition,
       "cycleCount": cycle.cycleCount,
     });

@@ -3,9 +3,12 @@ import '../models/position.dart';
 import '../models/wheel_cycle.dart';
 import '../models/strategy_recommendation.dart';
 import '../models/risk_profile.dart';
+import 'wheel_cycle_controller.dart';
 
 class MetaStrategyController {
-  MetaStrategyController();
+  final WheelCycleController _wheelCycleController;
+
+  MetaStrategyController() : _wheelCycleController = WheelCycleController();
 
   StrategyRecommendation evaluate({
     required AccountSnapshot account,
@@ -13,7 +16,11 @@ class MetaStrategyController {
     required WheelCycle wheel,
     required RiskProfile riskProfile,
   }) {
-    final cycleState = _determineWheelState(positions, wheel);
+    // Use WheelCycleController to determine state instead of duplicating logic
+    final cycleState = _wheelCycleController.determineState(
+      previous: wheel,
+      positions: positions,
+    );
 
     final nextAction = _determineNextAction(
       cycleState: cycleState,
@@ -29,33 +36,6 @@ class MetaStrategyController {
       reason: nextAction.reason,
       wheelState: cycleState,
     );
-  }
-
-  WheelCycleState _determineWheelState(
-    List<Position> positions,
-    WheelCycle wheel,
-  ) {
-    final hasOpenCsp = positions.any((p) => p.type == PositionType.csp && p.isOpen);
-    final hasShares = positions.any((p) => p.type == PositionType.shares && p.quantity >= 100);
-    final hasOpenCc = positions.any((p) => p.type == PositionType.coveredCall && p.isOpen);
-
-    // Priority order (mirror WheelCycleController rules where history matters)
-    if (hasOpenCsp) return WheelCycleState.cspOpen;
-
-    // Assigned: previously a CSP was open and now shares appear
-    if (hasShares && wheel.state == WheelCycleState.cspOpen) {
-      return WheelCycleState.assigned;
-    }
-
-    if (hasShares && hasOpenCc) return WheelCycleState.ccOpen;
-    if (hasShares && !hasOpenCc) return WheelCycleState.sharesOwned;
-
-    // Called away if previously in ccOpen and now no shares/cc
-    if (wheel.state == WheelCycleState.ccOpen && !hasShares && !hasOpenCc) {
-      return WheelCycleState.calledAway;
-    }
-
-    return WheelCycleState.idle;
   }
 
   _NextActionResult _determineNextAction({

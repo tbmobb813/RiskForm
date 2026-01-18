@@ -28,7 +28,7 @@ void main() {
       riskProfile: risk,
     );
 
-    expect(rec.action, contains('Sell'));
+    expect(rec.action, equals('Sell Cash-Secured Put'));
     expect(rec.wheelState, WheelCycleState.idle);
   });
 
@@ -46,7 +46,7 @@ void main() {
         type: PositionType.csp,
         symbol: 'XYZ',
         strategy: 'CSP',
-        quantity: 0,
+        quantity: 1,
         expiration: DateTime.now().add(const Duration(days: 30)),
         isOpen: true,
       )
@@ -61,7 +61,7 @@ void main() {
       riskProfile: risk,
     );
 
-    expect(rec.action, contains('Manage'));
+    expect(rec.action, equals('Manage Open CSP'));
     expect(rec.wheelState, WheelCycleState.cspOpen);
   });
 
@@ -94,7 +94,7 @@ void main() {
       riskProfile: risk,
     );
 
-    expect(rec.action, contains('Covered Call'));
+    expect(rec.action, equals('Sell Covered Call'));
     expect(rec.wheelState, WheelCycleState.sharesOwned);
   });
 
@@ -119,6 +119,6 @@ void main() {
     );
 
     expect(rec.wheelState, WheelCycleState.calledAway);
-    expect(rec.action, contains('Restart'));
+    expect(rec.action, equals('Restart Wheel with CSP'));
   });
 }
