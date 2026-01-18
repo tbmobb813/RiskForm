@@ -75,8 +75,8 @@ class WheelCycleService {
         orElse: () => WheelCycleState.idle,
       );
     }
-    // Fallback for legacy integer-based storage
-    if (value is int) {
+    // Fallback for legacy integer-based storage with bounds checking
+    if (value is int && value >= 0 && value < WheelCycleState.values.length) {
       return WheelCycleState.values[value];
     }
     return WheelCycleState.idle;
