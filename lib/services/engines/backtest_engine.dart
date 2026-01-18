@@ -248,19 +248,40 @@ class BacktestEngine {
     final strike = price;
 
     double premiumPerShare;
-    try {
-      if (optionPricing != null) {
+    if (optionPricing != null) {
+      try {
         premiumPerShare = optionPricing.priceEuropeanPut(
           spot: price,
           strike: strike,
           volatility: vol,
           timeToExpiryYears: tYears,
         );
-      } else {
+      } on ArgumentError catch (e) {
+        // Handle invalid numerical arguments (e.g., negative values)
+        debugPrint('Invalid arguments for option pricing (CSP), using heuristic: $e');
+        premiumPerShare = price * 0.02;
+      } on RangeError catch (e) {
+        // Handle mathematical domain errors
+        debugPrint('Math domain error in option pricing (CSP), using heuristic: $e');
         premiumPerShare = price * 0.02;
       }
-    } catch (e, stackTrace) {
-      debugPrint('Option pricing failed for CSP, using heuristic: $e');
+      // Other exceptions will propagate to surface real bugs in the pricing engine
+
+      // Validate the computed premium to guard against NaN, Infinity, or negative values
+      if (premiumPerShare.isNaN ||
+          premiumPerShare.isInfinite ||
+          premiumPerShare < 0) {
+        debugPrint(
+            'Received invalid option premium (CSP) from pricing engine '
+            '(value=$premiumPerShare); using heuristic.');
+        premiumPerShare = price * 0.02;
+      }
+    } on ArgumentError catch (e, stackTrace) {
+      debugPrint('Option pricing failed for CSP with invalid arguments: $e');
+      debugPrint('$stackTrace');
+      premiumPerShare = price * 0.02;
+    } on Exception catch (e, stackTrace) {
+      debugPrint('Option pricing failed for CSP with exception: $e');
       debugPrint('$stackTrace');
       premiumPerShare = price * 0.02;
     }
@@ -296,7 +317,7 @@ class BacktestEngine {
 
     // Early-assignment heuristic (deterministic, rare)
     if (shouldEarlyAssign(
-      symbol: configSymbolOrUnknown(notes),
+      symbol: configSymbolOrUnknown(),
       strike: strike,
       dte: csp.dte,
       isPut: true,
@@ -347,19 +368,29 @@ class BacktestEngine {
     final strike = price * 1.02; // 2% OTM
 
     double premiumPerShare;
-    try {
-      if (optionPricing != null) {
+    if (optionPricing != null) {
+      try {
         premiumPerShare = optionPricing.priceEuropeanCall(
           spot: price,
           strike: strike,
           volatility: vol,
           timeToExpiryYears: tYears,
         );
-      } else {
+      } on ArgumentError catch (e) {
+        // Handle invalid numerical arguments (e.g., negative values)
+        debugPrint('Invalid arguments for option pricing (CC), using heuristic: $e');
+        premiumPerShare = price * 0.015;
+      } on RangeError catch (e) {
+        // Handle mathematical domain errors
+        debugPrint('Math domain error in option pricing (CC), using heuristic: $e');
         premiumPerShare = price * 0.015;
       }
-    } catch (e, stackTrace) {
-      debugPrint('Option pricing failed for CC, using heuristic: $e');
+    } on ArgumentError catch (e, stackTrace) {
+      debugPrint('Option pricing failed for CC with invalid arguments: $e');
+      debugPrint('$stackTrace');
+      premiumPerShare = price * 0.015;
+    } on Exception catch (e, stackTrace) {
+      debugPrint('Option pricing failed for CC with exception: $e');
       debugPrint('$stackTrace');
       premiumPerShare = price * 0.015;
     }
@@ -393,7 +424,7 @@ class BacktestEngine {
     final isITM = price > strike;
 
     if (shouldEarlyAssign(
-      symbol: configSymbolOrUnknown(notes),
+      symbol: configSymbolOrUnknown(),
       strike: strike,
       dte: cc.dte,
       isPut: false,
@@ -468,7 +499,10 @@ class BacktestEngine {
         action = rec?.nextAction ?? action;
         reason = rec?.reason ?? reason;
       }
-    } catch (e, st) {
+    } on NoSuchMethodError catch (e, st) {
+      debugPrint('BacktestEngine: metaStrategy interface mismatch: $e\n$st');
+      notes.add('metaStrategy error: $e');
+    } on Exception catch (e, st) {
       debugPrint('BacktestEngine: metaStrategy evaluate failed: $e\n$st');
       notes.add('metaStrategy error: $e');
     }
@@ -481,7 +515,10 @@ class BacktestEngine {
         final payoff = payoffEngine.calculatePayoff(inputs);
         gain = (payoff?.maxGain ?? 0.0) as double;
       }
-    } catch (e, st) {
+    } on TypeError catch (e, st) {
+      debugPrint('BacktestEngine: payoff calculation type error: $e\n$st');
+      notes.add('payoff error: $e');
+    } on Exception catch (e, st) {
       debugPrint('BacktestEngine: payoff calculation failed: $e\n$st');
       notes.add('payoff error: $e');
     }
