@@ -266,6 +266,16 @@ class BacktestEngine {
         premiumPerShare = price * 0.02;
       }
       // Other exceptions will propagate to surface real bugs in the pricing engine
+
+      // Validate the computed premium to guard against NaN, Infinity, or negative values
+      if (premiumPerShare.isNaN ||
+          premiumPerShare.isInfinite ||
+          premiumPerShare < 0) {
+        debugPrint(
+            'Received invalid option premium (CSP) from pricing engine '
+            '(value=$premiumPerShare); using heuristic.');
+        premiumPerShare = price * 0.02;
+      }
     } else {
       premiumPerShare = price * 0.02;
     }
