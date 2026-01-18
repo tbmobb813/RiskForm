@@ -8,6 +8,7 @@ import 'package:flutter_application_2/models/account_context.dart';
 import 'package:flutter_application_2/models/trade_plan.dart';
 import 'package:flutter_application_2/services/engines/comparison_runner.dart';
 import 'package:flutter_application_2/services/engines/backtest_engine.dart';
+import 'package:flutter_application_2/services/engines/option_pricing_engine.dart';
 import 'package:flutter_application_2/state/comparison_provider.dart';
 import 'package:flutter_application_2/state/account_context_provider.dart';
 import 'package:flutter_application_2/services/data/trade_plan_repository.dart';
@@ -34,7 +35,7 @@ void main() {
         tradePlanRepositoryProvider.overrideWithValue(_FakeTradePlanRepository()),
         payoffEngineProvider.overrideWithValue(PayoffEngine()),
         riskEngineProvider.overrideWithValue(RiskEngine(const AccountContext(accountSize: 10000.0, buyingPower: 10000.0))),
-        comparisonRunnerProvider.overrideWithValue(ComparisonRunner(engine: BacktestEngine())),
+        comparisonRunnerProvider.overrideWithValue(ComparisonRunner(engine: BacktestEngine(optionPricing: OptionPricingEngine()))),
         accountContextProvider.overrideWithValue(const AsyncValue.data(AccountContext(accountSize: 10000.0, buyingPower: 10000.0))),
       ], child: const MaterialApp(home: SavePlanScreen())),
     );

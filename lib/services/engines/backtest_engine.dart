@@ -5,6 +5,7 @@ import 'package:flutter_application_2/models/backtest/backtest_step.dart';
 import 'package:flutter_application_2/models/backtest/wheel_sim_state.dart';
 import 'package:flutter_application_2/models/wheel_cycle.dart';
 import 'package:flutter_application_2/services/engines/wheel_helpers.dart';
+import 'package:flutter_application_2/services/engines/option_pricing_engine.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:math';
 
@@ -22,13 +23,15 @@ class BacktestEngine {
   final dynamic payoffEngine;
   final dynamic riskEngine;
   final dynamic metaStrategy;
-  final dynamic optionPricing;
+
+  /// Required for deterministic option pricing. Ensures reproducible backtests.
+  final OptionPricingEngine optionPricing;
 
   BacktestEngine({
     this.payoffEngine,
     this.riskEngine,
     this.metaStrategy,
-    this.optionPricing,
+    required this.optionPricing,
   });
 
   BacktestResult run(BacktestConfig config) {
@@ -291,44 +294,24 @@ class BacktestEngine {
   }
 
   WheelSimState _handleIdle(double price, WheelSimState state, List<String> notes) {
-    // Sell CSP at ATM using option pricing if available, otherwise fall back
-    // to a heuristic.
+    // Sell CSP at ATM using Black-Scholes pricing
     final tYears = 30 / 365.0;
     final vol = 0.25;
     final strike = price;
 
-    double premiumPerShare;
-    if (optionPricing != null) {
-      try {
-        premiumPerShare = optionPricing.priceEuropeanPut(
-          spot: price,
-          strike: strike,
-          volatility: vol,
-          timeToExpiryYears: tYears,
-        );
-      } on ArgumentError catch (e) {
-        // Handle invalid numerical arguments (e.g., negative values)
-        debugPrint('Invalid arguments for option pricing (CSP), using heuristic: $e');
-        premiumPerShare = price * 0.02;
-      } on RangeError catch (e) {
-        // Handle mathematical domain errors
-        debugPrint('Math domain error in option pricing (CSP), using heuristic: $e');
-        premiumPerShare = price * 0.02;
-      }
-      // Other exceptions will propagate to surface real bugs in the pricing engine
+    double premiumPerShare = optionPricing.priceEuropeanPut(
+      spot: price,
+      strike: strike,
+      volatility: vol,
+      timeToExpiryYears: tYears,
+    );
 
-      // Validate the computed premium to guard against NaN, Infinity, or negative values
-      if (premiumPerShare.isNaN ||
-          premiumPerShare.isInfinite ||
-          premiumPerShare < 0) {
-        debugPrint(
-            'Received invalid option premium (CSP) from pricing engine '
-            '(value=$premiumPerShare); using heuristic.');
-        premiumPerShare = price * 0.02;
-      }
-    } else {
-      // No option pricing engine available, use heuristic
-      premiumPerShare = price * 0.02;
+    // Validate the computed premium to guard against edge cases
+    if (premiumPerShare.isNaN || premiumPerShare.isInfinite || premiumPerShare < 0) {
+      throw StateError(
+        'Invalid option premium from pricing engine: $premiumPerShare '
+        '(spot=$price, strike=$strike, vol=$vol, t=$tYears)',
+      );
     }
 
     final premium = premiumPerShare * 100;
@@ -406,33 +389,24 @@ class BacktestEngine {
   }
 
   WheelSimState _handleSharesOwned(double price, WheelSimState state, List<String> notes) {
-    // Sell covered call using option pricing if available, otherwise fall back
-    // to a heuristic.
+    // Sell covered call using Black-Scholes pricing
     final tYears = 30 / 365.0;
     final vol = 0.25;
     final strike = price * 1.02; // 2% OTM
 
-    double premiumPerShare;
-    if (optionPricing != null) {
-      try {
-        premiumPerShare = optionPricing.priceEuropeanCall(
-          spot: price,
-          strike: strike,
-          volatility: vol,
-          timeToExpiryYears: tYears,
-        );
-      } on ArgumentError catch (e) {
-        // Handle invalid numerical arguments (e.g., negative values)
-        debugPrint('Invalid arguments for option pricing (CC), using heuristic: $e');
-        premiumPerShare = price * 0.015;
-      } on RangeError catch (e) {
-        // Handle mathematical domain errors
-        debugPrint('Math domain error in option pricing (CC), using heuristic: $e');
-        premiumPerShare = price * 0.015;
-      }
-    } else {
-      // No option pricing engine available, use heuristic
-      premiumPerShare = price * 0.015;
+    double premiumPerShare = optionPricing.priceEuropeanCall(
+      spot: price,
+      strike: strike,
+      volatility: vol,
+      timeToExpiryYears: tYears,
+    );
+
+    // Validate the computed premium to guard against edge cases
+    if (premiumPerShare.isNaN || premiumPerShare.isInfinite || premiumPerShare < 0) {
+      throw StateError(
+        'Invalid option premium from pricing engine: $premiumPerShare '
+        '(spot=$price, strike=$strike, vol=$vol, t=$tYears)',
+      );
     }
 
     final premium = premiumPerShare * 100;
