@@ -5,6 +5,10 @@ import '../../models/historical/historical_price.dart';
 import 'historical_data_source.dart';
 
 class YahooDataSource implements HistoricalDataSource {
+  final http.Client? client;
+
+  YahooDataSource({this.client});
+
   @override
   Future<List<HistoricalPrice>> fetchDailyPrices({
     required String symbol,
@@ -17,7 +21,8 @@ class YahooDataSource implements HistoricalDataSource {
     final url =
         'https://query1.finance.yahoo.com/v8/finance/chart/$symbol?period1=$period1&period2=$period2&interval=1d&includePrePost=false';
 
-    final response = await http.get(Uri.parse(url));
+    final httpClient = client ?? http.Client();
+    final response = await httpClient.get(Uri.parse(url));
     if (response.statusCode != 200) {
       throw Exception('Failed to fetch historical data: ${response.statusCode}');
     }
