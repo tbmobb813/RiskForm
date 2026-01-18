@@ -42,7 +42,7 @@ void main() {
             open: 100.0,
             high: 100.0,
             low: 100.0,
-            close: i < 10 ? 100.0 : 103.0, // 3% increase after day 10
+            close: i < 10 ? 100.0 : 103.0, // 3% increase starting at day 10
             volume: 1000000,
           ));
         }
