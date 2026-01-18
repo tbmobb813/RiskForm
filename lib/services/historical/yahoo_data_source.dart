@@ -5,6 +5,12 @@ import '../../models/historical/historical_price.dart';
 import 'historical_data_source.dart';
 
 class YahooDataSource implements HistoricalDataSource {
+  static const int _maxRetries = 3;
+  static const Duration _initialRetryDelay = Duration(seconds: 1);
+  static const Duration _minRequestInterval = Duration(milliseconds: 200);
+  
+  DateTime? _lastRequestTime;
+
   @override
   Future<List<HistoricalPrice>> fetchDailyPrices({
     required String symbol,
@@ -17,9 +23,43 @@ class YahooDataSource implements HistoricalDataSource {
     final url =
         'https://query1.finance.yahoo.com/v8/finance/chart/$symbol?period1=$period1&period2=$period2&interval=1d&includePrePost=false';
 
-    final response = await http.get(Uri.parse(url));
-    if (response.statusCode != 200) {
-      throw Exception('Failed to fetch historical data: ${response.statusCode}');
+    // Apply rate limiting
+    await _applyRateLimit();
+
+    // Retry logic with exponential backoff
+    http.Response response;
+    int retryCount = 0;
+    while (true) {
+      try {
+        response = await http.get(
+          Uri.parse(url),
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          },
+        );
+        
+        if (response.statusCode == 200) {
+          break;
+        } else if (response.statusCode == 429 || response.statusCode >= 500) {
+          // Rate limited or server error - retry
+          if (retryCount >= _maxRetries) {
+            throw Exception('Failed to fetch historical data after $_maxRetries retries: ${response.statusCode}');
+          }
+          retryCount++;
+          final delay = _initialRetryDelay * (1 << (retryCount - 1));
+          await Future.delayed(delay);
+        } else {
+          // Other error - don't retry
+          throw Exception('Failed to fetch historical data: ${response.statusCode}');
+        }
+      } catch (e) {
+        if (retryCount >= _maxRetries) {
+          rethrow;
+        }
+        retryCount++;
+        final delay = _initialRetryDelay * (1 << (retryCount - 1));
+        await Future.delayed(delay);
+      }
     }
 
     final json = jsonDecode(response.body) as Map<String, dynamic>;
@@ -57,5 +97,16 @@ class YahooDataSource implements HistoricalDataSource {
     }
 
     return prices;
+  }
+
+  /// Apply rate limiting to prevent being blocked by Yahoo Finance
+  Future<void> _applyRateLimit() async {
+    if (_lastRequestTime != null) {
+      final timeSinceLastRequest = DateTime.now().difference(_lastRequestTime!);
+      if (timeSinceLastRequest < _minRequestInterval) {
+        await Future.delayed(_minRequestInterval - timeSinceLastRequest);
+      }
+    }
+    _lastRequestTime = DateTime.now();
   }
 }
