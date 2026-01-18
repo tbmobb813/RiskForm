@@ -21,11 +21,12 @@ class WheelCycle {
   WheelCycle copyWith({
     WheelCycleState? state,
     DateTime? lastTransition,
+    bool updateLastTransition = false,
     int? cycleCount,
   }) {
     return WheelCycle(
       state: state ?? this.state,
-      lastTransition: lastTransition ?? this.lastTransition,
+      lastTransition: updateLastTransition ? lastTransition : this.lastTransition,
       cycleCount: cycleCount ?? this.cycleCount,
     );
   }
