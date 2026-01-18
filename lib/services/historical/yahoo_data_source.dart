@@ -46,13 +46,27 @@ class YahooDataSource implements HistoricalDataSource {
 
     for (int i = 0; i < timestamps.length; i++) {
       final ts = timestamps[i];
+      
+      // Extract price data for this timestamp
+      final open = (opens != null && i < opens.length && opens[i] != null) ? (opens[i] as num).toDouble() : null;
+      final high = (highs != null && i < highs.length && highs[i] != null) ? (highs[i] as num).toDouble() : null;
+      final low = (lows != null && i < lows.length && lows[i] != null) ? (lows[i] as num).toDouble() : null;
+      final close = (closes != null && i < closes.length && closes[i] != null) ? (closes[i] as num).toDouble() : null;
+      final volume = (volumes != null && i < volumes.length && volumes[i] != null) ? (volumes[i] as num).toDouble() : null;
+      
+      // Skip data points with missing critical price data (close is essential for backtesting)
+      if (close == null) {
+        continue;
+      }
+      
+      // Use close price as fallback for missing OHLC values to maintain valid price relationships
       prices.add(HistoricalPrice(
         date: DateTime.fromMillisecondsSinceEpoch((ts as int) * 1000),
-        open: (opens != null && i < opens.length && opens[i] != null) ? (opens[i] as num).toDouble() : 0.0,
-        high: (highs != null && i < highs.length && highs[i] != null) ? (highs[i] as num).toDouble() : 0.0,
-        low: (lows != null && i < lows.length && lows[i] != null) ? (lows[i] as num).toDouble() : 0.0,
-        close: (closes != null && i < closes.length && closes[i] != null) ? (closes[i] as num).toDouble() : 0.0,
-        volume: (volumes != null && i < volumes.length && volumes[i] != null) ? (volumes[i] as num).toDouble() : 0.0,
+        open: open ?? close,
+        high: high ?? close,
+        low: low ?? close,
+        close: close,
+        volume: volume ?? 0.0,
       ));
     }
 
