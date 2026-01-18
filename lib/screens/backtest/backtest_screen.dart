@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/backtest/backtest_config.dart';
 import '../../models/backtest/backtest_result.dart';
 import '../../state/backtest_engine_provider.dart';
+import '../../state/historical_providers.dart';
 import 'components/backtest_metrics_card.dart';
 import 'components/backtest_equity_chart.dart';
 import 'components/backtest_log_list.dart';
@@ -29,14 +30,35 @@ class _BacktestScreenState extends ConsumerState<BacktestScreen> {
 
   Future<void> _runBacktest() async {
     final engine = ref.read(backtestEngineProvider);
+    final historicalRepo = ref.read(historicalRepositoryProvider);
 
-    final result = await Future(() => engine.run(widget.config));
+    try {
+      // 1. Fetch historical OHLCV
+      final prices = await historicalRepo.getDailyPrices(
+        symbol: widget.config.symbol,
+        start: widget.config.startDate,
+        end: widget.config.endDate,
+      );
 
-    if (!mounted) return;
-    setState(() {
-      _result = result;
-      _isRunning = false;
-    });
+      // 2. Convert to price path (close prices)
+      final pricePath = prices.map((p) => p.close).toList();
+
+      // 3. Run backtest with real data
+      final result = await Future(() => engine.run(widget.config.copyWith(pricePath: pricePath)));
+
+      if (!mounted) return;
+      setState(() {
+        _result = result;
+        _isRunning = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _result = null;
+        _isRunning = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Backtest failed: $e')));
+    }
   }
 
   @override

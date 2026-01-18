@@ -40,15 +40,21 @@ class MetaStrategyController {
     final hasOpenCc = positions.any((p) => p.type == PositionType.coveredCall && p.isOpen);
 
     // Priority order (mirror WheelCycleController rules where history matters)
-    if (hasOpenCsp) return WheelCycleState.cspOpen;
-
-    // Assigned: previously a CSP was open and now shares appear
+    // Assigned: previously a CSP was open and now shares appear — check first
+    // so we don't hide an assignment when the CSP position still appears in
+    // the position list (e.g., transient state where both CSP and shares
+    // coexist). This keeps behavior consistent with WheelCycleController.
     if (hasShares && wheel.state == WheelCycleState.cspOpen) {
       return WheelCycleState.assigned;
     }
 
+    // If shares are present, prefer shares/covered-call states before
+    // reporting an open CSP. This prevents transient CSP records from
+    // shadowing the fact that shares are already held.
     if (hasShares && hasOpenCc) return WheelCycleState.ccOpen;
     if (hasShares && !hasOpenCc) return WheelCycleState.sharesOwned;
+
+    if (hasOpenCsp) return WheelCycleState.cspOpen;
 
     // Called away if previously in ccOpen and now no shares/cc
     if (wheel.state == WheelCycleState.ccOpen && !hasShares && !hasOpenCc) {

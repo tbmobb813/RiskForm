@@ -2,7 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_application_2/models/backtest/backtest_config.dart';
 import 'package:flutter_application_2/models/backtest/backtest_result.dart';
 import 'package:flutter_application_2/models/backtest/backtest_step.dart';
+import 'package:flutter_application_2/models/backtest/wheel_sim_state.dart';
 import 'package:flutter_application_2/models/wheel_cycle.dart';
+import 'package:flutter_application_2/services/engines/wheel_helpers.dart';
 
 /// Pure, deterministic backtest engine scaffold.
 class BacktestEngine {
@@ -11,45 +13,339 @@ class BacktestEngine {
   final dynamic payoffEngine;
   final dynamic riskEngine;
   final dynamic metaStrategy;
+  final dynamic optionPricing;
 
   BacktestEngine({
     this.payoffEngine,
     this.riskEngine,
     this.metaStrategy,
+    this.optionPricing,
   });
 
   BacktestResult run(BacktestConfig config) {
-    double capital = config.startingCapital;
+    if (config.pricePath.isEmpty) {
+      throw Exception('Backtest requires a non-empty price path.');
+    }
+
+    // Initialize simulation state for wheel simulation
     final equityCurve = <double>[];
     final notes = <String>[];
+    final steps = <BacktestStep>[];
 
-    WheelCycle cycle = WheelCycle(state: WheelCycleState.idle);
-    List<BacktestStep> steps = [];
+    // cycle analytics
+    final cycles = <CycleStats>[];
+    int currentCycleIndex = 0;
+    double? cycleStartEquity;
+    int cycleDuration = 0;
+    bool cycleHadAssignment = false;
+
+    final sim = WheelSimState(
+      capital: config.startingCapital,
+      shares: 0,
+      costBasis: 0.0,
+      cycle: WheelCycle(state: WheelCycleState.idle),
+    );
 
     for (final price in config.pricePath) {
-      final step = _simulateStep(
+      // decrement DTE for active options before processing today's price
+      if (sim.csp != null) sim.csp!.dte -= 1;
+      if (sim.cc != null) sim.cc!.dte -= 1;
+      final equityBefore = sim.capital + sim.shares * price;
+      cycleStartEquity ??= equityBefore;
+
+      final newSim = _simulateWheelStep(
         price: price,
-        capital: capital,
-        cycle: cycle,
+        state: sim,
         config: config,
         notes: notes,
       );
 
-      capital = step.equity;
-      equityCurve.add(capital);
-      steps.add(step);
+      // compute equity as capital + current shares * price
+      final equity = newSim.capital + (newSim.shares * price);
 
-      // update wheel state (placeholder)
-      cycle = _updateCycle(cycle, step);
+      steps.add(BacktestStep(
+        price: price,
+        equity: equity,
+        action: newSim.cycle.state.toString(),
+        reason: notes.isNotEmpty ? notes.last : '',
+      ));
+
+      equityCurve.add(equity);
+      // advance sim for next iteration (mutating behavior kept simple)
+      sim.capital = newSim.capital;
+      sim.shares = newSim.shares;
+      sim.costBasis = newSim.costBasis;
+      sim.cycle = newSim.cycle;
+      sim.csp = newSim.csp;
+      sim.cc = newSim.cc;
+
+      // cycle bookkeeping
+      cycleDuration += 1;
+      final lastNote = notes.isNotEmpty ? notes.last : '';
+      if (lastNote.contains('assigned') || lastNote.contains('CSP expired ITM')) {
+        cycleHadAssignment = true;
+      }
+
+      if (lastNote.contains('called away') || lastNote.contains('Cycle completed') || lastNote.contains('CC expired ITM')) {
+        // complete cycle
+        cycles.add(CycleStats(
+          index: currentCycleIndex,
+          startEquity: cycleStartEquity ?? equity,
+          endEquity: equity,
+          durationDays: cycleDuration,
+          hadAssignment: cycleHadAssignment,
+        ));
+        currentCycleIndex += 1;
+        cycleStartEquity = null;
+        cycleDuration = 0;
+        cycleHadAssignment = false;
+      }
     }
+    final avgReturn = cycles.isEmpty
+        ? 0.0
+        : cycles.map((c) => c.cycleReturn).reduce((a, b) => a + b) / cycles.length;
+    final avgDuration = cycles.isEmpty
+        ? 0.0
+        : cycles.map((c) => c.durationDays).reduce((a, b) => a + b) / cycles.length;
+    final assignmentRate = cycles.isEmpty ? 0.0 : cycles.where((c) => c.hadAssignment).length / cycles.length;
 
     return BacktestResult(
       equityCurve: equityCurve,
       maxDrawdown: _maxDrawdown(equityCurve),
-      totalReturn: (capital - config.startingCapital) / config.startingCapital,
-      cyclesCompleted: cycle.cycleCount,
+      totalReturn: (equityCurve.isNotEmpty ? (equityCurve.last - config.startingCapital) / config.startingCapital : 0.0),
+      cyclesCompleted: cycles.length,
       notes: notes,
+      cycles: cycles,
+      avgCycleReturn: avgReturn,
+      avgCycleDurationDays: avgDuration.toDouble(),
+      assignmentRate: assignmentRate.toDouble(),
     );
+  }
+
+  // --- Wheel simulation ---
+  WheelSimState _simulateWheelStep({
+    required double price,
+    required WheelSimState state,
+    required BacktestConfig config,
+    required List<String> notes,
+  }) {
+    // Operate on a copy to keep changes explicit
+    final s = state.copy();
+
+    switch (s.cycle.state) {
+      case WheelCycleState.idle:
+        return _handleIdle(price, s, notes);
+      case WheelCycleState.cspOpen:
+        return _handleCspOpen(price, s, notes);
+      case WheelCycleState.assigned:
+        return _handleAssigned(price, s, notes);
+      case WheelCycleState.sharesOwned:
+        return _handleSharesOwned(price, s, notes);
+      case WheelCycleState.ccOpen:
+        return _handleCcOpen(price, s, notes);
+      case WheelCycleState.calledAway:
+        return _handleCalledAway(price, s, notes);
+    }
+  }
+
+  WheelSimState _handleIdle(double price, WheelSimState state, List<String> notes) {
+    // Sell CSP at ATM using option pricing if available, otherwise fall back
+    // to a heuristic.
+    final tYears = 30 / 365.0;
+    final vol = 0.25;
+    final strike = price;
+
+    double premiumPerShare;
+    try {
+      if (optionPricing != null) {
+        premiumPerShare = optionPricing.priceEuropeanPut(
+          spot: price,
+          strike: strike,
+          volatility: vol,
+          timeToExpiryYears: tYears,
+        );
+      } else {
+        premiumPerShare = price * 0.02;
+      }
+    } catch (_) {
+      premiumPerShare = price * 0.02;
+    }
+
+    final premium = premiumPerShare * 100;
+    state.capital += premium;
+
+    // create in-sim option to track DTE and strike
+    final dte = 30;
+    state.csp = SimOption(
+      strike: strike,
+      dte: dte,
+      isPut: true,
+      isShort: true,
+    );
+
+    notes.add('Sold CSP @ ${strike.toStringAsFixed(2)}, DTE $dte, premium ${premium.toStringAsFixed(2)}');
+    state.cycle = state.cycle.copyWith(state: WheelCycleState.cspOpen);
+    return state;
+  }
+
+  WheelSimState _handleCspOpen(double price, WheelSimState state, List<String> notes) {
+    // Use the in-sim option if present
+    final csp = state.csp;
+    if (csp == null) {
+      notes.add('CSP open but option missing; reverting to idle.');
+      state.cycle = state.cycle.copyWith(state: WheelCycleState.idle);
+      return state;
+    }
+
+    final strike = csp.strike;
+    final isITM = price < strike;
+
+    // Early-assignment heuristic (deterministic, rare)
+    if (shouldEarlyAssign(
+      symbol: configSymbolOrUnknown(notes),
+      strike: strike,
+      dte: csp.dte,
+      isPut: true,
+      price: price,
+    )) {
+      // perform early assignment
+      state.shares = 100;
+      state.costBasis = strike;
+      state.capital -= strike * 100;
+      notes.add('CSP early-assigned @ ${strike.toStringAsFixed(2)}');
+      state.cycle = state.cycle.copyWith(state: WheelCycleState.assigned);
+      state.csp = null;
+      return state;
+    }
+
+    if (csp.dte <= 0) {
+      if (isITM) {
+        // assignment at expiry
+        state.shares = 100;
+        state.costBasis = strike;
+        state.capital -= strike * 100;
+        notes.add('CSP expired ITM, assigned @ ${strike.toStringAsFixed(2)}');
+        state.cycle = state.cycle.copyWith(state: WheelCycleState.assigned);
+      } else {
+        // expires worthless
+        notes.add('CSP expired OTM, no assignment');
+        state.cycle = state.cycle.copyWith(state: WheelCycleState.idle);
+      }
+      state.csp = null;
+      return state;
+    }
+
+    notes.add('CSP open, DTE ${csp.dte}, spot ${price.toStringAsFixed(2)}');
+    return state;
+  }
+
+  WheelSimState _handleAssigned(double price, WheelSimState state, List<String> notes) {
+    notes.add('Shares confirmed at cost basis ${state.costBasis}');
+    state.cycle = state.cycle.copyWith(state: WheelCycleState.sharesOwned);
+    return state;
+  }
+
+  WheelSimState _handleSharesOwned(double price, WheelSimState state, List<String> notes) {
+    // Sell covered call using option pricing if available, otherwise fall back
+    // to a heuristic.
+    final tYears = 30 / 365.0;
+    final vol = 0.25;
+    final strike = price * 1.02; // 2% OTM
+
+    double premiumPerShare;
+    try {
+      if (optionPricing != null) {
+        premiumPerShare = optionPricing.priceEuropeanCall(
+          spot: price,
+          strike: strike,
+          volatility: vol,
+          timeToExpiryYears: tYears,
+        );
+      } else {
+        premiumPerShare = price * 0.015;
+      }
+    } catch (_) {
+      premiumPerShare = price * 0.015;
+    }
+
+    final premium = premiumPerShare * 100;
+    state.capital += premium;
+
+    final dte = 30;
+    final strikeForOption = strike;
+    state.cc = SimOption(
+      strike: strikeForOption,
+      dte: dte,
+      isPut: false,
+      isShort: true,
+    );
+
+    notes.add('Sold CC @ ${strikeForOption.toStringAsFixed(2)}, DTE $dte, premium ${premium.toStringAsFixed(2)}');
+    state.cycle = state.cycle.copyWith(state: WheelCycleState.ccOpen);
+    return state;
+  }
+
+  WheelSimState _handleCcOpen(double price, WheelSimState state, List<String> notes) {
+    final cc = state.cc;
+    if (cc == null) {
+      notes.add('CC open but option missing; keeping shares.');
+      state.cycle = state.cycle.copyWith(state: WheelCycleState.sharesOwned);
+      return state;
+    }
+
+    final strike = cc.strike;
+    final isITM = price > strike;
+
+    if (shouldEarlyAssign(
+      symbol: configSymbolOrUnknown(notes),
+      strike: strike,
+      dte: cc.dte,
+      isPut: false,
+      price: price,
+    )) {
+      // early called-away
+      final proceeds = strike * 100;
+      final gain = proceeds - (state.costBasis * 100);
+      state.capital += proceeds;
+      state.shares = 0;
+      notes.add('CC early-called-away @ ${strike.toStringAsFixed(2)}, gain ${gain.toStringAsFixed(2)}');
+      state.cycle = state.cycle.copyWith(
+        state: WheelCycleState.calledAway,
+        cycleCount: state.cycle.cycleCount + 1,
+      );
+      state.cc = null;
+      return state;
+    }
+
+    if (cc.dte <= 0) {
+      if (isITM) {
+        final proceeds = cc.strike * 100;
+        final gain = proceeds - (state.costBasis * 100);
+        state.capital += proceeds;
+        state.shares = 0;
+
+        notes.add('CC expired ITM, called away @ ${cc.strike.toStringAsFixed(2)}, gain ${gain.toStringAsFixed(2)}');
+
+        state.cycle = state.cycle.copyWith(
+          state: WheelCycleState.calledAway,
+          cycleCount: state.cycle.cycleCount + 1,
+        );
+      } else {
+        notes.add('CC expired OTM, keep shares');
+        state.cycle = state.cycle.copyWith(state: WheelCycleState.sharesOwned);
+      }
+      state.cc = null;
+      return state;
+    }
+
+    notes.add('CC open, DTE ${cc.dte}, spot ${price.toStringAsFixed(2)}');
+    return state;
+  }
+
+  WheelSimState _handleCalledAway(double price, WheelSimState state, List<String> notes) {
+    notes.add('Cycle completed. Restarting wheel.');
+    state.cycle = state.cycle.copyWith(state: WheelCycleState.idle);
+    return state;
   }
 
   BacktestStep _simulateStep({

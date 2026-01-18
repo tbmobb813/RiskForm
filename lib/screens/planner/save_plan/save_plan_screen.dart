@@ -65,6 +65,9 @@ class SavePlanScreen extends ConsumerWidget {
                       maxCycles: 10,
                       pricePath: prices,
                       strategyId: state.strategyId ?? 'wheel',
+                      symbol: 'SPY',
+                      startDate: DateTime.now().subtract(const Duration(days: 365 * 2)),
+                      endDate: DateTime.now(),
                     );
 
                     Navigator.of(context).push(
