@@ -27,10 +27,10 @@ class Position {
   /// Days to expiration (DTE), clamped to a sane range.
   int get dte => expiration.difference(DateTime.now()).inDays.clamp(0, 999);
 
-  /// Lightweight lifecycle stage derived from DTE.
-  /// - early: long time to expiry
-  /// - mid: intermediate
-  /// - late: close to expiration
+  /// Backwards-compatible alias requested by Phase‑2 APIs.
+  int get daysUntilExpiration => dte;
+
+  /// Lightweight lifecycle stage derived from DTE as a typed enum.
   PositionStage get stage {
     final days = dte;
     if (days <= 15) return PositionStage.late;
@@ -38,35 +38,31 @@ class Position {
     return PositionStage.early;
   }
 
+  /// Simple lifecycleStage string for UI use: "Early", "Mid", "Late".
+  String get lifecycleStage {
+    final days = daysUntilExpiration;
+    if (days > 30) return 'Early';
+    if (days > 10) return 'Mid';
+    return 'Late';
+  }
+
   /// Heuristic probability (0.0 - 1.0) that an option position will be assigned
-  /// before expiration. Uses a simple rule-of-thumb based on DTE and position type.
-  /// This is intentionally conservative and easy to tweak.
+  /// before expiration. This is intentionally simple and conservative for Phase‑2.
   double get assignmentProbability {
     // For shares (no option), assignment probability is 0.
     if (type == PositionType.shares) return 0.0;
 
-    // Base probability depends on stage.
-    final days = dte.clamp(0, 365);
+    final d = daysUntilExpiration;
+    if (d > 20) return 0.10;
+    if (d > 10) return 0.25;
+    return 0.50;
+  }
 
-    double prob;
-    if (days <= 7) {
-      prob = 0.7; // very near-term
-    } else if (days <= 30) {
-      // linearly scale from 0.7 at 7d to 0.25 at 30d
-      prob = 0.25 + (30 - days) * ((0.7 - 0.25) / (30 - 7));
-    } else if (days <= 90) {
-      // lower baseline for mid-term
-      prob = 0.1 + (90 - days) * ((0.25 - 0.1) / (90 - 30));
-    } else {
-      prob = 0.05; // long-dated
-    }
-
-    // Slightly adjust for strategy: CSP (put) has marginally higher assignment risk.
-    if (type == PositionType.csp) prob *= 1.1;
-
-    // Clamp to [0,1]
-    if (prob < 0) prob = 0.0;
-    if (prob > 1) prob = 1.0;
-    return double.parse(prob.toStringAsFixed(2));
+  /// Optional simple time-decay impact cue: "Low", "Moderate", "High".
+  String get timeDecayImpact {
+    final d = daysUntilExpiration;
+    if (d > 20) return 'Low';
+    if (d > 10) return 'Moderate';
+    return 'High';
   }
 }

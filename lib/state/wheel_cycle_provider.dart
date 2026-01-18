@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/wheel_cycle.dart';
 import '../services/firebase/wheel_cycle_service.dart';
 import '../services/firebase/auth_service.dart';
-import '../models/position.dart';
 import '../screens/dashboard/active_positions_section.dart';
 
 final wheelCycleProvider = FutureProvider<WheelCycle>((ref) async {

@@ -33,6 +33,53 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Dart/Flutter generated
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Xcode
+/ios/Pods/
+/ios/Runner.xcworkspace/
+/ios/Flutter/Flutter.framework
+/ios/Flutter/Flutter.podspec
+
+# Android
+/android/.gradle/
+/android/local.properties
+/android/**/build/
+/android/*.iml
+
+# Gradle
+.gradle/
+
+# Keystores, credentials
+*.jks
+*.keystore
+android/key.properties
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# IDEs
+/.idea/
+*.iml
+
+# Node
+**/node_modules/
+
+# Tools
+/tools/**/node_modules/
+
+# Firebase service account / secrets (ignore by pattern; keep if intentionally tracked)
+# Uncomment and adjust if you add any service account files to repo intentionally
+#service-account*.json
+
+
 # Symbolication related
 app.*.symbols
 
