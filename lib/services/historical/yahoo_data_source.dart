@@ -60,8 +60,9 @@ class YahooDataSource implements HistoricalDataSource {
         continue;
       }
       
-      // Use close price as fallback for missing OHLC values while maintaining valid OHLC relationships
-      // High must be >= max(open, close), Low must be <= min(open, close)
+      // Use close price as fallback for missing OHLC values while maintaining valid OHLC relationships.
+      // If Yahoo provides high/low, we trust those market data values as-is. When high/low are null,
+      // we synthesize them so that: high >= max(open, close) and low <= min(open, close).
       final openPrice = open ?? close;
       final highPrice = high ?? max(openPrice, close);
       final lowPrice = low ?? min(openPrice, close);
