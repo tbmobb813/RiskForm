@@ -276,7 +276,13 @@ class BacktestEngine {
             '(value=$premiumPerShare); using heuristic.');
         premiumPerShare = price * 0.02;
       }
-    } else {
+    } on ArgumentError catch (e, stackTrace) {
+      debugPrint('Option pricing failed for CSP with invalid arguments: $e');
+      debugPrint('$stackTrace');
+      premiumPerShare = price * 0.02;
+    } on Exception catch (e, stackTrace) {
+      debugPrint('Option pricing failed for CSP with exception: $e');
+      debugPrint('$stackTrace');
       premiumPerShare = price * 0.02;
     }
 
@@ -379,8 +385,13 @@ class BacktestEngine {
         debugPrint('Math domain error in option pricing (CC), using heuristic: $e');
         premiumPerShare = price * 0.015;
       }
-      // Other exceptions will propagate to surface real bugs in the pricing engine
-    } else {
+    } on ArgumentError catch (e, stackTrace) {
+      debugPrint('Option pricing failed for CC with invalid arguments: $e');
+      debugPrint('$stackTrace');
+      premiumPerShare = price * 0.015;
+    } on Exception catch (e, stackTrace) {
+      debugPrint('Option pricing failed for CC with exception: $e');
+      debugPrint('$stackTrace');
       premiumPerShare = price * 0.015;
     }
 
@@ -488,7 +499,10 @@ class BacktestEngine {
         action = rec?.nextAction ?? action;
         reason = rec?.reason ?? reason;
       }
-    } catch (e, st) {
+    } on NoSuchMethodError catch (e, st) {
+      debugPrint('BacktestEngine: metaStrategy interface mismatch: $e\n$st');
+      notes.add('metaStrategy error: $e');
+    } on Exception catch (e, st) {
       debugPrint('BacktestEngine: metaStrategy evaluate failed: $e\n$st');
       notes.add('metaStrategy error: $e');
     }
@@ -501,7 +515,10 @@ class BacktestEngine {
         final payoff = payoffEngine.calculatePayoff(inputs);
         gain = (payoff?.maxGain ?? 0.0) as double;
       }
-    } catch (e, st) {
+    } on TypeError catch (e, st) {
+      debugPrint('BacktestEngine: payoff calculation type error: $e\n$st');
+      notes.add('payoff error: $e');
+    } on Exception catch (e, st) {
       debugPrint('BacktestEngine: payoff calculation failed: $e\n$st');
       notes.add('payoff error: $e');
     }
