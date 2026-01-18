@@ -1,3 +1,5 @@
+// ignore_for_file: unused_element, dead_code, dead_null_aware_expression
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_application_2/models/backtest/backtest_config.dart';
 import 'package:flutter_application_2/models/backtest/backtest_result.dart';
@@ -5,6 +7,12 @@ import 'package:flutter_application_2/models/backtest/backtest_step.dart';
 import 'package:flutter_application_2/models/backtest/wheel_sim_state.dart';
 import 'package:flutter_application_2/models/wheel_cycle.dart';
 import 'package:flutter_application_2/services/engines/wheel_helpers.dart';
+import 'dart:math';
+
+import 'package:flutter_application_2/models/historical/historical_price.dart';
+import 'package:flutter_application_2/services/analytics/regime_classifier.dart';
+import 'package:flutter_application_2/models/analytics/market_regime.dart';
+import 'package:flutter_application_2/models/analytics/regime_segment.dart';
 
 /// Pure, deterministic backtest engine scaffold.
 class BacktestEngine {
@@ -27,6 +35,18 @@ class BacktestEngine {
       throw Exception('Backtest requires a non-empty price path.');
     }
 
+    // build historical price list with daily spacing from config.startDate
+    final historical = <HistoricalPrice>[];
+    for (var i = 0; i < config.pricePath.length; i++) {
+      final d = config.startDate.add(Duration(days: i));
+      final p = config.pricePath[i];
+      historical.add(HistoricalPrice(date: d, open: p, high: p, low: p, close: p, volume: 0));
+    }
+
+    // classify regimes
+    final classifier = RegimeClassifier();
+    final regimeSegments = classifier.classify(historical);
+
     // Initialize simulation state for wheel simulation
     final equityCurve = <double>[];
     final notes = <String>[];
@@ -38,6 +58,8 @@ class BacktestEngine {
     double? cycleStartEquity;
     int cycleDuration = 0;
     bool cycleHadAssignment = false;
+    int? cycleStartIndex;
+    int dayIndex = 0;
 
     final sim = WheelSimState(
       capital: config.startingCapital,
@@ -52,6 +74,7 @@ class BacktestEngine {
       if (sim.cc != null) sim.cc!.dte -= 1;
       final equityBefore = sim.capital + sim.shares * price;
       cycleStartEquity ??= equityBefore;
+      cycleStartIndex ??= dayIndex;
 
       final newSim = _simulateWheelStep(
         price: price,
@@ -94,12 +117,16 @@ class BacktestEngine {
           endEquity: equity,
           durationDays: cycleDuration,
           hadAssignment: cycleHadAssignment,
+          startIndex: cycleStartIndex,
+          endIndex: dayIndex,
         ));
         currentCycleIndex += 1;
         cycleStartEquity = null;
         cycleDuration = 0;
         cycleHadAssignment = false;
+        cycleStartIndex = null;
       }
+      dayIndex += 1;
     }
     final avgReturn = cycles.isEmpty
         ? 0.0
@@ -109,17 +136,83 @@ class BacktestEngine {
         : cycles.map((c) => c.durationDays).reduce((a, b) => a + b) / cycles.length;
     final assignmentRate = cycles.isEmpty ? 0.0 : cycles.where((c) => c.hadAssignment).length / cycles.length;
 
+    // enrich cycles with dominant regimes
+    List<CycleStats> enriched = cycles.map((c) {
+      final dom = _dominantRegimeForCycle(cycle: c, segments: regimeSegments);
+      return CycleStats(
+        index: c.index,
+        startEquity: c.startEquity,
+        endEquity: c.endEquity,
+        durationDays: c.durationDays,
+        hadAssignment: c.hadAssignment,
+        dominantRegime: dom,
+        startIndex: c.startIndex,
+        endIndex: c.endIndex,
+      );
+    }).toList();
+
+    double avgCycleReturnForRegime(List<CycleStats> cyclesList, MarketRegime regime) {
+      final filtered = cyclesList.where((c) => c.dominantRegime == regime).toList();
+      if (filtered.isEmpty) return 0.0;
+      final sum = filtered.fold<double>(0, (a, c) => a + c.cycleReturn);
+      return sum / filtered.length;
+    }
+
+    double assignmentRateForRegime(List<CycleStats> cyclesList, MarketRegime regime) {
+      final filtered = cyclesList.where((c) => c.dominantRegime == regime).toList();
+      if (filtered.isEmpty) return 0.0;
+      final assigned = filtered.where((c) => c.hadAssignment).length;
+      return assigned / filtered.length;
+    }
+
+    final upRet = avgCycleReturnForRegime(enriched, MarketRegime.uptrend);
+    final downRet = avgCycleReturnForRegime(enriched, MarketRegime.downtrend);
+    final sideRet = avgCycleReturnForRegime(enriched, MarketRegime.sideways);
+
+    final upAssign = assignmentRateForRegime(enriched, MarketRegime.uptrend);
+    final downAssign = assignmentRateForRegime(enriched, MarketRegime.downtrend);
+    final sideAssign = assignmentRateForRegime(enriched, MarketRegime.sideways);
+
     return BacktestResult(
       equityCurve: equityCurve,
       maxDrawdown: _maxDrawdown(equityCurve),
       totalReturn: (equityCurve.isNotEmpty ? (equityCurve.last - config.startingCapital) / config.startingCapital : 0.0),
       cyclesCompleted: cycles.length,
       notes: notes,
-      cycles: cycles,
+      cycles: enriched,
       avgCycleReturn: avgReturn,
       avgCycleDurationDays: avgDuration.toDouble(),
       assignmentRate: assignmentRate.toDouble(),
+      uptrendAvgCycleReturn: upRet,
+      downtrendAvgCycleReturn: downRet,
+      sidewaysAvgCycleReturn: sideRet,
+      uptrendAssignmentRate: upAssign,
+      downtrendAssignmentRate: downAssign,
+      sidewaysAssignmentRate: sideAssign,
     );
+  }
+
+  MarketRegime? _dominantRegimeForCycle({
+    required CycleStats cycle,
+    required List<RegimeSegment> segments,
+  }) {
+    final cycleStart = cycle.startIndex ?? 0;
+    final cycleEnd = cycle.endIndex ?? (cycle.startIndex ?? 0) + cycle.durationDays;
+
+    MarketRegime? best;
+    int bestOverlap = 0;
+
+    for (final seg in segments) {
+      final overlapStart = max(cycleStart, seg.startIndex);
+      final overlapEnd = min(cycleEnd, seg.endIndex);
+      final overlap = overlapEnd - overlapStart + 1;
+      if (overlap > bestOverlap && overlap > 0) {
+        bestOverlap = overlap;
+        best = seg.regime;
+      }
+    }
+
+    return best;
   }
 
   // --- Wheel simulation ---

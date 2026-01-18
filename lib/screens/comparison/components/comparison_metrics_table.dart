@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../models/comparison/comparison_result.dart';
+import '../../../models/backtest/backtest_result.dart';
 
 class ComparisonMetricsTable extends StatelessWidget {
   final ComparisonResult result;
@@ -40,7 +41,7 @@ class ComparisonMetricsTable extends StatelessWidget {
     );
   }
 
-  TableRow _resultRow(result, int index) {
+  TableRow _resultRow(BacktestResult result, int index) {
     final label = (result.notes.isNotEmpty) ? result.notes.first : 'Strategy ${index + 1}';
     return TableRow(
       children: [

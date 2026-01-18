@@ -9,6 +9,7 @@ import '../../../state/comparison_provider.dart';
 import '../../../models/comparison/comparison_config.dart';
 import '../../../services/engines/comparison_helper.dart';
 import '../../comparison/comparison_screen.dart';
+import '../../journal/journal_screen.dart';
 // trade plan persistence handled by PlannerNotifier
 import '../components/confirmation_summary_card.dart';
 import '../components/notes_field.dart';
@@ -26,6 +27,17 @@ class SavePlanScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text("Save Trade Plan"),
         elevation: 0,
+        actions: [
+          IconButton(
+            tooltip: 'Journal',
+            icon: const Icon(Icons.book),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const JournalScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(

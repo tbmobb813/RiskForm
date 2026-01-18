@@ -4,6 +4,7 @@ import 'components/wheel_performance_summary_card.dart';
 import 'components/wheel_equity_chart_card.dart';
 import 'components/wheel_drawdown_chart_card.dart';
 import 'components/wheel_cycle_table_card.dart';
+import 'components/wheel_regime_summary_card.dart';
 
 class WheelPerformanceScreen extends StatelessWidget {
   final BacktestResult result;
@@ -20,6 +21,8 @@ class WheelPerformanceScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             WheelPerformanceSummaryCard(result: result),
+            const SizedBox(height: 12),
+            WheelRegimeSummaryCard(result: result),
             const SizedBox(height: 24),
             WheelEquityChartCard(result: result),
             const SizedBox(height: 24),

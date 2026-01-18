@@ -5,6 +5,7 @@ import '../../models/backtest/backtest_config.dart';
 import '../../models/backtest/backtest_result.dart';
 import '../../state/backtest_engine_provider.dart';
 import '../../state/historical_providers.dart';
+import '../../state/journal_providers.dart';
 import 'components/backtest_metrics_card.dart';
 import 'components/backtest_equity_chart.dart';
 import 'components/backtest_cycle_breakdown_card.dart';
@@ -46,6 +47,18 @@ class _BacktestScreenState extends ConsumerState<BacktestScreen> {
 
       // 3. Run backtest with real data
       final result = await Future(() => engine.run(widget.config.copyWith(pricePath: pricePath)));
+
+      // record journal entries asynchronously (non-blocking to UI)
+      try {
+        final journal = ref.read(journalAutomationProvider);
+        for (final cycle in result.cycles) {
+          await journal.recordCycle(cycle);
+          if (cycle.hadAssignment) await journal.recordAssignment(cycle);
+        }
+        await journal.recordBacktest(result);
+      } catch (_) {
+        // journaling is best-effort; ignore errors here
+      }
 
       if (!mounted) return;
       setState(() {

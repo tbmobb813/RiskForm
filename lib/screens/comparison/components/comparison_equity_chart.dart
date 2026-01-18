@@ -108,8 +108,11 @@ class _MultiLinePainter extends CustomPainter {
       for (var i = 0; i < c.length; i++) {
         final x = leftPadding + (i / (maxLen - 1 > 0 ? (maxLen - 1) : 1)) * w;
         final y = 8 + h - ((c[i] - minY) / (maxY - minY)) * h;
-        if (i == 0) path.moveTo(x, y);
-        else path.lineTo(x, y);
+        if (i == 0) {
+          path.moveTo(x, y);
+        } else {
+          path.lineTo(x, y);
+        }
       }
       canvas.drawPath(path, paint);
     }
@@ -127,7 +130,9 @@ class _MultiLinePainter extends CustomPainter {
       tp.layout(maxWidth: size.width - legendX - 8);
       tp.paint(canvas, Offset(legendX + 18, legendY - 4));
       legendY += 18;
-      if (legendY > size.height - 30) break; // avoid overflow
+      if (legendY > size.height - 30) {
+        break; // avoid overflow
+      }
     }
   }
 
