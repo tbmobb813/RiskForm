@@ -6,11 +6,12 @@ import 'journal_repository.dart';
 
 class JournalAutomationService {
   final JournalRepository repo;
+  final Random _secureRandom = Random.secure();
 
   JournalAutomationService({required this.repo});
 
-  // Simple id generator (no external dependency)
-  String _id() => '${DateTime.now().microsecondsSinceEpoch}-${Random().nextInt(100000)}';
+  // Generate a more robust ID using secure random and timestamp
+  String _id() => '${DateTime.now().microsecondsSinceEpoch}-${_secureRandom.nextInt(0x7FFFFFFF)}';
 
   Future<void> recordBacktest(BacktestResult result) async {
     final entry = JournalEntry(

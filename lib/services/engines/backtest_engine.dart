@@ -1,5 +1,3 @@
-// ignore_for_file: unused_element, dead_code, dead_null_aware_expression
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter_application_2/models/backtest/backtest_config.dart';
 import 'package:flutter_application_2/models/backtest/backtest_result.dart';
@@ -260,7 +258,9 @@ class BacktestEngine {
       } else {
         premiumPerShare = price * 0.02;
       }
-    } catch (_) {
+    } catch (e, stackTrace) {
+      debugPrint('Option pricing failed for CSP, using heuristic: $e');
+      debugPrint('$stackTrace');
       premiumPerShare = price * 0.02;
     }
 
@@ -357,7 +357,9 @@ class BacktestEngine {
       } else {
         premiumPerShare = price * 0.015;
       }
-    } catch (_) {
+    } catch (e, stackTrace) {
+      debugPrint('Option pricing failed for CC, using heuristic: $e');
+      debugPrint('$stackTrace');
       premiumPerShare = price * 0.015;
     }
 
@@ -441,6 +443,7 @@ class BacktestEngine {
     return state;
   }
 
+  // ignore: unused_element
   BacktestStep _simulateStep({
     required double price,
     required double capital,
@@ -492,6 +495,7 @@ class BacktestEngine {
     );
   }
 
+  // ignore: unused_element
   WheelCycle _updateCycle(WheelCycle cycle, BacktestStep step) {
     // Placeholder: consumers should hook up `WheelCycleController` for
     // realistic lifecycle transitions. For now we keep cycle unchanged.
@@ -516,8 +520,12 @@ class BacktestEngine {
   }
 
   // --- Minimal internal mocks to keep engine self-contained for v1 ---
+  // ignore: unused_element
   dynamic _mockAccount(double capital) => {'capital': capital};
+  // ignore: unused_element
   List<dynamic> _mockPositions(WheelCycle cycle) => <dynamic>[];
+  // ignore: unused_element
   dynamic _defaultRiskProfile() => {'risk': 'default'};
+  // ignore: unused_element
   dynamic _mockInputs(double price, String action) => {'price': price, 'action': action};
 }

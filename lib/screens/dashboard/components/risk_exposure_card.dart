@@ -12,7 +12,7 @@ class RiskExposureCard extends ConsumerWidget {
 
     return exposure.when(
       loading: () => const _LoadingCard(),
-      error: (error, stack) => const _ErrorCard(),
+      error: (_, __) => const _ErrorCard(),
       data: (risk) => _RiskCard(risk: risk),
     );
   }

@@ -12,7 +12,7 @@ class ActiveWheelCycleCard extends ConsumerWidget {
 
     return cycle.when(
       loading: () => const _LoadingCard(),
-      error: (error, stack) => const _ErrorCard(),
+      error: (_, __) => const _ErrorCard(),
       data: (wheel) => _WheelCycleCard(wheel: wheel),
     );
   }
