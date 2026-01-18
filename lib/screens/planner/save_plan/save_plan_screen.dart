@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../state/planner_notifier.dart';
+import '../../backtest/backtest_screen.dart';
+import '../../../models/backtest/backtest_config.dart';
+import '../../../state/account_context_provider.dart';
+// trade plan persistence handled by PlannerNotifier
 import '../components/confirmation_summary_card.dart';
 import '../components/notes_field.dart';
 import '../components/tags_section.dart';
@@ -46,6 +50,32 @@ class SavePlanScreen extends ConsumerWidget {
               ),
 
               const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () {
+                    // Build a BacktestConfig from current planner state and account.
+                    final accountAsync = ref.watch(accountContextProvider);
+                    final startingCapital = accountAsync.value?.accountSize ?? 10000.0;
+                    final basePrice = state.payoff?.breakeven ?? 100.0;
+                    final prices = List<double>.generate(60, (i) => basePrice + (i - 30) * 0.5);
+
+                    final config = BacktestConfig(
+                      startingCapital: startingCapital,
+                      maxCycles: 10,
+                      pricePath: prices,
+                      strategyId: state.strategyId ?? 'wheel',
+                    );
+
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (c) => BacktestScreen(config: config)),
+                    );
+                  },
+                  child: const Text('Simulate this plan'),
+                ),
+              ),
+
+              const SizedBox(height: 12),
 
               SizedBox(
                 width: double.infinity,
@@ -53,6 +83,8 @@ class SavePlanScreen extends ConsumerWidget {
                   onPressed: () async {
                     final ok = await planner.savePlan();
                     if (!ok) return;
+
+                    // The notifier handled persistence and wheel update.
 
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(

@@ -132,29 +132,30 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
 
   state = state.copyWith(isLoading: true, clearError: true);
 
-  try {
-    final plan = TradePlan(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      strategyId: state.strategyId!,
-      strategyName: state.strategyName!,
-      inputs: state.inputs!,
-      payoff: state.payoff!,
-      risk: state.risk!,
-      notes: state.notes ?? "",
-      tags: state.tags,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
+    try {
+      final plan = TradePlan(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        strategyId: state.strategyId!,
+        strategyName: state.strategyName!,
+        inputs: state.inputs!,
+        payoff: state.payoff!,
+        risk: state.risk!,
+        notes: state.notes ?? "",
+        tags: state.tags,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
 
-    await _repository.savePlan(plan);
+      // Persist plan and update wheel cycle in one atomic flow.
+      await _repository.savePlanAndUpdateWheel(plan);
 
-    reset();
-    return true;
-  } catch (e) {
-    state = state.copyWith(
-      isLoading: false,
-      errorMessage: "Failed to save plan.",
-    );
+      reset();
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: "Failed to save plan.",
+      );
     return false;
   }
 }

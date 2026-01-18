@@ -21,6 +21,12 @@ class FakeTradePlanRepository implements TradePlanRepository {
   }
 
   @override
+  Future<void> savePlanAndUpdateWheel(TradePlan plan, {bool persistPlan = true}) async {
+    // For tests, just behave like savePlan
+    await savePlan(plan);
+  }
+
+  @override
   Future<List<TradePlan>> fetchPlans() async => [];
 }
 

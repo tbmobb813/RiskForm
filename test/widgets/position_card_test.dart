@@ -6,9 +6,12 @@ import 'package:flutter_application_2/models/position.dart';
 void main() {
   testWidgets('PositionCard displays symbol, strategy and shows snackbar on tap', (WidgetTester tester) async {
     final pos = Position(
+      type: PositionType.coveredCall,
       symbol: 'AAPL',
       strategy: 'CC',
+      quantity: 100,
       expiration: DateTime.now().add(const Duration(days: 30)),
+      isOpen: true,
       riskFlags: ['High IV'],
     );
 
