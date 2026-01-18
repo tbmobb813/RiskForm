@@ -47,8 +47,7 @@ class YahooDataSource implements HistoricalDataSource {
             throw Exception('Failed to fetch historical data after $_maxRetries retries: ${response.statusCode}');
           }
           retryCount++;
-          final delay = _initialRetryDelay * (1 << (retryCount - 1));
-          await Future.delayed(delay);
+          await Future.delayed(_calculateRetryDelay(retryCount));
         } else {
           // Other error - don't retry
           throw Exception('Failed to fetch historical data: ${response.statusCode}');
@@ -58,8 +57,7 @@ class YahooDataSource implements HistoricalDataSource {
           rethrow;
         }
         retryCount++;
-        final delay = _initialRetryDelay * (1 << (retryCount - 1));
-        await Future.delayed(delay);
+        await Future.delayed(_calculateRetryDelay(retryCount));
       }
     }
 
@@ -109,5 +107,10 @@ class YahooDataSource implements HistoricalDataSource {
       }
     }
     _lastRequestTime = DateTime.now();
+  }
+
+  /// Calculate exponential backoff delay for retry attempts
+  Duration _calculateRetryDelay(int retryCount) {
+    return _initialRetryDelay * (1 << (retryCount - 1));
   }
 }
