@@ -174,6 +174,7 @@ class BacktestEngine {
     final sideAssign = assignmentRateForRegime(enriched, MarketRegime.sideways);
 
     return BacktestResult(
+      strategyId: config.strategyId,
       equityCurve: equityCurve,
       maxDrawdown: _maxDrawdown(equityCurve),
       totalReturn: (equityCurve.isNotEmpty ? (equityCurve.last - config.startingCapital) / config.startingCapital : 0.0),

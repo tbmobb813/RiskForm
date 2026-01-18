@@ -24,6 +24,7 @@ class CycleStats {
 }
 
 class BacktestResult {
+  final String strategyId;
   final List<double> equityCurve;
   final double maxDrawdown;
   final double totalReturn;
@@ -45,6 +46,7 @@ class BacktestResult {
   final double sidewaysAssignmentRate;
 
   BacktestResult({
+    required this.strategyId,
     required this.equityCurve,
     required this.maxDrawdown,
     required this.totalReturn,
