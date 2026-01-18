@@ -5,6 +5,7 @@ import 'package:flutter_application_2/models/backtest/backtest_step.dart';
 import 'package:flutter_application_2/models/backtest/wheel_sim_state.dart';
 import 'package:flutter_application_2/models/wheel_cycle.dart';
 import 'package:flutter_application_2/services/engines/wheel_helpers.dart';
+import 'package:uuid/uuid.dart';
 import 'dart:math';
 
 import 'package:flutter_application_2/models/historical/historical_price.dart';
@@ -14,6 +15,8 @@ import 'package:flutter_application_2/models/analytics/regime_segment.dart';
 
 /// Pure, deterministic backtest engine scaffold.
 class BacktestEngine {
+  static const _uuid = Uuid();
+
   // Using dynamic here keeps the scaffold decoupled from concrete engine
   // implementations; callers can pass real engines if available.
   final dynamic payoffEngine;
@@ -58,6 +61,14 @@ class BacktestEngine {
     bool cycleHadAssignment = false;
     int? cycleStartIndex;
     int dayIndex = 0;
+    String currentCycleId = _uuid.v4();
+    CycleOutcome? currentCycleOutcome;
+
+    // Track assignment and called-away details for journal entries
+    double? currentAssignmentPrice;
+    double? currentAssignmentStrike;
+    double? currentCalledAwayPrice;
+    double? currentCalledAwayStrike;
 
     final sim = WheelSimState(
       capital: config.startingCapital,
@@ -73,6 +84,10 @@ class BacktestEngine {
       final equityBefore = sim.capital + sim.shares * price;
       cycleStartEquity ??= equityBefore;
       cycleStartIndex ??= dayIndex;
+
+      // Capture option strikes before simulation step (they get nulled on assignment/called-away)
+      final cspStrikeBefore = sim.csp?.strike;
+      final ccStrikeBefore = sim.cc?.strike;
 
       final newSim = _simulateWheelStep(
         price: price,
@@ -103,26 +118,55 @@ class BacktestEngine {
       // cycle bookkeeping
       cycleDuration += 1;
       final lastNote = notes.isNotEmpty ? notes.last : '';
+
+      // Track assignment events
       if (lastNote.contains('assigned') || lastNote.contains('CSP expired ITM')) {
         cycleHadAssignment = true;
+        currentCycleOutcome = CycleOutcome.assigned;
+        currentAssignmentPrice = price;
+        currentAssignmentStrike = cspStrikeBefore;
+      }
+
+      // Track OTM expiration (CSP expired worthless, no assignment)
+      if (lastNote.contains('CSP expired OTM')) {
+        currentCycleOutcome = CycleOutcome.expiredOTM;
+      }
+
+      // Track called away events
+      if (lastNote.contains('called away') || lastNote.contains('CC expired ITM')) {
+        currentCycleOutcome = CycleOutcome.calledAway;
+        currentCalledAwayPrice = price;
+        currentCalledAwayStrike = ccStrikeBefore;
       }
 
       if (lastNote.contains('called away') || lastNote.contains('Cycle completed') || lastNote.contains('CC expired ITM')) {
         // complete cycle
         cycles.add(CycleStats(
+          cycleId: currentCycleId,
           index: currentCycleIndex,
           startEquity: cycleStartEquity ?? equity,
           endEquity: equity,
           durationDays: cycleDuration,
           hadAssignment: cycleHadAssignment,
+          outcome: currentCycleOutcome,
           startIndex: cycleStartIndex,
           endIndex: dayIndex,
+          assignmentPrice: currentAssignmentPrice,
+          assignmentStrike: currentAssignmentStrike,
+          calledAwayPrice: currentCalledAwayPrice,
+          calledAwayStrike: currentCalledAwayStrike,
         ));
         currentCycleIndex += 1;
         cycleStartEquity = null;
         cycleDuration = 0;
         cycleHadAssignment = false;
         cycleStartIndex = null;
+        currentCycleId = _uuid.v4();
+        currentCycleOutcome = null;
+        currentAssignmentPrice = null;
+        currentAssignmentStrike = null;
+        currentCalledAwayPrice = null;
+        currentCalledAwayStrike = null;
       }
       dayIndex += 1;
     }
@@ -138,14 +182,20 @@ class BacktestEngine {
     List<CycleStats> enriched = cycles.map((c) {
       final dom = _dominantRegimeForCycle(cycle: c, segments: regimeSegments);
       return CycleStats(
+        cycleId: c.cycleId,
         index: c.index,
         startEquity: c.startEquity,
         endEquity: c.endEquity,
         durationDays: c.durationDays,
         hadAssignment: c.hadAssignment,
+        outcome: c.outcome,
         dominantRegime: dom,
         startIndex: c.startIndex,
         endIndex: c.endIndex,
+        assignmentPrice: c.assignmentPrice,
+        assignmentStrike: c.assignmentStrike,
+        calledAwayPrice: c.calledAwayPrice,
+        calledAwayStrike: c.calledAwayStrike,
       );
     }).toList();
 
@@ -172,7 +222,7 @@ class BacktestEngine {
     final sideAssign = assignmentRateForRegime(enriched, MarketRegime.sideways);
 
     return BacktestResult(
-      strategyId: config.strategyId,
+      configUsed: config,
       equityCurve: equityCurve,
       maxDrawdown: _maxDrawdown(equityCurve),
       totalReturn: (equityCurve.isNotEmpty ? (equityCurve.last - config.startingCapital) / config.startingCapital : 0.0),
@@ -276,13 +326,8 @@ class BacktestEngine {
             '(value=$premiumPerShare); using heuristic.');
         premiumPerShare = price * 0.02;
       }
-    } on ArgumentError catch (e, stackTrace) {
-      debugPrint('Option pricing failed for CSP with invalid arguments: $e');
-      debugPrint('$stackTrace');
-      premiumPerShare = price * 0.02;
-    } on Exception catch (e, stackTrace) {
-      debugPrint('Option pricing failed for CSP with exception: $e');
-      debugPrint('$stackTrace');
+    } else {
+      // No option pricing engine available, use heuristic
       premiumPerShare = price * 0.02;
     }
 
@@ -385,13 +430,8 @@ class BacktestEngine {
         debugPrint('Math domain error in option pricing (CC), using heuristic: $e');
         premiumPerShare = price * 0.015;
       }
-    } on ArgumentError catch (e, stackTrace) {
-      debugPrint('Option pricing failed for CC with invalid arguments: $e');
-      debugPrint('$stackTrace');
-      premiumPerShare = price * 0.015;
-    } on Exception catch (e, stackTrace) {
-      debugPrint('Option pricing failed for CC with exception: $e');
-      debugPrint('$stackTrace');
+    } else {
+      // No option pricing engine available, use heuristic
       premiumPerShare = price * 0.015;
     }
 

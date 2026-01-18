@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'package:uuid/uuid.dart';
 
 import '../../models/backtest/backtest_result.dart';
 import '../../models/journal/journal_entry.dart';
@@ -6,19 +6,18 @@ import 'journal_repository.dart';
 
 class JournalAutomationService {
   final JournalRepository repo;
-  final Random _secureRandom = Random.secure();
+  static const _uuid = Uuid();
 
   JournalAutomationService({required this.repo});
 
-  // Generate a more robust ID using secure random and timestamp
-  String _id() => '${DateTime.now().microsecondsSinceEpoch}-${_secureRandom.nextInt(0x7FFFFFFF)}';
-
   Future<void> recordBacktest(BacktestResult result) async {
     final entry = JournalEntry(
-      id: _id(),
+      id: _uuid.v4(),
       timestamp: DateTime.now(),
       type: 'backtest',
       data: {
+        'symbol': result.configUsed.symbol,
+        'label': result.configUsed.label,
         'totalReturn': result.totalReturn,
         'maxDrawdown': result.maxDrawdown,
         'cyclesCompleted': result.cyclesCompleted,
@@ -30,16 +29,19 @@ class JournalAutomationService {
     await repo.addEntry(entry);
   }
 
-  Future<void> recordCycle(CycleStats cycle) async {
+  Future<void> recordCycle(CycleStats cycle, String symbol) async {
     final entry = JournalEntry(
-      id: _id(),
+      id: _uuid.v4(),
       timestamp: DateTime.now(),
       type: 'cycle',
       data: {
+        'cycleId': cycle.cycleId,
+        'symbol': symbol,
         'cycleIndex': cycle.index,
         'cycleReturn': cycle.cycleReturn,
         'durationDays': cycle.durationDays,
         'hadAssignment': cycle.hadAssignment,
+        'outcome': cycle.outcome?.toString(),
         'dominantRegime': cycle.dominantRegime?.toString(),
       },
     );
@@ -47,14 +49,16 @@ class JournalAutomationService {
     await repo.addEntry(entry);
   }
 
-  Future<void> recordAssignment(CycleStats cycle) async {
+  Future<void> recordAssignment(CycleStats cycle, String symbol) async {
     final entry = JournalEntry(
-      id: _id(),
+      id: _uuid.v4(),
       timestamp: DateTime.now(),
       type: 'assignment',
       data: {
-        'cycleIndex': cycle.index,
-        'costBasis': cycle.startEquity,
+        'cycleId': cycle.cycleId,
+        'symbol': symbol,
+        'price': cycle.assignmentPrice,
+        'strike': cycle.assignmentStrike,
         'regime': cycle.dominantRegime?.toString(),
       },
     );
@@ -62,14 +66,16 @@ class JournalAutomationService {
     await repo.addEntry(entry);
   }
 
-  Future<void> recordCalledAway(CycleStats cycle) async {
+  Future<void> recordCalledAway(CycleStats cycle, String symbol) async {
     final entry = JournalEntry(
-      id: _id(),
+      id: _uuid.v4(),
       timestamp: DateTime.now(),
       type: 'calledAway',
       data: {
-        'cycleIndex': cycle.index,
-        'endEquity': cycle.endEquity,
+        'cycleId': cycle.cycleId,
+        'symbol': symbol,
+        'price': cycle.calledAwayPrice,
+        'strike': cycle.calledAwayStrike,
         'regime': cycle.dominantRegime?.toString(),
       },
     );

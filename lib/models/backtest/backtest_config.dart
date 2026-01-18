@@ -3,6 +3,7 @@ class BacktestConfig {
   final int maxCycles;
   final List<double> pricePath;
   final String strategyId;
+  final String? label;
 
   // Historical parameters
   final String symbol;
@@ -14,6 +15,7 @@ class BacktestConfig {
     required this.maxCycles,
     required this.pricePath,
     required this.strategyId,
+    this.label,
     required this.symbol,
     required this.startDate,
     required this.endDate,
@@ -24,6 +26,7 @@ class BacktestConfig {
     int? maxCycles,
     List<double>? pricePath,
     String? strategyId,
+    String? label,
     String? symbol,
     DateTime? startDate,
     DateTime? endDate,
@@ -33,6 +36,7 @@ class BacktestConfig {
       maxCycles: maxCycles ?? this.maxCycles,
       pricePath: pricePath ?? this.pricePath,
       strategyId: strategyId ?? this.strategyId,
+      label: label ?? this.label,
       symbol: symbol ?? this.symbol,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,

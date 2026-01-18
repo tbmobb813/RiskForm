@@ -57,9 +57,10 @@ class _BacktestScreenState extends ConsumerState<BacktestScreen> {
       // record journal entries asynchronously (non-blocking to UI)
       try {
         final journal = ref.read(journalAutomationProvider);
+        final symbol = widget.config.symbol;
         for (final cycle in result.cycles) {
-          await journal.recordCycle(cycle);
-          if (cycle.hadAssignment) await journal.recordAssignment(cycle);
+          await journal.recordCycle(cycle, symbol);
+          if (cycle.hadAssignment) await journal.recordAssignment(cycle, symbol);
         }
         await journal.recordBacktest(result);
       } catch (e, stackTrace) {

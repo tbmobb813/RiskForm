@@ -17,10 +17,11 @@ class ComparisonRunner {
       final result = engine.run(c);
       // persist journal entries if service provided
       if (journalService != null) {
+        final symbol = c.symbol;
         for (final cycle in result.cycles) {
-          await journalService!.recordCycle(cycle);
+          await journalService!.recordCycle(cycle, symbol);
           if (cycle.hadAssignment) {
-            await journalService!.recordAssignment(cycle);
+            await journalService!.recordAssignment(cycle, symbol);
           }
         }
         await journalService!.recordBacktest(result);
