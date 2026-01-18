@@ -7,6 +7,8 @@ import '../services/historical/historical_repository.dart';
 
 final historicalDataSourceProvider = Provider((ref) => YahooDataSource());
 
+// NOTE: Requires Hive to be initialized with Hive.initFlutter() in main()
+// and the 'historical_cache' box to be opened before using this provider.
 final historicalCacheProvider = Provider((ref) {
   final box = Hive.box('historical_cache');
   return HistoricalCache(box);

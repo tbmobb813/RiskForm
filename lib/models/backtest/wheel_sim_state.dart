@@ -1,4 +1,4 @@
-﻿import 'package:flutter_application_2/models/wheel_cycle.dart';
+import 'package:flutter_application_2/models/wheel_cycle.dart';
 
 class SimOption {
   final double strike;

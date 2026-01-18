@@ -24,9 +24,13 @@ class YahooDataSource implements HistoricalDataSource {
 
     final json = jsonDecode(response.body) as Map<String, dynamic>;
     final result = json['chart']?['result'];
-    if (result == null || (result as List).isEmpty) return [];
+    if (result == null) return [];
+    if (result is! List) {
+      throw Exception('Unexpected Yahoo Finance API response format: result is not a List');
+    }
+    if (result.isEmpty) return [];
 
-    final first = (result).first as Map<String, dynamic>;
+    final first = result.first as Map<String, dynamic>;
     final timestamps = (first['timestamp'] as List<dynamic>?) ?? [];
     final indicators = first['indicators']?['quote'] as List<dynamic>?;
     if (indicators == null || indicators.isEmpty) return [];

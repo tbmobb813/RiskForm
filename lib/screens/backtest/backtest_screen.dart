@@ -62,8 +62,10 @@ class _BacktestScreenState extends ConsumerState<BacktestScreen> {
           if (cycle.hadAssignment) await journal.recordAssignment(cycle);
         }
         await journal.recordBacktest(result);
-      } catch (_) {
-        // journaling is best-effort; ignore errors here
+      } catch (e, stackTrace) {
+        // Journaling is best-effort; log and continue so UI/backtest flow is not blocked.
+        debugPrint('Journal recording failed: $e');
+        debugPrint('$stackTrace');
       }
 
       if (!mounted) return;
