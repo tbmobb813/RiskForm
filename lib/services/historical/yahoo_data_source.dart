@@ -8,6 +8,7 @@ class YahooDataSource implements HistoricalDataSource {
   static const int _maxRetries = 3;
   static const Duration _initialRetryDelay = Duration(seconds: 1);
   static const Duration _minRequestInterval = Duration(milliseconds: 200);
+  static const String _userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
   
   DateTime? _lastRequestTime;
 
@@ -34,7 +35,7 @@ class YahooDataSource implements HistoricalDataSource {
         response = await http.get(
           Uri.parse(url),
           headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'User-Agent': _userAgent,
           },
         );
         
