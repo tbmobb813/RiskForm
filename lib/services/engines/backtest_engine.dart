@@ -248,20 +248,25 @@ class BacktestEngine {
     final strike = price;
 
     double premiumPerShare;
-    try {
-      if (optionPricing != null) {
+    if (optionPricing != null) {
+      try {
         premiumPerShare = optionPricing.priceEuropeanPut(
           spot: price,
           strike: strike,
           volatility: vol,
           timeToExpiryYears: tYears,
         );
-      } else {
+      } on ArgumentError catch (e) {
+        // Handle invalid numerical arguments (e.g., negative values)
+        debugPrint('Invalid arguments for option pricing (CSP), using heuristic: $e');
+        premiumPerShare = price * 0.02;
+      } on RangeError catch (e) {
+        // Handle mathematical domain errors
+        debugPrint('Math domain error in option pricing (CSP), using heuristic: $e');
         premiumPerShare = price * 0.02;
       }
-    } catch (e, stackTrace) {
-      debugPrint('Option pricing failed for CSP, using heuristic: $e');
-      debugPrint('$stackTrace');
+      // Other exceptions will propagate to surface real bugs in the pricing engine
+    } else {
       premiumPerShare = price * 0.02;
     }
 
@@ -347,20 +352,25 @@ class BacktestEngine {
     final strike = price * 1.02; // 2% OTM
 
     double premiumPerShare;
-    try {
-      if (optionPricing != null) {
+    if (optionPricing != null) {
+      try {
         premiumPerShare = optionPricing.priceEuropeanCall(
           spot: price,
           strike: strike,
           volatility: vol,
           timeToExpiryYears: tYears,
         );
-      } else {
+      } on ArgumentError catch (e) {
+        // Handle invalid numerical arguments (e.g., negative values)
+        debugPrint('Invalid arguments for option pricing (CC), using heuristic: $e');
+        premiumPerShare = price * 0.015;
+      } on RangeError catch (e) {
+        // Handle mathematical domain errors
+        debugPrint('Math domain error in option pricing (CC), using heuristic: $e');
         premiumPerShare = price * 0.015;
       }
-    } catch (e, stackTrace) {
-      debugPrint('Option pricing failed for CC, using heuristic: $e');
-      debugPrint('$stackTrace');
+      // Other exceptions will propagate to surface real bugs in the pricing engine
+    } else {
       premiumPerShare = price * 0.015;
     }
 
