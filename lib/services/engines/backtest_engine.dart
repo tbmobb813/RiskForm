@@ -17,6 +17,7 @@ import 'package:flutter_application_2/models/analytics/regime_segment.dart';
 /// Pure, deterministic backtest engine scaffold.
 class BacktestEngine {
   static const _uuid = Uuid();
+  static const engineVersion = '1.0.0';
 
   // Using dynamic here keeps the scaffold decoupled from concrete engine
   // implementations; callers can pass real engines if available.
@@ -241,6 +242,8 @@ class BacktestEngine {
       uptrendAssignmentRate: upAssign,
       downtrendAssignmentRate: downAssign,
       sidewaysAssignmentRate: sideAssign,
+      engineVersion: engineVersion,
+      regimeSegments: regimeSegments,
     );
   }
 

@@ -9,6 +9,8 @@ import '../../state/journal_providers.dart';
 import '../../state/comparison_provider.dart';
 import '../../models/comparison/comparison_config.dart';
 import '../../screens/comparison/comparison_screen.dart';
+import '../../state/backtest_providers.dart';
+import '../../services/backtest/backtest_history_repository.dart';
 import 'components/backtest_metrics_card.dart';
 import 'components/backtest_equity_chart.dart';
 import 'components/backtest_cycle_breakdown_card.dart';
@@ -53,6 +55,17 @@ class _BacktestScreenState extends ConsumerState<BacktestScreen> {
       // 3. Run backtest with real data
       final runConfig = widget.config.copyWith(pricePath: pricePath);
       final result = await Future(() => engine.run(runConfig));
+
+      // persist to history (in-memory) for quick access
+      try {
+        final historyRepo = ref.read(backtestHistoryRepositoryProvider);
+        historyRepo.add(BacktestHistoryEntry(
+          id: DateTime.now().microsecondsSinceEpoch.toString(),
+          label: widget.config.label ?? '${widget.config.strategyId} ${widget.config.symbol}',
+          timestamp: DateTime.now(),
+          result: result,
+        ));
+      } catch (_) {}
 
       // record journal entries asynchronously (non-blocking to UI)
       try {

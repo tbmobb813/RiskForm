@@ -23,8 +23,11 @@ class FakeBox implements Box {
   }
 
   @override
-  Future<void> clear() async {
+  @override
+  Future<int> clear() async {
+    final removed = _storage.length;
     _storage.clear();
+    return removed;
   }
 
   // Other Box methods not needed for these tests

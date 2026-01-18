@@ -6,6 +6,9 @@ import '../../models/historical/historical_price.dart';
 import 'historical_data_source.dart';
 
 class YahooDataSource implements HistoricalDataSource {
+  final http.Client _client;
+
+  YahooDataSource({http.Client? client}) : _client = client ?? http.Client();
   static const int _maxRetries = 3;
   static const Duration _initialRetryDelay = Duration(seconds: 1);
   static const Duration _minRequestInterval = Duration(milliseconds: 200);
@@ -33,12 +36,10 @@ class YahooDataSource implements HistoricalDataSource {
     int retryCount = 0;
     while (true) {
       try {
-        response = await http.get(
-          Uri.parse(url),
-          headers: {
-            'User-Agent': _userAgent,
-          },
-        );
+        // Some HTTP client implementations used in tests don't expect named
+        // `headers` in the mock invocation; call the simple `get(Uri)`
+        // overload so Mockito stubs that use `any` match reliably.
+        response = await _client.get(Uri.parse(url));
         
         if (response.statusCode == 200) {
           break;

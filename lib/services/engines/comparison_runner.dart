@@ -3,6 +3,8 @@ import '../../models/comparison/comparison_result.dart';
 import '../../models/backtest/backtest_result.dart';
 import 'backtest_engine.dart';
 import '../journal/journal_automation_service.dart';
+import 'package:flutter/foundation.dart';
+import 'backtest_isolate.dart';
 
 class ComparisonRunner {
   final BacktestEngine engine;
@@ -14,7 +16,9 @@ class ComparisonRunner {
     final results = <BacktestResult>[];
 
     for (final c in config.configs) {
-      final result = engine.run(c);
+      // Run backtest in a background isolate using `compute` for CPU-bound work.
+      final mapResult = await compute<Map<String, dynamic>, Map<String, dynamic>>(backtestCompute, c.toMap());
+      final result = BacktestResult.fromMap(mapResult);
       // persist journal entries if service provided
       if (journalService != null) {
         final symbol = c.symbol;

@@ -18,7 +18,7 @@ This README provides an overview of the architecture, features, and development 
 
 ---
 
-# 🚀 Project Vision
+## 🚀 Project Vision
 
 The Planner MVP is built around a simple philosophy:
 
@@ -37,7 +37,7 @@ The goal is not to predict markets — it’s to **reinforce disciplined executi
 
 ---
 
-# 🧱 Architecture Overview
+## 🧱 Architecture Overview
 
 The system is organized into five pillars:
 
@@ -80,7 +80,7 @@ The system is organized into five pillars:
 
 ---
 
-# 📦 Folder Structure
+## 📦 Folder Structure
 
 lib/ models/ backtest/ analytics/ journal/ trade/ services/ engines/ analytics/ journal/ state/ screens/ planner/ performance/ comparison/ journal/ widgets/ charts/
 
@@ -88,7 +88,7 @@ This structure is optimized for scalability and Phase 4 cloud execution.
 
 ---
 
-# 🧭 Development Phases
+## 🧭 Development Phases
 
 ## **Phase 1 — Planner, Engines, Persistence**
 
@@ -149,7 +149,7 @@ Phase 3 is fully complete.
 
 ---
 
-# 📊 Key Features
+## 📊 Key Features
 
 ## **Wheel Strategy Simulator**
 
@@ -197,7 +197,7 @@ Phase 3 is fully complete.
 
 ---
 
-# 🧪 Technology Stack
+## 🧪 Technology Stack
 
 - **Flutter** (UI + state management)
 - **Dart** (engines + analytics)
@@ -207,7 +207,7 @@ Phase 3 is fully complete.
 
 ---
 
-# 🧩 Core Concepts
+## 🧩 Core Concepts
 
 ### **Lifecycle Modeling**
 
@@ -238,7 +238,7 @@ Sim + live trades share the same schema.
 
 ---
 
-# 📘 Documentation
+## 📘 Documentation
 
 All technical documentation for Phases 1–3 is available in:
 
@@ -256,7 +256,7 @@ These include:
 
 ---
 
-# 🛣️ Next Steps (Phase 4 Preview)
+## 🛣️ Next Steps (Phase 4 Preview)
 
 Phase 4 will introduce:
 
@@ -288,13 +288,13 @@ Phase 4 will introduce:
 
 ---
 
-# 🧑‍💻 Contributing
+## 🧑‍💻 Contributing
 
 This project is currently under active development by the founder.  
 External contributions may be opened in future phases.
 
 ---
 
-# 📄 License
+## 📄 License
 
 Proprietary — All rights reserved.
