@@ -5,6 +5,10 @@ import '../../../state/planner_notifier.dart';
 import '../../backtest/backtest_screen.dart';
 import '../../../models/backtest/backtest_config.dart';
 import '../../../state/account_context_provider.dart';
+import '../../../state/comparison_provider.dart';
+import '../../../models/comparison/comparison_config.dart';
+import '../../../services/engines/comparison_helper.dart';
+import '../../comparison/comparison_screen.dart';
 // trade plan persistence handled by PlannerNotifier
 import '../components/confirmation_summary_card.dart';
 import '../components/notes_field.dart';
@@ -33,6 +37,44 @@ class SavePlanScreen extends ConsumerWidget {
                 strategyName: state.strategyName,
                 payoff: state.payoff,
                 risk: state.risk,
+              ),
+
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () async {
+                    // run a small deterministic parameter sweep and open ComparisonScreen
+                    final accountAsync = ref.watch(accountContextProvider);
+                    final startingCapital = accountAsync.value?.accountSize ?? 10000.0;
+                    final basePrice = state.payoff?.breakeven ?? 100.0;
+
+                    final baseConfig = BacktestConfig(
+                      startingCapital: startingCapital,
+                      maxCycles: 10,
+                      pricePath: [basePrice],
+                      strategyId: state.strategyId ?? 'wheel',
+                      symbol: 'SPY',
+                      startDate: DateTime.now().subtract(const Duration(days: 365)),
+                      endDate: DateTime.now(),
+                    );
+
+                    // deterministic drifts for regime comparisons
+                    final drifts = [-0.005, -0.001, 0.0, 0.001, 0.005];
+                    final configs = generateSweepConfigs(base: baseConfig, drifts: drifts, length: 252);
+
+                    final runner = ref.read(comparisonRunnerProvider);
+                    final comparisonConfig = ComparisonConfig(configs: configs);
+                    final result = await runner.run(comparisonConfig);
+
+                    if (context.mounted) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (c) => ComparisonScreen(result: result)),
+                      );
+                    }
+                  },
+                  child: const Text('Compare Parameter Sweep'),
+                ),
               ),
 
               const SizedBox(height: 24),

@@ -7,6 +7,7 @@ import '../../state/backtest_engine_provider.dart';
 import '../../state/historical_providers.dart';
 import 'components/backtest_metrics_card.dart';
 import 'components/backtest_equity_chart.dart';
+import 'components/backtest_cycle_breakdown_card.dart';
 import 'components/backtest_log_list.dart';
 
 class BacktestScreen extends ConsumerStatefulWidget {
@@ -85,6 +86,10 @@ class _BacktestScreenState extends ConsumerState<BacktestScreen> {
           const SizedBox(height: 24),
           BacktestEquityChart(equityCurve: result.equityCurve),
           const SizedBox(height: 24),
+          if (result.cycles.isNotEmpty) ...[
+            CycleBreakdownCard(cycles: result.cycles),
+            const SizedBox(height: 24),
+          ],
           BacktestLogList(steps: result.notes),
         ],
       ),
