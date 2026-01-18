@@ -49,7 +49,8 @@ class OptionPricingEngine {
   }
 
   double _normCdf(double x) {
-    // Abramowitz-Stegun approximation
+    // Abramowitz-Stegun approximation (valid for x >= 0)
+    // For negative x, we use the symmetry property: Φ(-x) = 1 - Φ(x)
     const p = 0.2316419;
     const b1 = 0.319381530;
     const b2 = -0.356563782;
@@ -57,6 +58,7 @@ class OptionPricingEngine {
     const b4 = -1.821255978;
     const b5 = 1.330274429;
 
+    // Evaluate polynomial at |x| since approximation requires x >= 0
     final t = 1.0 / (1.0 + p * x.abs());
     final poly = b1 * t +
         b2 * pow(t, 2) +
@@ -66,6 +68,7 @@ class OptionPricingEngine {
     final pdf = (1 / sqrt(2 * pi)) * exp(-0.5 * x * x);
     final cdf = 1 - pdf * poly;
 
+    // Apply symmetry property for negative x: Φ(-x) = 1 - Φ(x)
     return x >= 0 ? cdf : 1 - cdf;
   }
 }
