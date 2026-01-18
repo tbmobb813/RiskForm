@@ -217,7 +217,17 @@ void main() {
         );
 
         // Assert
-        expect(result1, equals(result2));
+        expect(result1.length, equals(result2.length));
+        for (var i = 0; i < result1.length; i++) {
+          final p1 = result1[i];
+          final p2 = result2[i];
+          expect(p1.date, equals(p2.date));
+          expect(p1.open, equals(p2.open));
+          expect(p1.high, equals(p2.high));
+          expect(p1.low, equals(p2.low));
+          expect(p1.close, equals(p2.close));
+          expect(p1.volume, equals(p2.volume));
+        }
         expect(fakeSource.fetchCallCount, equals(1)); // Called only once
       });
 
