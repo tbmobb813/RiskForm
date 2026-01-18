@@ -397,8 +397,17 @@ void main() {
           end: end,
         );
 
-        // Assert
-        expect(result, equals(mockPrices));
+        // Assert: compare field values rather than object identity
+        expect(
+          result
+              .map((p) => [p.date, p.open, p.high, p.low, p.close, p.volume])
+              .toList(),
+          equals(
+            mockPrices
+                .map((p) => [p.date, p.open, p.high, p.low, p.close, p.volume])
+                .toList(),
+          ),
+        );
         expect(fakeSource.fetchCallCount, equals(1)); // Only called once, second was cached
       });
     });
