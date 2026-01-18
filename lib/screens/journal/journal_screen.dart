@@ -3,6 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/journal/journal_entry.dart';
 import '../../state/journal_providers.dart';
+import '../../state/discipline_providers.dart';
+import 'components/discipline_score_card.dart';
+import '../../services/journal/discipline_history_service.dart';
+import 'components/discipline_history_card.dart';
+import '../../services/journal/discipline_timeline_service.dart';
+import 'components/discipline_streaks_card.dart';
+import 'components/habit_stats_card.dart';
 import 'journal_entry_detail.dart';
 import 'journal_filter_bar.dart';
 
@@ -19,7 +26,8 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
   @override
   Widget build(BuildContext context) {
     final repo = ref.watch(journalRepositoryProvider);
-    var entries = repo.getAll().reversed.toList(); // newest first
+    final allEntries = repo.getAll();
+    var entries = allEntries.reversed.toList(); // newest first
 
     if (filter != 'all') {
       entries = entries.where((e) => e.type == filter).toList();
@@ -35,10 +43,39 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
     final groups = grouped.entries.toList()
       ..sort((a, b) => b.key.compareTo(a.key));
 
+    final scoring = ref.read(disciplineScoringProvider);
+    final score = scoring.compute(allEntries);
+
+    final historyService = DisciplineHistoryService(scorer: scoring);
+    final history = historyService.computeHistory(allEntries, days: 30);
+
+    final timelineService = DisciplineTimelineService(scoring: scoring);
+    final timeline = timelineService.buildTimeline(allEntries);
+    final streaks = timelineService.computeStreaks(timeline);
+    final habits = timelineService.computeHabits(allEntries);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Journal')),
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: DisciplineScoreCard(score: score),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: DisciplineHistoryCard(history: history),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: DisciplineStreaksCard(streaks: streaks),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: HabitStatsCard(habits: habits),
+          ),
           Padding(
             padding: const EdgeInsets.all(16),
             child: JournalFilterBar(
@@ -62,7 +99,7 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
-                    ...group.value.map((e) => _JournalListTile(entry: e)),
+                    ...group.value.map((e) => _JournalListTile(key: ValueKey(e.id), entry: e)),
                   ],
                 );
               },
@@ -85,9 +122,10 @@ class _JournalListTile extends StatelessWidget {
       child: ListTile(
         title: Text(_titleFor(entry)),
         subtitle: Text(
-          '${entry.timestamp.toLocal()}',
+          '${entry.timestamp.toLocal()}${_isLive(entry) ? " • LIVE" : ""}',
           style: const TextStyle(fontSize: 12),
         ),
+        tileColor: _isLive(entry) ? Colors.blueGrey.shade50 : null,
         onTap: () {
           Navigator.push(
             context,
@@ -97,6 +135,8 @@ class _JournalListTile extends StatelessWidget {
       ),
     );
   }
+
+  bool _isLive(JournalEntry e) => e.data['live'] == true;
 
   String _titleFor(JournalEntry e) {
     switch (e.type) {
