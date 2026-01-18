@@ -19,4 +19,4 @@ bool shouldEarlyAssign({
 
 // TODO: Extract symbol from notes when implemented in backtest config
 // Currently returns 'unknown' as symbol extraction logic is not yet implemented
-String configSymbolOrUnknown(List<String> notes) => 'unknown';
+String configSymbolOrUnknown() => 'unknown';

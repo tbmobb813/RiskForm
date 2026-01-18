@@ -296,7 +296,7 @@ class BacktestEngine {
 
     // Early-assignment heuristic (deterministic, rare)
     if (shouldEarlyAssign(
-      symbol: configSymbolOrUnknown(notes),
+      symbol: configSymbolOrUnknown(),
       strike: strike,
       dte: csp.dte,
       isPut: true,
@@ -393,7 +393,7 @@ class BacktestEngine {
     final isITM = price > strike;
 
     if (shouldEarlyAssign(
-      symbol: configSymbolOrUnknown(notes),
+      symbol: configSymbolOrUnknown(),
       strike: strike,
       dte: cc.dte,
       isPut: false,
