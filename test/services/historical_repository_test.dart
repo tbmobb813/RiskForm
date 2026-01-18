@@ -1,61 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_application_2/services/historical/historical_repository.dart';
-import 'package:flutter_application_2/services/historical/historical_data_source.dart';
 import 'package:flutter_application_2/services/historical/historical_cache.dart';
 import 'package:flutter_application_2/models/historical/historical_price.dart';
-import 'package:hive/hive.dart';
-
-/// Fake implementation of HistoricalDataSource for testing
-class FakeHistoricalDataSource implements HistoricalDataSource {
-  List<HistoricalPrice>? mockResponse;
-  Exception? mockError;
-  int fetchCallCount = 0;
-
-  @override
-  Future<List<HistoricalPrice>> fetchDailyPrices({
-    required String symbol,
-    required DateTime start,
-    required DateTime end,
-  }) async {
-    fetchCallCount++;
-    
-    if (mockError != null) {
-      throw mockError!;
-    }
-    
-    return mockResponse ?? [];
-  }
-}
-
-/// Fake implementation of Hive Box for testing
-class FakeBox implements Box {
-  final Map<String, dynamic> _storage = {};
-
-  @override
-  dynamic get(key, {defaultValue}) {
-    return _storage[key] ?? defaultValue;
-  }
-
-  @override
-  Future<void> put(key, value) async {
-    _storage[key] = value;
-  }
-
-  @override
-  Future<void> delete(key) async {
-    _storage.remove(key);
-  }
-
-  @override
-  Future<void> clear() async {
-    _storage.clear();
-  }
-
-  // Other Box methods not needed for these tests
-  @override
-  dynamic noSuchMethod(Invocation invocation) => 
-      throw UnimplementedError('${invocation.memberName} not implemented in FakeBox');
-}
+import '../fakes/fake_historical_data_source.dart';
+import '../fakes/fake_box.dart';
 
 void main() {
   group('HistoricalRepository', () {
