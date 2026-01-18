@@ -19,7 +19,20 @@ class NextStrategyCard extends ConsumerWidget {
       error: (e, _) => Card(
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Text("Unable to determine next strategy"),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text("Unable to determine next strategy"),
+              const SizedBox(height: 8),
+              Text(
+                'Details: ${e.toString()}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.white70,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       data: (rec) => Card(
