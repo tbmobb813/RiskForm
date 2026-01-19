@@ -65,4 +65,56 @@ class Position {
     if (d > 10) return 'Moderate';
     return 'High';
   }
+
+  /// Converts Position to JSON for Firestore storage.
+  Map<String, dynamic> toJson() {
+    return {
+      'type': type.name,
+      'symbol': symbol,
+      'strategy': strategy,
+      'quantity': quantity,
+      'isOpen': isOpen,
+      'expiration': expiration.toIso8601String(),
+      'riskFlags': riskFlags,
+    };
+  }
+
+  /// Creates a Position from JSON data.
+  factory Position.fromJson(Map<String, dynamic> json) {
+    return Position(
+      type: PositionType.values.firstWhere(
+        (e) => e.name == json['type'],
+        orElse: () => PositionType.shares,
+      ),
+      symbol: json['symbol'] as String? ?? '',
+      strategy: json['strategy'] as String? ?? '',
+      quantity: (json['quantity'] as num?)?.toInt() ?? 0,
+      isOpen: json['isOpen'] as bool? ?? true,
+      expiration: json['expiration'] != null
+          ? DateTime.parse(json['expiration'] as String)
+          : DateTime.now(),
+      riskFlags: (json['riskFlags'] as List<dynamic>?)?.cast<String>() ?? [],
+    );
+  }
+
+  /// Creates a copy with optional field overrides.
+  Position copyWith({
+    PositionType? type,
+    String? symbol,
+    String? strategy,
+    int? quantity,
+    bool? isOpen,
+    DateTime? expiration,
+    List<String>? riskFlags,
+  }) {
+    return Position(
+      type: type ?? this.type,
+      symbol: symbol ?? this.symbol,
+      strategy: strategy ?? this.strategy,
+      quantity: quantity ?? this.quantity,
+      isOpen: isOpen ?? this.isOpen,
+      expiration: expiration ?? this.expiration,
+      riskFlags: riskFlags ?? this.riskFlags,
+    );
+  }
 }

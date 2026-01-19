@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_application_2/services/data/trade_plan_repository.dart';
 import 'package:flutter_application_2/services/firebase/trade_plan_service.dart';
 import 'package:flutter_application_2/services/firebase/auth_service.dart';
@@ -42,11 +43,43 @@ class FakeWheelCycleService implements WheelCycleService {
 }
 
 class FakeAuth implements AuthService {
-  final String? uid;
-  FakeAuth(this.uid);
+  final String? _uid;
+  FakeAuth(this._uid);
 
   @override
-  String? get currentUserId => uid;
+  String? get currentUserId => _uid;
+
+  @override
+  User? get currentUser => null;
+
+  @override
+  bool get isAuthenticated => _uid != null;
+
+  @override
+  Stream<User?> get authStateChanges => Stream<User?>.value(null);
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {}
+
+  @override
+  Future<void> signOut() async {}
+
+  @override
+  Future<UserCredential> signInWithEmail({required String email, required String password}) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<UserCredential> signUpWithEmail({required String email, required String password}) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  String requireAuth() {
+    final uid = currentUserId;
+    if (uid == null) throw Exception('Not logged in');
+    return uid;
+  }
 }
 
 void main() {

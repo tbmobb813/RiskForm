@@ -6,6 +6,7 @@ import '../firebase/trade_plan_service.dart';
 import '../firebase/auth_service.dart';
 import '../firebase/wheel_cycle_service.dart';
 import 'position_repository.dart';
+import 'repository_interface.dart';
 
 final tradePlanRepositoryProvider = Provider<TradePlanRepository>((ref) {
   final service = ref.read(tradePlanServiceProvider);
@@ -19,11 +20,13 @@ class TradePlanRepository {
   final TradePlanService _service;
   final AuthService _auth;
   final WheelCycleService _wheelService;
-  final PositionRepository _positionsRepository;
+  final RepositoryInterface<Position> _positionsRepository;
 
-  TradePlanRepository(this._service, this._auth, [WheelCycleService? wheel, PositionRepository? positions])
-      : _wheelService = wheel ?? WheelCycleService(),
-        _positionsRepository = positions ?? PositionRepository();
+  TradePlanRepository(TradePlanService service, AuthService auth, [WheelCycleService? wheel, RepositoryInterface<Position>? positions])
+      : _service = service,
+        _auth = auth,
+        _wheelService = wheel ?? WheelCycleService(),
+        _positionsRepository = positions ?? _InMemoryPositionRepository();
 
   Future<void> savePlan(TradePlan plan) async {
     final uid = _auth.currentUserId;
@@ -96,5 +99,20 @@ class TradePlanRepository {
     if (uid == null) throw Exception("User not logged in.");
 
     return _service.fetchPlans(uid);
+  }
+}
+
+class _InMemoryPositionRepository implements RepositoryInterface<Position> {
+  final List<Position> _items = [];
+
+  @override
+  Future<Position?> getById(String id) async => null;
+
+  @override
+  Future<List<Position>> listAll() async => List<Position>.from(_items);
+
+  @override
+  Future<void> save(Position item) async {
+    _items.add(item);
   }
 }
