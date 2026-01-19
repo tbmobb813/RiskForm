@@ -169,7 +169,7 @@ class SavePlanScreen extends ConsumerWidget {
                             'strategyId': state.strategyId ?? 'unknown',
                             'cycleState': 'planned',
                             'notes': state.notes ?? '',
-                            'tags': state.tags ?? <String>[],
+                            'tags': state.tags,
                           });
 
                           if (!context.mounted) return;

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'components/next_strategy_card.dart';
 import 'components/active_wheel_cycle_card.dart';
 import 'components/risk_exposure_card.dart';
@@ -35,9 +36,43 @@ class DashboardScreen extends StatelessWidget {
               SizedBox(height: 16),
               AccountSnapshotCard(),
               SizedBox(height: 16),
+              // Behavior Dashboard quick access
+              _BehaviorTile(),
+              SizedBox(height: 16),
               ToolsAndStrategyLibrary(),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BehaviorTile extends StatelessWidget {
+  const _BehaviorTile();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          children: [
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Behavior Dashboard', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 6),
+                  Text('Track your discipline trend, streaks, and recent trades.'),
+                ],
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => context.goNamed('behavior'),
+              child: const Text('Open'),
+            ),
+          ],
         ),
       ),
     );

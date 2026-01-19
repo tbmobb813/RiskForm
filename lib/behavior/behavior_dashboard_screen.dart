@@ -153,7 +153,7 @@ class _Sparkline extends StatelessWidget {
     final min = values.reduce((a, b) => a < b ? a : b);
     final range = (max - min) == 0 ? 1 : (max - min);
 
-    return Row(
+              return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: values.map((v) {
         final t = (v - min) / range;
@@ -163,7 +163,7 @@ class _Sparkline extends StatelessWidget {
             child: Container(
               height: 60 * t + 4,
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.7),
+                color: Colors.green.withAlpha((0.7 * 255).round()),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),

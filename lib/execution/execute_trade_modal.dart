@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import '../utils/payload_builders.dart' as pb;
 import 'package:flutter/material.dart';
 
 import '../discipline/discipline_engine.dart';
@@ -33,6 +34,8 @@ class _ExecuteTradeModalState extends State<ExecuteTradeModal> {
   final _contractsCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
   bool _loading = false;
+
+  // Use shared serializer util for callable transport
 
   @override
   void dispose() {
@@ -80,6 +83,10 @@ class _ExecuteTradeModalState extends State<ExecuteTradeModal> {
         'risk': 0,
       };
 
+      // If plan specifies strike/expiration, assume execution used the same unless overridden
+      executedParams['strike'] = plannedParams['strike'];
+      executedParams['expiration'] = plannedParams['expiration'];
+
       final score = DisciplineEngine.scoreTrade(plannedParams: plannedParams, executedParams: executedParams);
 
       // 3. Create position
@@ -109,22 +116,9 @@ class _ExecuteTradeModalState extends State<ExecuteTradeModal> {
         final functions = FirebaseFunctions.instance;
         final callable = functions.httpsCallable('scoreTrade');
 
-        // Convert DateTimes to ISO strings for transport
-        final planForCall = Map<String, dynamic>.from(plannedParams);
-        if (planForCall['plannedEntryTime'] is DateTime) planForCall['plannedEntryTime'] = (planForCall['plannedEntryTime'] as DateTime).toIso8601String();
-
-        final execForCall = <String, dynamic>{
-          'contracts': contracts,
-          'entryPrice': entryPrice,
-          'executedAt': executedAt.toIso8601String(),
-          'risk': 0,
-        };
-
-        final res = await callable.call(<String, dynamic>{
-          'journalId': widget.planId,
-          'plannedParams': planForCall,
-          'executedParams': execForCall,
-        });
+        // Build canonical payload using payload builder (includes strike/expiration)
+        final payload = pb.buildScoreTradePayload(journalId: widget.planId, plannedParams: plannedParams, executedParams: executedParams);
+        final res = await callable.call(payload);
 
         if (res.data != null) {
           usedServerScoring = true;

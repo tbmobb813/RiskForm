@@ -1,5 +1,6 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'discipline_engine.dart';
+import '../utils/payload_builders.dart' as pb;
 
 /// Attempts to call the server-side `scoreTrade` callable function.
 /// Falls back to the local `DisciplineEngine` if the callable fails.
@@ -14,18 +15,10 @@ class ServerScoring {
       final functions = FirebaseFunctions.instance;
       final callable = functions.httpsCallable('scoreTrade');
 
-      // Convert DateTime to ISO strings if present
-      final planCopy = Map<String, dynamic>.from(plannedParams);
-      planCopy.updateAll((k, v) => v is DateTime ? v.toIso8601String() : v);
+      // Build canonical payload using helper
+      final payload = pb.buildScoreTradePayload(journalId: journalId, plannedParams: plannedParams, executedParams: executedParams);
 
-      final execCopy = Map<String, dynamic>.from(executedParams);
-      execCopy.updateAll((k, v) => v is DateTime ? v.toIso8601String() : v);
-
-      final res = await callable.call(<String, dynamic>{
-        'journalId': journalId,
-        'plannedParams': planCopy,
-        'executedParams': execCopy,
-      });
+      final res = await callable.call(payload);
 
       if (res.data != null && res.data['total'] != null) {
         return (res.data['total'] as num).toInt();
