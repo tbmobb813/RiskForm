@@ -15,8 +15,8 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.10.7'
-          # channel removed to let the action resolve the specific pinned version
+          flutter-version: '3.38.7'
+          # pin to a Flutter release suggested by the setup script
 
       - name: Cache Pub dependencies
         uses: actions/cache@v4
