@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'risk_summary_screen.dart';
 
+// ignore: unused_element
 class _RiskClassificationBanner extends StatelessWidget {
   final RiskClassification classification;
 
@@ -65,6 +66,7 @@ class _RiskClassificationBanner extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _BannerData {
   final String title;
   final String subtitle;

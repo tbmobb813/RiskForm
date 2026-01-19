@@ -3,11 +3,13 @@ import '../services/engines/backtest_engine.dart';
 import '../services/engines/payoff_engine.dart';
 import '../services/engines/risk_engine.dart';
 import '../state/meta_strategy_provider.dart';
+import '../state/option_pricing_provider.dart';
 
 final backtestEngineProvider = Provider<BacktestEngine>((ref) {
   return BacktestEngine(
     payoffEngine: ref.read(payoffEngineProvider),
     riskEngine: ref.read(riskEngineProvider),
     metaStrategy: ref.read(metaStrategyControllerProvider),
+    optionPricing: ref.read(optionPricingEngineProvider),
   );
 });

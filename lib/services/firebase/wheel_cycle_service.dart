@@ -9,7 +9,8 @@ final wheelCycleServiceProvider = Provider<WheelCycleService>((ref) {
 });
 
 class WheelCycleService {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  FirebaseFirestore? _db;
+  FirebaseFirestore get _database => _db ??= FirebaseFirestore.instance;
   final _controller = WheelCycleController();
 
   /// Update the wheel cycle for [uid]. If [previous] is provided it will be
@@ -73,11 +74,7 @@ class WheelCycleService {
   }
 
   // Make visible for testing to allow proper unit tests of deserialization logic
-  WheelCycleState deserializeStateForTesting(dynamic value) {
-    return _deserializeState(value);
-  }
-
-  WheelCycleState _deserializeState(dynamic value) {
+  static WheelCycleState deserializeStateForTesting(dynamic value) {
     if (value is String) {
       return WheelCycleState.values.firstWhere(
         (e) => e.name == value,

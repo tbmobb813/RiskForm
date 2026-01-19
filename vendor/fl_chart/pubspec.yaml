@@ -1,0 +1,10 @@
+name: fl_chart
+description: "Local shim of fl_chart for tests (minimal API surface)."
+version: 0.0.1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter

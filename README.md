@@ -1,200 +1,300 @@
-# RiskForm
+# Planner MVP — Wheel Strategy Simulator & Discipline Engine
 
-**RiskForm is a deterministic risk-first strategy framework for systematic options income.**
+A discipline‑first trading platform designed to help small‑account traders execute the Wheel strategy with clarity, structure, and behavioral reinforcement.  
+This project models **time, state, and discipline**, not hype or prediction.
 
-It is not a signal generator.
-It is not a prediction engine.
-It does not chase returns.
+The system includes:
 
-RiskForm exists to **formalize risk**, **constrain behavior**, and **compose strategies safely**.
+- A full Wheel lifecycle simulator  
+- Realistic option pricing & assignment logic  
+- Regime‑aware analytics  
+- Strategy comparison  
+- Automated journaling  
+- Discipline scoring  
+- Habit tracking  
+- A calm, cockpit‑style UI  
 
----
-
-## Philosophy
-
-Most trading systems fail for the same reasons:
-
-* Strategies are defined loosely
-* Risk is implicit instead of explicit
-* “Edge” is confused with luck
-* Strategy logic and execution logic are entangled
-* New strategies are bolted on instead of integrated
-
-RiskForm rejects this approach.
-
-**In RiskForm, risk is the primary abstraction.**
-
-Every strategy is treated as a **risk contract** with:
-
-* Defined payoff bounds
-* Known failure modes
-* Explicit assignment logic
-* Enforced guardrails
-
-Returns are an outcome — not the objective.
+This README provides an overview of the architecture, features, and development phases.
 
 ---
 
-## Core Principles
+## 🚀 Project Vision
 
-### 1. Determinism Over Discretion
+The Planner MVP is built around a simple philosophy:
 
-Given the same inputs, a RiskForm strategy produces the same outputs.
-There is no “feel”, no overrides, no intuition hooks.
+> **Trading success is a behavioral problem, not a P/L problem.**
 
-If behavior cannot be formalized, it does not belong in the system.
+The app helps traders:
 
----
+- plan trades  
+- simulate realistic outcomes  
+- understand regime‑dependent behavior  
+- track discipline  
+- compare strategies  
+- build long‑term habits  
 
-### 2. Strategies Are Engines, Not Ideas
-
-A strategy in RiskForm is an **engine** with a fixed interface.
-
-Each engine must declare:
-
-* Entry conditions
-* Exit conditions
-* Payoff formulas
-* Risk formulas
-* Assignment behavior
-* Capital requirements
-
-If it cannot be expressed this way, it is not a valid strategy.
+The goal is not to predict markets — it’s to **reinforce disciplined execution**.
 
 ---
 
-### 3. Risk Is Defined Before Return
+## 🧱 Architecture Overview
 
-Every engine must answer:
+The system is organized into five pillars:
 
-* *What can go wrong?*
-* *How bad can it get?*
-* *Under what conditions does failure accelerate?*
+### **1. Engines**
 
-Only after these are defined does the system care about yield.
+- Pricing engine  
+- Assignment engine  
+- Lifecycle engine  
+- Backtest engine  
+- Regime classifier  
 
----
+### **2. State & Persistence**
 
-### 4. Guardrails Are Non-Negotiable
+- Planner state  
+- Backtest state  
+- Firestore persistence  
+- Account context  
 
-RiskForm enforces constraints at the system level:
+### **3. Analytics**
 
-* Position sizing limits
-* Volatility thresholds
-* Correlation exposure
-* Capital allocation rules
+- Cycle‑level analytics  
+- Performance dashboard  
+- Regime segmentation  
+- Strategy comparison  
 
-Strategies do not bypass guardrails.
-Meta-strategies do not weaken them.
+### **4. Journal**
 
----
+- Automated sim entries  
+- Live‑trade ingestion  
+- Discipline scoring  
+- Streaks & habits  
 
-### 5. Composition Without Mutation
+### **5. UI**
 
-Complex behavior is achieved through **composition**, not modification.
-
-* Credit spreads remain credit spreads
-* Covered calls remain covered calls
-* The Wheel is a **meta-strategy**, not a new engine
-
-This ensures correctness, testability, and extensibility.
-
----
-
-## Architecture Overview
-
-RiskForm is structured around three layers:
-
-### Strategy Engines
-
-Atomic, self-contained implementations of trading logic
-(e.g. Cash-Secured Puts, Credit Spreads, Covered Calls)
-
-Each engine:
-
-* Implements the StrategyEngineInterface
-* Knows nothing about other strategies
-* Exposes standardized outputs
+- Planner  
+- Dashboard  
+- Journal  
+- Comparison  
+- Discipline analytics  
 
 ---
 
-### Meta-Strategy Controllers
+## 📦 Folder Structure
 
-Orchestrators that coordinate engines without altering them.
+lib/ models/ backtest/ analytics/ journal/ trade/ services/ engines/ analytics/ journal/ state/ screens/ planner/ performance/ comparison/ journal/ widgets/ charts/
 
-Examples:
-
-* Wheel Strategy
-* Income Rotation
-* Risk-Adaptive Allocation
-
-Meta-strategies decide *when* and *how* to deploy engines — never *how engines work*.
+This structure is optimized for scalability and Phase 4 cloud execution.
 
 ---
 
-### Risk & Control Layer
+## 🧭 Development Phases
 
-System-wide enforcement of:
+## **Phase 1 — Planner, Engines, Persistence**
 
-* Capital constraints
-* Exposure limits
-* Kill conditions
-* Assignment handling
-* State transitions
+Core foundations.
 
-This layer always has veto power.
+### Completed
 
----
-
-## What RiskForm Is Not
-
-* ❌ A backtest toy
-* ❌ A black-box AI trader
-* ❌ A signal marketplace
-* ❌ A prediction system
-* ❌ A “get rich quick” platform
-
-RiskForm assumes markets are uncertain and treats that uncertainty with respect.
+- Planner UI  
+- State management  
+- Pricing engine  
+- Lifecycle engine  
+- Payoff chart  
+- Firestore persistence  
+- Folder structure  
+- Account context provider  
 
 ---
 
-## Intended Users
+## **Phase 2 — Wheel Lifecycle, Dashboard, Risk**
 
-RiskForm is built for:
+Full Wheel modeling + risk exposure.
 
-* Engineers who think in systems
-* Traders who value survival over excitement
-* Builders who want correctness before optimization
+### Completed
 
-If you are looking for shortcuts, this is the wrong tool.
-
-If you are building something meant to last, you are in the right place.
-
----
-
-## The Goal
-
-> **To make incorrect risk behavior structurally impossible.**
-
-When a strategy fails in RiskForm, it should fail:
-
-* Within known bounds
-* For known reasons
-* Without cascading damage
-
-That is not pessimism.
-
-That is engineering.
+- CSP → assignment → CC → called away  
+- Cycle modeling  
+- Assignment & expiration logic  
+- Dashboard risk exposure  
+- Strategy recommendations  
+- Initial journal automation  
 
 ---
 
-### Status
+## **Phase 3 — Analytics, Behavior, Comparison**
 
-RiskForm is under active development.
-Interfaces are treated as contracts.
-Breaking changes are intentional and rare.
+Intelligence + behavior modeling.
+
+### Completed
+
+- Realistic option pricing  
+- Realistic assignment & expiration  
+- Cycle‑by‑cycle analytics  
+- Performance dashboard  
+- Strategy comparison  
+- Regime segmentation  
+- Journal automation  
+- Journal UI  
+- Discipline scoring  
+- Discipline streaks  
+- Habit tracking  
+- Pre‑Phase‑4 enhancements:
+  - Config snapshot  
+  - Cycle IDs  
+  - CycleOutcome enum  
+  - Backtest labels  
+
+Phase 3 is fully complete.
 
 ---
 
-**RiskForm**
-*Structure before speculation. Risk before reward.*
+## 📊 Key Features
+
+## **Wheel Strategy Simulator**
+
+- Realistic CSP/CC lifecycle  
+- Assignment & expiration logic  
+- Premium modeling  
+- Cycle detection  
+- Equity & drawdown curves  
+
+## **Regime‑Aware Analytics**
+
+- Uptrend / Downtrend / Sideways segmentation  
+- Regime‑specific cycle returns  
+- Regime‑specific assignment rates  
+
+## **Performance Dashboard**
+
+- Total return  
+- Max drawdown  
+- Cycle stats  
+- Equity curve  
+- Drawdown curve  
+- Regime breakdown  
+
+## **Strategy Comparison**
+
+- Compare multiple configs  
+- Side‑by‑side metrics  
+- Multi‑curve equity chart  
+
+## **Journal System**
+
+- Automated sim entries  
+- Live‑trade ingestion  
+- Unified journal structure  
+- Entry detail view  
+- Filtering by type  
+
+## **Discipline Engine**
+
+- Discipline scoring  
+- Daily snapshots  
+- Streaks  
+- Habit tracking  
+
+---
+
+## 🧪 Technology Stack
+
+- **Flutter** (UI + state management)
+- **Dart** (engines + analytics)
+- **Riverpod** (state management)
+- **Firestore** (persistence)
+- **Custom engines** (pricing, lifecycle, backtesting)
+
+---
+
+## 🧩 Core Concepts
+
+### **Lifecycle Modeling**
+
+The Wheel is treated as a deterministic state machine:
+
+- CSP open → CSP expiration → assignment → CC open → CC expiration → called away
+
+### **Regime Awareness**
+
+Market behavior affects strategy behavior:
+
+- Uptrend  
+- Downtrend  
+- Sideways  
+
+### **Behavioral Reinforcement**
+
+The system tracks:
+
+- discipline  
+- habits  
+- streaks  
+- adherence to plan  
+
+### **Unified Journal**
+
+Sim + live trades share the same schema.
+
+---
+
+## 📘 Documentation
+
+All technical documentation for Phases 1–3 is available in:
+
+- `/docs/phase1-3-technical.md`  
+- `/docs/project-overview.md`  
+
+These include:
+
+- Backtest Engine Specification  
+- Cycle Lifecycle Specification  
+- Journal Specification  
+- Discipline Model  
+- Strategy Comparison Specification  
+- Regime Classification Rules  
+
+---
+
+## 🛣️ Next Steps (Phase 4 Preview)
+
+Phase 4 will introduce:
+
+### **1. Cloud Backtesting Engine**
+
+- Distributed jobs  
+- Multi‑symbol  
+- Multi‑strategy  
+- Persistent results  
+
+### **2. Pro Analytics**
+
+- Volatility clustering  
+- Heatmaps  
+- Assignment risk curves  
+- Capital efficiency scoring  
+
+### **3. Multi‑Strategy Orchestration**
+
+- Wheel + CSP ladder  
+- Wheel + PMCC  
+- Wheel + covered strangle  
+
+### **4. Live Trading Integration**
+
+- Broker sync  
+- Real‑time journal ingestion  
+- Sim vs live behavior comparison  
+
+---
+
+## 🧑‍💻 Contributing
+
+This project is currently under active development by the founder.  
+External contributions may be opened in future phases.
+
+---
+
+## 📄 License
+
+Proprietary — All rights reserved.

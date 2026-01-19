@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_application_2/models/trade_plan.dart';
 
+// ignore: unused_element
 class _FakeDoc {
   final String id;
   final Map<String, dynamic> _data;

@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import '../../models/analytics/regime_segment.dart';
+import '../../models/analytics/market_regime.dart';
 
 class PayoffChart extends StatelessWidget {
   final List<Offset> curve;
   final double breakeven;
+  final List<RegimeSegment>? regimes;
 
   const PayoffChart({
     super.key,
     required this.curve,
     required this.breakeven,
+    this.regimes,
   });
 
   @override
@@ -26,6 +30,7 @@ class PayoffChart extends StatelessWidget {
               breakeven: breakeven,
               lineColor: theme.colorScheme.primary,
               axisColor: axisColor,
+              regimes: regimes,
             ),
           ),
         ),
@@ -39,12 +44,14 @@ class _PayoffPainter extends CustomPainter {
   final double breakeven;
   final Color lineColor;
   final Color axisColor;
+  final List<RegimeSegment>? regimes;
 
   _PayoffPainter({
     required this.curve,
     required this.breakeven,
     required this.lineColor,
     required this.axisColor,
+    this.regimes,
   });
 
   @override
@@ -65,6 +72,31 @@ class _PayoffPainter extends CustomPainter {
     }
 
     // axis paint reserved for other uses; specific paints below use adjusted alpha
+
+    // draw regime background bands first (if provided)
+    if (regimes != null && regimes!.isNotEmpty) {
+      for (final seg in regimes!) {
+        final start = seg.startIndex.toDouble();
+        final end = seg.endIndex.toDouble();
+        final left = _mapX(start, minX, maxX, size.width);
+        final right = _mapX(end, minX, maxX, size.width);
+        Color bandColor;
+        switch (seg.regime) {
+          case MarketRegime.uptrend:
+            bandColor = Colors.green.withOpacity(0.08);
+            break;
+          case MarketRegime.downtrend:
+            bandColor = Colors.red.withOpacity(0.08);
+            break;
+          case MarketRegime.sideways:
+            bandColor = Colors.yellow.withOpacity(0.06);
+            break;
+        }
+        final rect = Rect.fromLTRB(left, 0, right, size.height);
+        final paint = Paint()..color = bandColor;
+        canvas.drawRect(rect, paint);
+      }
+    }
 
     // draw zero line
     final zeroY = _mapY(0, minY, maxY, size.height);
