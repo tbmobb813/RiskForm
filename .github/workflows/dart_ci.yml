@@ -26,7 +26,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.10.7'
-          channel: 'stable'
+          # channel removed to let the action resolve the specific pinned version
 
       - name: Install dependencies
         working-directory: .
