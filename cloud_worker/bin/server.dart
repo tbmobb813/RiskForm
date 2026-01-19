@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import '../lib/backtest_engine.dart';
+import 'package:riskform_cloud_worker/backtest_engine.dart';
 
 /// Cloud Run backtest worker server.
 ///

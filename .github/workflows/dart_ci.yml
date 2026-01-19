@@ -46,3 +46,42 @@ jobs:
         with:
           name: coverage-lcov
           path: coverage/lcov.info
+
+  cloud-worker:
+    name: Cloud Worker (analyze & test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Pub dependencies (cloud_worker)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+          key: ${{ runner.os }}-pub-cloud-worker-${{ hashFiles('cloud_worker/pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: '3.0.0'
+
+      - name: Install dependencies (cloud_worker)
+        working-directory: cloud_worker
+        run: dart pub get
+
+      - name: Run analyzer (cloud_worker)
+        working-directory: cloud_worker
+        run: dart analyze
+
+      - name: Run tests (cloud_worker)
+        working-directory: cloud_worker
+        run: dart test --no-color
+
+      - name: Upload cloud-worker test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-worker-test-logs
+          path: cloud_worker

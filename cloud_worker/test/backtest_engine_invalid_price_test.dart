@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import '../lib/backtest_engine.dart';
+import 'package:riskform_cloud_worker/backtest_engine.dart';
 
 void main() {
   test('CloudBacktestEngine.run throws on zero or negative prices', () {

@@ -7,9 +7,9 @@ environment:
   sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
-  # Reference to main project for engine code
-  # In production, you may want to extract shared code to a separate package
-  path: ^1.9.0
+  # Local shared core package containing engines and models.
+  riskform_core:
+    path: ../packages/riskform_core
 
 dev_dependencies:
   lints: ^3.0.0
