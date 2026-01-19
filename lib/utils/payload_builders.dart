@@ -1,4 +1,4 @@
-import 'serialize_for_callable.dart' as _ser;
+import 'serialize_for_callable.dart' as ser;
 
 /// Small payload builders for cloud callables.
 
@@ -9,7 +9,7 @@ Map<String, dynamic> buildScoreTradePayload({
 }) {
   return {
     'journalId': journalId,
-    'plannedParams': _ser.serializeForCallable(plannedParams),
-    'executedParams': _ser.serializeForCallable(executedParams),
+    'plannedParams': ser.serializeForCallable(plannedParams),
+    'executedParams': ser.serializeForCallable(executedParams),
   };
 }

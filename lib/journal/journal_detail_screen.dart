@@ -82,7 +82,7 @@ class _JournalDetailScreenState extends State<JournalDetailScreen> {
           }
 
           final data = snapshot.data!.data()!;
-          final createdAt = (data['createdAt'] as Timestamp?)?.toDate()?.toLocal()?.toString()?.split('.')?.first ?? '';
+          final createdAt = (data['createdAt'] as Timestamp?)?.toDate().toLocal().toString().split('.').first ?? '';
 
           return Padding(
             padding: const EdgeInsets.all(16.0),

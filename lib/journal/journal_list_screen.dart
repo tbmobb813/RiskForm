@@ -14,7 +14,7 @@ class JournalListScreen extends StatelessWidget {
         .orderBy('createdAt', descending: true)
         .snapshots();
 
-    String _strategyName(String id) {
+    String strategyName(String id) {
       // Minimal local mapping for friendly names; extend as needed.
       const map = {
         'csp': 'Cash-Secured Put',
@@ -50,7 +50,7 @@ class JournalListScreen extends StatelessWidget {
               final entry = JournalEntry.fromFirestore(doc);
 
               return ListTile(
-                title: Text(_strategyName(entry.strategyId)),
+                title: Text(strategyName(entry.strategyId)),
                 subtitle: Text(
                     '${entry.cycleState} • ${entry.createdAt.toLocal().toString().split('.').first}'),
                 trailing: entry.disciplineScore != null

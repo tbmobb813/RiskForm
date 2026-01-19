@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../lib/utils/serialize_for_callable.dart' as ser;
+import 'package:flutter_application_2/utils/serialize_for_callable.dart' as ser;
 
 void main() {
   test('serialize DateTime and Timestamp to ISO strings', () {

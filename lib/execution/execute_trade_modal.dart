@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import '../utils/serialize_for_callable.dart' as _ser;
+import '../utils/serialize_for_callable.dart' as ser;
 import 'package:flutter/material.dart';
 
 import '../discipline/discipline_engine.dart';
@@ -113,20 +113,18 @@ class _ExecuteTradeModalState extends State<ExecuteTradeModal> {
         final callable = functions.httpsCallable('scoreTrade');
 
         // Serialize planned and executed params for transport
-        final planForCall = _ser.serializeForCallable(plannedParams) as Map<String, dynamic>;
-
-        final execForCall = _ser.serializeForCallable(<String, dynamic>{
-          'contracts': contracts,
-          'entryPrice': entryPrice,
-          'executedAt': executedAt,
-          'risk': 0,
+        final payload = ser.serializeForCallable({
+          'journalId': widget.planId,
+          'plannedParams': plannedParams,
+          'executedParams': {
+            'contracts': contracts,
+            'entryPrice': entryPrice,
+            'executedAt': executedAt,
+            'risk': 0,
+          },
         }) as Map<String, dynamic>;
 
-        final res = await callable.call(<String, dynamic>{
-          'journalId': widget.planId,
-          'plannedParams': planForCall,
-          'executedParams': execForCall,
-        });
+        final res = await callable.call(payload);
 
         if (res.data != null) {
           usedServerScoring = true;

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../../lib/utils/payload_builders.dart' as pb;
+import 'package:flutter_application_2/utils/payload_builders.dart' as pb;
 
 void main() {
   test('buildScoreTradePayload serializes DateTime fields', () {
