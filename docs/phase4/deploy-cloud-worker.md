@@ -26,14 +26,12 @@ This guide walks through deploying:
 
 The Dart worker lives in `/cloud_worker`:
 
-```
 cloud_worker/
 ├── bin/
 │   └── server.dart    # HTTP entrypoint
 ├── pubspec.yaml
 ├── Dockerfile
 └── .dockerignore
-```
 
 `bin/server.dart` handles:
 
@@ -126,7 +124,6 @@ curl -X POST https://riskform-backtest-worker-abc123-uc.a.run.app/run-backtest \
 
 The Functions live in `/functions`:
 
-```
 functions/
 ├── src/
 │   ├── index.ts           # Entry point
@@ -135,7 +132,6 @@ functions/
 ├── package.json
 ├── tsconfig.json
 └── .eslintrc.js
-```
 
 ### 3.2 Install dependencies
 
@@ -188,13 +184,14 @@ The rules in `firestore.rules` should match the spec in `/docs/phase4/firestore-
 
 Create the required composite index for `watchUserJobs`:
 
-**Option A: Firebase Console**
+### Option A: Firebase Console
 
 Go to Firestore → Indexes → Add Index:
+
 - Collection: `backtestJobs`
 - Fields: `userId` (Ascending), `submittedAt` (Descending)
 
-**Option B: firestore.indexes.json**
+#### Option B: firestore.indexes.json
 
 Create `firestore.indexes.json` in project root:
 
@@ -262,7 +259,7 @@ firebase deploy --only firestore:indexes
 ### 6.3 Troubleshooting
 
 | Symptom | Check |
-|---------|-------|
+| --------- | ------- |
 | Job stays `queued` | Function not triggering - check deployment, check rules |
 | Job goes to `failed` immediately | Check function logs for validation errors |
 | Cloud Run error | Check `backtest.cloud_run_url` config, check Cloud Run logs |

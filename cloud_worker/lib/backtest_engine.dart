@@ -40,6 +40,7 @@ class CloudBacktestEngine {
     double cycleStartEquity = startingCapital;
     int cycleDuration = 0;
     bool cycleHadAssignment = false;
+    bool _resetCycleThisIteration = false;
 
     for (final price in pricePath) {
       // Decrement DTE
@@ -130,6 +131,7 @@ class CloudBacktestEngine {
               cycleCount++;
               cycleStartEquity = endEquity;
               cycleDuration = 0;
+              _resetCycleThisIteration = true;
               cycleHadAssignment = false;
 
               notes.add('CC expired ITM, called away @ ${ccStrike.toStringAsFixed(2)}');
@@ -146,7 +148,13 @@ class CloudBacktestEngine {
 
       final equity = capital + shares * price;
       equityCurve.add(equity);
-      cycleDuration++;
+      if (_resetCycleThisIteration) {
+        // A reset happened during this iteration; don't increment here
+        // or the next cycle will start with 1 instead of 0.
+        _resetCycleThisIteration = false;
+      } else {
+        cycleDuration++;
+      }
     }
 
     // Calculate metrics
@@ -198,17 +206,39 @@ class CloudBacktestEngine {
 
   // Black-Scholes pricing (simplified, no dividends, r=0)
   double _blackScholesCall(double S, double K, double sigma, double T) {
-    if (T <= 0) return max(0, S - K);
-    final d1 = (log(S / K) + 0.5 * sigma * sigma * T) / (sigma * sqrt(T));
-    final d2 = d1 - sigma * sqrt(T);
-    return S * _cdf(d1) - K * _cdf(d2);
+    if (S <= 0 || K <= 0) {
+      throw StateError('Invalid inputs to Black-Scholes call: S=$S K=$K');
+    }
+    if (T <= 0 || sigma <= 0) return max(0, S - K);
+
+    final denom = sigma * sqrt(T);
+    if (denom == 0) return max(0, S - K);
+
+    final d1 = (log(S / K) + 0.5 * sigma * sigma * T) / denom;
+    final d2 = d1 - denom;
+    final price = S * _cdf(d1) - K * _cdf(d2);
+    if (price.isNaN || price.isInfinite || price < 0) {
+      throw StateError('Invalid Black-Scholes call price computed: $price (S=$S K=$K sigma=$sigma T=$T)');
+    }
+    return price;
   }
 
   double _blackScholesPut(double S, double K, double sigma, double T) {
-    if (T <= 0) return max(0, K - S);
-    final d1 = (log(S / K) + 0.5 * sigma * sigma * T) / (sigma * sqrt(T));
-    final d2 = d1 - sigma * sqrt(T);
-    return K * _cdf(-d2) - S * _cdf(-d1);
+    if (S <= 0 || K <= 0) {
+      throw StateError('Invalid inputs to Black-Scholes put: S=$S K=$K');
+    }
+    if (T <= 0 || sigma <= 0) return max(0, K - S);
+
+    final denom = sigma * sqrt(T);
+    if (denom == 0) return max(0, K - S);
+
+    final d1 = (log(S / K) + 0.5 * sigma * sigma * T) / denom;
+    final d2 = d1 - denom;
+    final price = K * _cdf(-d2) - S * _cdf(-d1);
+    if (price.isNaN || price.isInfinite || price < 0) {
+      throw StateError('Invalid Black-Scholes put price computed: $price (S=$S K=$K sigma=$sigma T=$T)');
+    }
+    return price;
   }
 
   // Standard normal CDF approximation
