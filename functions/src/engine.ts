@@ -3,9 +3,11 @@ import { defineString } from "firebase-functions/params";
 // Use the global fetch available in Node 18+ rather than depending on node-fetch
 declare const fetch: typeof globalThis.fetch;
 
-// Define the Cloud Run URL as a Firebase parameter (for params API migration)
-// This can be set via environment variable or Firebase parameter configuration.
-const cloudRunUrlParam = defineString("backtest.cloud_run_url", {
+// Define the Cloud Run URL as a Firebase parameter (for params API migration).
+// Param names must follow env-var style: uppercase letters, digits, and underscores.
+// Use `BACKTEST_CLOUD_RUN_URL` so the deployer can set it via params or it maps cleanly
+// to an environment variable.
+const cloudRunUrlParam = defineString("BACKTEST_CLOUD_RUN_URL", {
   description: "URL of the Cloud Run backtest worker service",
 });
 
@@ -95,7 +97,7 @@ export async function runBacktestEngine(
   // Log which source provided the Cloud Run URL to aid debugging
   console.info(`Cloud Run URL source: ${resolved.source}`);
   if (!cloudRunUrl) {
-    throw new Error("Cloud Run URL is not configured. Set CLOUD_RUN_URL env var or Functions params 'backtest.cloud_run_url'.");
+    throw new Error("Cloud Run URL is not configured. Set CLOUD_RUN_URL env var or Functions params 'BACKTEST_CLOUD_RUN_URL'.");
   }
   const res = await fetch(`${cloudRunUrl}/run-backtest`, {
     method: "POST",

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
+
 import '../backtest/backtest_config.dart';
 
 enum CloudBacktestStatus { queued, running, completed, failed }
@@ -48,12 +50,25 @@ class CloudBacktestJob {
     final status = CloudBacktestStatus.values
         .firstWhere((e) => e.toString().split('.').last == statusToken);
 
+    DateTime? parseDate(dynamic v) {
+      if (v == null) return null;
+      if (v is DateTime) return v;
+      if (v is String) return DateTime.parse(v);
+      if (v is int) return DateTime.fromMillisecondsSinceEpoch(v);
+      if (v is Timestamp) return v.toDate();
+      try {
+        return DateTime.parse(v.toString());
+      } catch (_) {
+        return null;
+      }
+    }
+
     return CloudBacktestJob(
       jobId: m['jobId'] as String,
       userId: m['userId'] as String,
-      submittedAt: DateTime.parse(m['submittedAt'] as String),
-      startedAt: m['startedAt'] != null ? DateTime.parse(m['startedAt'] as String) : null,
-      completedAt: m['completedAt'] != null ? DateTime.parse(m['completedAt'] as String) : null,
+      submittedAt: parseDate(m['submittedAt'])!,
+      startedAt: parseDate(m['startedAt']),
+      completedAt: parseDate(m['completedAt']),
       status: status,
       configUsed: BacktestConfig.fromMap(Map<String, dynamic>.from(m['configUsed'] as Map)),
       engineVersion: m['engineVersion'] as String,

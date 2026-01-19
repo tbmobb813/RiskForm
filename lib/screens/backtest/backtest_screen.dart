@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -38,6 +40,7 @@ class _BacktestScreenState extends ConsumerState<BacktestScreen> {
   String? _cloudJobId;
   CloudBacktestJob? _cloudJob;
   bool _isSubmittingToCloud = false;
+  StreamSubscription<CloudBacktestJob?>? _cloudJobSub;
 
   @override
   void initState() {
@@ -302,6 +305,14 @@ class _BacktestScreenState extends ConsumerState<BacktestScreen> {
     );
   }
 
+  @override
+  void dispose() {
+    // Ensure any active Cloud job subscription is cancelled to avoid leaks
+    _cloudJobSub?.cancel();
+    _cloudJobSub = null;
+    super.dispose();
+  }
+
   Future<void> _submitToCloud() async {
     final auth = ref.read(authServiceProvider);
     final userId = auth.currentUserId;
@@ -328,8 +339,9 @@ class _BacktestScreenState extends ConsumerState<BacktestScreen> {
         _isSubmittingToCloud = false;
       });
 
-      // Listen for job status updates
-      cloudService.jobStream(jobId).listen((job) {
+      // Cancel any previous subscription to avoid leaks, then listen for updates
+      await _cloudJobSub?.cancel();
+      _cloudJobSub = cloudService.jobStream(jobId).listen((job) async {
         if (!mounted) return;
         setState(() => _cloudJob = job);
 
@@ -337,10 +349,15 @@ class _BacktestScreenState extends ConsumerState<BacktestScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Cloud backtest completed!')),
           );
+          // Stop listening once the job is finished
+          await _cloudJobSub?.cancel();
+          _cloudJobSub = null;
         } else if (job?.status == CloudBacktestStatus.failed) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Cloud backtest failed: ${job?.errorMessage ?? "Unknown error"}')),
           );
+          await _cloudJobSub?.cancel();
+          _cloudJobSub = null;
         }
       });
 
