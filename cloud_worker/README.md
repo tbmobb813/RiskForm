@@ -13,6 +13,7 @@ This service receives backtest requests from Firebase Functions and executes the
 Health check endpoint.
 
 **Response:**
+
 ```json
 {
   "status": "healthy",
@@ -26,6 +27,7 @@ Health check endpoint.
 Execute a backtest with the provided configuration.
 
 **Request:**
+
 ```json
 {
   "configUsed": {
@@ -40,6 +42,7 @@ Execute a backtest with the provided configuration.
 ```
 
 **Response:**
+
 ```json
 {
   "backtestResult": {
@@ -119,13 +122,13 @@ firebase functions:config:set backtest.cloud_run_url="https://riskform-backtest-
 ### Environment Variables
 
 | Variable | Default | Description |
-|----------|---------|-------------|
-| PORT | 8080 | Server port |
+| -------- | ------- | ----------- |
+| PORT     | 8080    | Server port |
 
 ### Cloud Run Settings
 
 | Setting | Recommended | Description |
-|---------|-------------|-------------|
+| --------- | ------------- | ------------- |
 | Memory | 512Mi-1Gi | Depends on backtest complexity |
 | CPU | 1 | Usually sufficient |
 | Concurrency | 1 | One backtest per instance |
@@ -133,24 +136,19 @@ firebase functions:config:set backtest.cloud_run_url="https://riskform-backtest-
 | Min instances | 0 | Scale to zero when idle |
 | Max instances | 10 | Limit concurrent backtests |
 
-## TODO: Engine Integration
+## Engine
 
-The current implementation returns placeholder results. To integrate the actual engine:
+The cloud worker includes a pure-Dart implementation of the wheel strategy backtest engine
+(`lib/backtest_engine.dart`). This mirrors the core logic from the main Flutter app but
+without Flutter dependencies, making it suitable for server-side execution.
 
-1. Extract shared engine code to a separate Dart package
-2. Add the package as a dependency in `pubspec.yaml`
-3. Import and use `BacktestEngine` in `server.dart`
+The engine simulates:
 
-Example:
-```dart
-import 'package:riskform_engine/backtest_engine.dart';
-import 'package:riskform_engine/backtest_config.dart';
-
-final config = BacktestConfig.fromMap(configUsed);
-final engine = BacktestEngine();
-final result = engine.run(config);
-final resultMap = result.toMap();
-```
+- Cash-secured put (CSP) selling at ATM strikes
+- Assignment handling when puts expire ITM
+- Covered call (CC) selling at 2% OTM strikes
+- Called-away handling when calls expire ITM
+- Full cycle tracking with metrics calculation
 
 ## Logging
 
@@ -167,7 +165,6 @@ All logs are structured JSON for Cloud Logging compatibility:
 ```
 
 Filter in Cloud Logging:
-```
+
 resource.type="cloud_run_revision"
 jsonPayload.event="backtest_completed"
-```

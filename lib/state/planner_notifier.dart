@@ -64,7 +64,6 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
     state = state.copyWith(isLoading: true, clearError: true);
 
     try {
-      // TODO: call real engine
       final payoff = await _payoffEngine.compute(
         strategyId: state.strategyId!,
         inputs: state.inputs!,
@@ -97,7 +96,6 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
     state = state.copyWith(isLoading: true, clearError: true);
 
     try {
-      // TODO: call real risk engine
       final risk = await _riskEngine.compute(
         strategyId: state.strategyId!,
         inputs: state.inputs!,

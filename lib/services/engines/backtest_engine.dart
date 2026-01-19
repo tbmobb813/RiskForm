@@ -293,18 +293,19 @@ class BacktestEngine {
   }) {
     // Operate on a copy to keep changes explicit
     final s = state.copy();
+    final symbol = config.symbol;
 
     switch (s.cycle.state) {
       case WheelCycleState.idle:
         return _handleIdle(price, s, notes);
       case WheelCycleState.cspOpen:
-        return _handleCspOpen(price, s, notes);
+        return _handleCspOpen(price, s, notes, symbol);
       case WheelCycleState.assigned:
         return _handleAssigned(price, s, notes);
       case WheelCycleState.sharesOwned:
         return _handleSharesOwned(price, s, notes);
       case WheelCycleState.ccOpen:
-        return _handleCcOpen(price, s, notes);
+        return _handleCcOpen(price, s, notes, symbol);
       case WheelCycleState.calledAway:
         return _handleCalledAway(price, s, notes);
     }
@@ -348,7 +349,7 @@ class BacktestEngine {
     return state;
   }
 
-  WheelSimState _handleCspOpen(double price, WheelSimState state, List<String> notes) {
+  WheelSimState _handleCspOpen(double price, WheelSimState state, List<String> notes, String symbol) {
     // Use the in-sim option if present
     final csp = state.csp;
     if (csp == null) {
@@ -362,7 +363,7 @@ class BacktestEngine {
 
     // Early-assignment heuristic (deterministic, rare)
     if (shouldEarlyAssign(
-      symbol: configSymbolOrUnknown(),
+      symbol: symbol,
       strike: strike,
       dte: csp.dte,
       isPut: true,
@@ -443,7 +444,7 @@ class BacktestEngine {
     return state;
   }
 
-  WheelSimState _handleCcOpen(double price, WheelSimState state, List<String> notes) {
+  WheelSimState _handleCcOpen(double price, WheelSimState state, List<String> notes, String symbol) {
     final cc = state.cc;
     if (cc == null) {
       notes.add('CC open but option missing; keeping shares.');
@@ -455,7 +456,7 @@ class BacktestEngine {
     final isITM = price > strike;
 
     if (shouldEarlyAssign(
-      symbol: configSymbolOrUnknown(),
+      symbol: symbol,
       strike: strike,
       dte: cc.dte,
       isPut: false,

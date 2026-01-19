@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:riskform_cloud_worker/backtest_engine.dart';
+
 /// Cloud Run backtest worker server.
 ///
 /// Endpoints:
@@ -92,20 +94,8 @@ Future<void> _handleRunBacktest(HttpRequest request) async {
       'strategyId': configUsed['strategyId'],
     });
 
-    // TODO: Import and use actual BacktestEngine from main project
-    // For now, return a placeholder result
-    //
-    // In production, this would be:
-    //
-    // import 'package:riskform/services/engines/backtest_engine.dart';
-    // import 'package:riskform/models/backtest/backtest_config.dart';
-    //
-    // final config = BacktestConfig.fromMap(configUsed);
-    // final engine = BacktestEngine();
-    // final result = engine.run(config);
-    // final resultMap = result.toMap();
-
-    final resultMap = _createPlaceholderResult(configUsed);
+    final engine = CloudBacktestEngine();
+    final resultMap = engine.run(configUsed);
 
     final durationMs = DateTime.now().difference(startTime).inMilliseconds;
     _log('INFO', 'backtest_completed', {
@@ -133,36 +123,6 @@ Future<void> _handleRunBacktest(HttpRequest request) async {
       ..write(jsonEncode({'error': e.toString()}));
     await request.response.close();
   }
-}
-
-/// Create a placeholder backtest result for testing.
-///
-/// TODO: Replace with actual engine call once the engine is properly
-/// imported into the cloud_worker package.
-Map<String, dynamic> _createPlaceholderResult(Map<String, dynamic> configUsed) {
-  return {
-    'configUsed': configUsed,
-    'equityCurve': [100000.0, 101000.0, 102500.0, 103000.0, 104200.0],
-    'maxDrawdown': -0.08,
-    'totalReturn': 0.042,
-    'cyclesCompleted': 5,
-    'notes': [
-      'Cloud backtest completed',
-      'Placeholder result - replace with actual engine',
-    ],
-    'cycles': <Map<String, dynamic>>[],
-    'avgCycleReturn': 0.0084,
-    'avgCycleDurationDays': 21.0,
-    'assignmentRate': 0.2,
-    'uptrendAvgCycleReturn': 0.012,
-    'downtrendAvgCycleReturn': 0.004,
-    'sidewaysAvgCycleReturn': 0.008,
-    'uptrendAssignmentRate': 0.1,
-    'downtrendAssignmentRate': 0.4,
-    'sidewaysAssignmentRate': 0.2,
-    'engineVersion': '1.0.0',
-    'regimeSegments': <Map<String, dynamic>>[],
-  };
 }
 
 /// Structured logging for Cloud Logging compatibility.

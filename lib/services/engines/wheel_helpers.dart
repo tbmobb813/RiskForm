@@ -16,7 +16,3 @@ bool shouldEarlyAssign({
   final h = deterministicHash('$symbol-${strike.toStringAsFixed(2)}-$dte');
   return h % 100 < earlyAssignPct;
 }
-
-// TODO: Extract symbol from notes when implemented in backtest config
-// Currently returns 'unknown' as symbol extraction logic is not yet implemented
-String configSymbolOrUnknown() => 'unknown';
