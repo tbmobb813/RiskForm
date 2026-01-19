@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/backtest/backtest_history_repository.dart';
 
-final _dummyProvider = Provider((ref) => null);
-
 class BacktestHistoryScreen extends ConsumerWidget {
   final BacktestHistoryRepository repository;
 
