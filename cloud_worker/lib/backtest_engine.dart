@@ -40,7 +40,7 @@ class CloudBacktestEngine {
     double cycleStartEquity = startingCapital;
     int cycleDuration = 0;
     bool cycleHadAssignment = false;
-    bool _resetCycleThisIteration = false;
+    bool resetCycleThisIteration = false;
 
     for (final price in pricePath) {
       // Decrement DTE
@@ -131,7 +131,7 @@ class CloudBacktestEngine {
               cycleCount++;
               cycleStartEquity = endEquity;
               cycleDuration = 0;
-              _resetCycleThisIteration = true;
+              resetCycleThisIteration = true;
               cycleHadAssignment = false;
 
               notes.add('CC expired ITM, called away @ ${ccStrike.toStringAsFixed(2)}');
@@ -148,10 +148,10 @@ class CloudBacktestEngine {
 
       final equity = capital + shares * price;
       equityCurve.add(equity);
-      if (_resetCycleThisIteration) {
+      if (resetCycleThisIteration) {
         // A reset happened during this iteration; don't increment here
         // or the next cycle will start with 1 instead of 0.
-        _resetCycleThisIteration = false;
+        resetCycleThisIteration = false;
       } else {
         cycleDuration++;
       }
