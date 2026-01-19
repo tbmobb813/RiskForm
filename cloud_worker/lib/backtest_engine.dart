@@ -258,4 +258,8 @@ class CloudBacktestEngine {
 
     return 0.5 * (1.0 + sign * y);
   }
+
+  // Public wrappers used by tests to validate Black-Scholes behavior.
+  double priceCall(double S, double K, double sigma, double T) => _blackScholesCall(S, K, sigma, T);
+  double pricePut(double S, double K, double sigma, double T) => _blackScholesPut(S, K, sigma, T);
 }
