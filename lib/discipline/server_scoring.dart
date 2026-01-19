@@ -1,5 +1,6 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'discipline_engine.dart';
+import '../utils/serialize_for_callable.dart' as _ser;
 
 /// Attempts to call the server-side `scoreTrade` callable function.
 /// Falls back to the local `DisciplineEngine` if the callable fails.
@@ -14,12 +15,9 @@ class ServerScoring {
       final functions = FirebaseFunctions.instance;
       final callable = functions.httpsCallable('scoreTrade');
 
-      // Convert DateTime to ISO strings if present
-      final planCopy = Map<String, dynamic>.from(plannedParams);
-      planCopy.updateAll((k, v) => v is DateTime ? v.toIso8601String() : v);
-
-      final execCopy = Map<String, dynamic>.from(executedParams);
-      execCopy.updateAll((k, v) => v is DateTime ? v.toIso8601String() : v);
+      // Serialize DateTime / Timestamp values recursively for transport
+      final planCopy = _ser.serializeForCallable(plannedParams) as Map<String, dynamic>;
+      final execCopy = _ser.serializeForCallable(executedParams) as Map<String, dynamic>;
 
       final res = await callable.call(<String, dynamic>{
         'journalId': journalId,

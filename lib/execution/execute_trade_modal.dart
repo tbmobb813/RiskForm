@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import '../utils/serialize_for_callable.dart' as _ser;
 import 'package:flutter/material.dart';
 
 import '../discipline/discipline_engine.dart';
@@ -33,6 +34,8 @@ class _ExecuteTradeModalState extends State<ExecuteTradeModal> {
   final _contractsCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
   bool _loading = false;
+
+  // Use shared serializer util for callable transport
 
   @override
   void dispose() {
@@ -109,16 +112,15 @@ class _ExecuteTradeModalState extends State<ExecuteTradeModal> {
         final functions = FirebaseFunctions.instance;
         final callable = functions.httpsCallable('scoreTrade');
 
-        // Convert DateTimes to ISO strings for transport
-        final planForCall = Map<String, dynamic>.from(plannedParams);
-        if (planForCall['plannedEntryTime'] is DateTime) planForCall['plannedEntryTime'] = (planForCall['plannedEntryTime'] as DateTime).toIso8601String();
+        // Serialize planned and executed params for transport
+        final planForCall = _ser.serializeForCallable(plannedParams) as Map<String, dynamic>;
 
-        final execForCall = <String, dynamic>{
+        final execForCall = _ser.serializeForCallable(<String, dynamic>{
           'contracts': contracts,
           'entryPrice': entryPrice,
-          'executedAt': executedAt.toIso8601String(),
+          'executedAt': executedAt,
           'risk': 0,
-        };
+        }) as Map<String, dynamic>;
 
         final res = await callable.call(<String, dynamic>{
           'journalId': widget.planId,

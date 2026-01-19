@@ -1,6 +1,7 @@
 import '../../models/analytics/market_regime.dart';
 import '../../models/analytics/regime_segment.dart';
 import 'backtest_config.dart';
+import '../../utils/parse_date.dart' as _pd;
 
 /// Represents the outcome of a wheel cycle.
 enum CycleOutcome {
@@ -202,8 +203,8 @@ class BacktestResult {
       regimeSegments: (m['regimeSegments'] as List<dynamic>?)
               ?.map((s) => RegimeSegment(
                     regime: MarketRegime.values.firstWhere((e) => e.toString() == (s['regime'] as String)),
-                    startDate: DateTime.parse(s['startDate'] as String),
-                    endDate: DateTime.parse(s['endDate'] as String),
+                    startDate: _pd.parseDate(s['startDate'])!,
+                    endDate: _pd.parseDate(s['endDate'])!,
                     startIndex: (s['startIndex'] as num).toInt(),
                     endIndex: (s['endIndex'] as num).toInt(),
                   ))

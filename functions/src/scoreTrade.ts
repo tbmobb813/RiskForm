@@ -33,17 +33,60 @@ export const scoreTrade = functions.https.onCall(async (data, context) => {
   // Compute score (simple port of local engine heuristics)
   let adherence = 40;
   try {
-    if (plannedParams?.strike != null && executedParams?.strike != null && plannedParams.strike !== executedParams.strike) adherence -= 15;
-    if (plannedParams?.expiration != null && executedParams?.expiration != null && plannedParams.expiration !== executedParams.expiration) adherence -= 10;
-    if (plannedParams?.contracts != null && executedParams?.contracts != null && plannedParams.contracts !== executedParams.contracts) adherence -= 15;
+      if (plannedParams?.strike != null && executedParams?.strike != null && plannedParams.strike !== executedParams.strike) adherence -= 15;
+      // Parse expiration values defensively: accept ISO strings, millis, or Firestore-like {seconds,nanoseconds}
+      const parseToDate = (v: any): Date | null => {
+        if (v == null) return null;
+        if (v instanceof Date) return v;
+        if (typeof v === 'string' || typeof v === 'number') {
+          const d = new Date(v);
+          if (!isNaN(d.getTime())) return d;
+        }
+        // Firestore serialized timestamp shapes
+        const secs = v?.seconds ?? v?._seconds;
+        const nanos = v?.nanoseconds ?? v?._nanoseconds ?? 0;
+        if (secs != null) {
+          const s = typeof secs === 'number' ? secs : Number(secs);
+          const n = typeof nanos === 'number' ? nanos : Number(nanos || 0);
+          return new Date(s * 1000 + Math.floor(n / 1e6));
+        }
+        return null;
+      };
+
+      const plannedExpDate = parseToDate(plannedParams?.expiration);
+      const execExpDate = parseToDate(executedParams?.expiration);
+      if (plannedExpDate != null && execExpDate != null) {
+        if (plannedExpDate.getTime() !== execExpDate.getTime()) adherence -= 10;
+      } else if (plannedParams?.expiration != null && executedParams?.expiration != null && plannedParams.expiration !== executedParams.expiration) {
+        adherence -= 10;
+      }
+
+      if (plannedParams?.contracts != null && executedParams?.contracts != null && plannedParams.contracts !== executedParams.contracts) adherence -= 15;
   } catch (e) {
     // ignore
   }
 
   let timing = 30;
   try {
-    const plannedTime = plannedParams?.plannedEntryTime ? new Date(plannedParams.plannedEntryTime) : null;
-    const executedTime = executedParams?.executedAt ? new Date(executedParams.executedAt) : null;
+    const parseToDateLocal = (v: any): Date | null => {
+      if (v == null) return null;
+      if (v instanceof Date) return v;
+      if (typeof v === 'string' || typeof v === 'number') {
+        const d = new Date(v);
+        if (!isNaN(d.getTime())) return d;
+      }
+      const secs = v?.seconds ?? v?._seconds;
+      const nanos = v?.nanoseconds ?? v?._nanoseconds ?? 0;
+      if (secs != null) {
+        const s = typeof secs === 'number' ? secs : Number(secs);
+        const n = typeof nanos === 'number' ? nanos : Number(nanos || 0);
+        return new Date(s * 1000 + Math.floor(n / 1e6));
+      }
+      return null;
+    };
+
+    const plannedTime = plannedParams?.plannedEntryTime ? parseToDateLocal(plannedParams.plannedEntryTime) : null;
+    const executedTime = executedParams?.executedAt ? parseToDateLocal(executedParams.executedAt) : null;
     if (plannedTime && executedTime) {
       const diff = Math.abs((executedTime.getTime() - plannedTime.getTime()) / 60000);
       if (diff > 30) timing -= 10;

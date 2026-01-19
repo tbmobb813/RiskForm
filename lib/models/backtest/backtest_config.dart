@@ -1,3 +1,5 @@
+import '../../utils/parse_date.dart';
+
 class BacktestConfig {
   final double startingCapital;
   final int maxCycles;
@@ -64,8 +66,8 @@ class BacktestConfig {
       strategyId: m['strategyId'] as String,
       label: m['label'] as String?,
       symbol: m['symbol'] as String,
-      startDate: DateTime.parse(m['startDate'] as String),
-      endDate: DateTime.parse(m['endDate'] as String),
+      startDate: parseDate(m['startDate'])!,
+      endDate: parseDate(m['endDate'])!,
     );
   }
 }
