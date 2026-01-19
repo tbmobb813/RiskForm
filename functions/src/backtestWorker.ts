@@ -1,7 +1,8 @@
-import * as functions from "firebase-functions";
+import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import * as admin from "firebase-admin";
 import { runBacktestEngine } from "./engine";
 
+// Get Firestore instance (admin is initialized in index.ts)
 const db = admin.firestore();
 
 /**
@@ -14,11 +15,14 @@ const db = admin.firestore();
  * 4. Write result to backtestResults collection
  * 5. Mark job as "completed" or "failed"
  */
-export const onBacktestJobCreated = (functions.firestore as any)
-  .document("backtestJobs/{jobId}")
-  .onCreate(async (snap: any, context: any) => {
-    const jobId = (context?.params?.jobId) as string;
-    const job = snap?.data?.();
+export const onBacktestJobCreated = onDocumentCreated(
+  "backtestJobs/{jobId}",
+  async (event) => {
+    const snap = event.data;
+    if (!snap) return;
+
+    const jobId = event.params.jobId;
+    const job = snap.data();
 
     if (!job) return;
 

@@ -34,9 +34,10 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.onBacktestJobCreated = void 0;
-const functions = __importStar(require("firebase-functions"));
+const firestore_1 = require("firebase-functions/v2/firestore");
 const admin = __importStar(require("firebase-admin"));
 const engine_1 = require("./engine");
+// Get Firestore instance (admin is initialized in index.ts)
 const db = admin.firestore();
 /**
  * Firestore trigger that runs when a new backtest job is created.
@@ -48,11 +49,12 @@ const db = admin.firestore();
  * 4. Write result to backtestResults collection
  * 5. Mark job as "completed" or "failed"
  */
-exports.onBacktestJobCreated = functions.firestore
-    .document("backtestJobs/{jobId}")
-    .onCreate(async (snap, context) => {
+exports.onBacktestJobCreated = (0, firestore_1.onDocumentCreated)("backtestJobs/{jobId}", async (event) => {
     var _a;
-    const jobId = context.params.jobId;
+    const snap = event.data;
+    if (!snap)
+        return;
+    const jobId = event.params.jobId;
     const job = snap.data();
     if (!job)
         return;

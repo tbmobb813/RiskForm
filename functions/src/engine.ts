@@ -1,9 +1,13 @@
-import * as functions from "firebase-functions";
+import { defineString } from "firebase-functions/params";
 
 // Use the global fetch available in Node 18+ rather than depending on node-fetch
-declare const fetch: any;
+declare const fetch: typeof globalThis.fetch;
 
-const CLOUD_RUN_URL = (functions.config() as any)?.backtest?.cloud_run_url as string;
+// Define the Cloud Run URL as a Firebase parameter
+// This can be set via environment variable or Firebase parameter configuration
+const cloudRunUrlParam = defineString("CLOUD_RUN_URL", {
+  description: "URL of the Cloud Run backtest worker service",
+});
 
 /**
  * Backtest result structure returned from Cloud Run Dart engine.
@@ -64,7 +68,8 @@ export interface RegimeSegment {
 export async function runBacktestEngine(
   configUsed: Record<string, unknown>
 ): Promise<BacktestResult> {
-  const res = await fetch(`${CLOUD_RUN_URL}/run-backtest`, {
+  const cloudRunUrl = cloudRunUrlParam.value();
+  const res = await fetch(`${cloudRunUrl}/run-backtest`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ configUsed }),
