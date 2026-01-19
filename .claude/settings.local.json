@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npm run build:*)",
       "Bash(gcloud projects add-iam-policy-binding:*)",
-      "Bash(firebase deploy:*)"
+      "Bash(firebase deploy:*)",
+      "Bash(gcloud services enable:*)"
     ]
   }
 }
