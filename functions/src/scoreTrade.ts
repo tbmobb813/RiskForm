@@ -4,7 +4,7 @@ import * as admin from 'firebase-admin';
 const db = admin.firestore();
 
 // Callable function to compute and persist discipline score for a journal entry.
-export const scoreTrade = functions.https.onCall(async (data, context) => {
+export const scoreTrade = functions.https.onCall(async (data: any, context: any) => {
   // Authentication
   const uid = context.auth?.uid;
   if (!uid) {

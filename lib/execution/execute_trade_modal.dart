@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import '../utils/serialize_for_callable.dart' as ser;
+import '../utils/payload_builders.dart' as pb;
 import 'package:flutter/material.dart';
 
 import '../discipline/discipline_engine.dart';
@@ -83,6 +84,10 @@ class _ExecuteTradeModalState extends State<ExecuteTradeModal> {
         'risk': 0,
       };
 
+      // If plan specifies strike/expiration, assume execution used the same unless overridden
+      executedParams['strike'] = plannedParams['strike'];
+      executedParams['expiration'] = plannedParams['expiration'];
+
       final score = DisciplineEngine.scoreTrade(plannedParams: plannedParams, executedParams: executedParams);
 
       // 3. Create position
@@ -112,18 +117,8 @@ class _ExecuteTradeModalState extends State<ExecuteTradeModal> {
         final functions = FirebaseFunctions.instance;
         final callable = functions.httpsCallable('scoreTrade');
 
-        // Serialize planned and executed params for transport
-        final payload = ser.serializeForCallable({
-          'journalId': widget.planId,
-          'plannedParams': plannedParams,
-          'executedParams': {
-            'contracts': contracts,
-            'entryPrice': entryPrice,
-            'executedAt': executedAt,
-            'risk': 0,
-          },
-        }) as Map<String, dynamic>;
-
+        // Build canonical payload using payload builder (includes strike/expiration)
+        final payload = pb.buildScoreTradePayload(journalId: widget.planId, plannedParams: plannedParams, executedParams: executedParams);
         final res = await callable.call(payload);
 
         if (res.data != null) {
