@@ -1,21 +1,24 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 
+import '../discipline/discipline_engine.dart';
 import '../journal/journal_detail_screen.dart';
 
 class ExecuteTradeModal extends StatefulWidget {
   final String planId; // journal entry id for the plan
   final String strategyId;
+  final FirebaseFirestore? firestore;
 
-  const ExecuteTradeModal({super.key, required this.planId, required this.strategyId});
+  const ExecuteTradeModal({super.key, required this.planId, required this.strategyId, this.firestore});
 
-  static Future<void> show(BuildContext context, {required String planId, required String strategyId}) {
+  static Future<void> show(BuildContext context, {required String planId, required String strategyId, FirebaseFirestore? firestore}) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (_) => Padding(
         padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-        child: ExecuteTradeModal(planId: planId, strategyId: strategyId),
+        child: ExecuteTradeModal(planId: planId, strategyId: strategyId, firestore: firestore),
       ),
     );
   }
@@ -47,10 +50,40 @@ class _ExecuteTradeModalState extends State<ExecuteTradeModal> {
     final contracts = int.parse(_contractsCtrl.text.trim());
     final notes = _notesCtrl.text.trim();
 
-    final firestore = FirebaseFirestore.instance;
+    final firestore = widget.firestore ?? FirebaseFirestore.instance;
 
     try {
-      // 1. Create position
+      // 1. Read existing journal (planned) params so we can score the execution
+      final journalRef = firestore.collection('journalEntries').doc(widget.planId);
+      final journalSnap = await journalRef.get();
+      final planData = journalSnap.exists ? (journalSnap.data() as Map<String, dynamic>) : <String, dynamic>{};
+
+      // Build planned params (best-effort mapping)
+      final plannedParams = <String, dynamic>{
+        'strike': planData['strike'],
+        'expiration': planData['expiration'] is Timestamp ? (planData['expiration'] as Timestamp).toDate() : planData['expiration'],
+        'contracts': planData['contracts'],
+        'plannedEntryTime': planData['plannedEntryTime'] is Timestamp ? (planData['plannedEntryTime'] as Timestamp).toDate() : planData['plannedEntryTime'],
+        'maxEntryPrice': planData['maxEntryPrice'],
+        'maxRisk': planData['maxRisk'],
+      };
+
+      // 2. Compute execution params and score
+      final executedAt = DateTime.now();
+      final executedParams = <String, dynamic>{
+        'strike': null,
+        'expiration': null,
+        'contracts': contracts,
+        'entryPrice': entryPrice,
+        'executedAt': executedAt,
+        // Minimal risk estimate; expand later with real calc
+        'risk': 0,
+      };
+
+      final score = DisciplineEngine.scoreTrade(plannedParams: plannedParams, executedParams: executedParams);
+
+      // 3. Create position
+      // 3. Create position
       final positionRef = firestore.collection('positions').doc();
       await positionRef.set({
         'openedAt': FieldValue.serverTimestamp(),
@@ -61,8 +94,7 @@ class _ExecuteTradeModalState extends State<ExecuteTradeModal> {
         'cycleState': 'opened',
       });
 
-      // 2. Update journal entry (planId assumed to be journal doc id)
-      final journalRef = firestore.collection('journalEntries').doc(widget.planId);
+      // 4. Update journal entry with position and basic state (server will add scoring)
       final updates = <String, dynamic>{
         'positionId': positionRef.id,
         'cycleState': 'opened',
@@ -70,14 +102,58 @@ class _ExecuteTradeModalState extends State<ExecuteTradeModal> {
       if (notes.isNotEmpty) updates['notes'] = notes;
       await journalRef.update(updates);
 
+      // 5. Try to invoke server-side scoring function for auditable scoring. If it fails,
+      // fall back to the local computed score and write locally.
+      bool usedServerScoring = false;
+      try {
+        final functions = FirebaseFunctions.instance;
+        final callable = functions.httpsCallable('scoreTrade');
+
+        // Convert DateTimes to ISO strings for transport
+        final planForCall = Map<String, dynamic>.from(plannedParams);
+        if (planForCall['plannedEntryTime'] is DateTime) planForCall['plannedEntryTime'] = (planForCall['plannedEntryTime'] as DateTime).toIso8601String();
+
+        final execForCall = <String, dynamic>{
+          'contracts': contracts,
+          'entryPrice': entryPrice,
+          'executedAt': executedAt.toIso8601String(),
+          'risk': 0,
+        };
+
+        final res = await callable.call(<String, dynamic>{
+          'journalId': widget.planId,
+          'plannedParams': planForCall,
+          'executedParams': execForCall,
+        });
+
+        if (res.data != null) {
+          usedServerScoring = true;
+        }
+      } catch (e) {
+        // server scoring failed — we'll write local score below
+      }
+
+      if (!usedServerScoring) {
+        // 6. Fall back: write local score to journal
+        final localScoreUpdates = <String, dynamic>{
+          'disciplineScore': score.total,
+          'disciplineBreakdown': score.toFirestore(),
+        };
+        await journalRef.update(localScoreUpdates);
+      }
+
       if (!mounted) return;
       Navigator.pop(context); // close modal
 
       // Navigate to journal detail to show updated entry
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => JournalDetailScreen(entryId: widget.planId)),
-      );
+      // In tests we may inject a fake Firestore instance; avoid navigating to the
+      // real JournalDetailScreen when a test-provided instance is present.
+      if (widget.firestore == null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => JournalDetailScreen(entryId: widget.planId)),
+        );
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Execution failed: $e')));

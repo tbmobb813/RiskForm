@@ -30,3 +30,4 @@ setGlobalOptions({ maxInstances: 10 });
 
 // Export the backtest worker function
 export { onBacktestJobCreated } from "./backtestWorker";
+export { scoreTrade } from "./scoreTrade";

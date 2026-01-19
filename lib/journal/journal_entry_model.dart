@@ -10,6 +10,7 @@ class JournalEntry {
   final String? notes;
   final List<String> tags;
   final int? disciplineScore;
+  final Map<String, dynamic>? disciplineBreakdown;
 
   JournalEntry({
     required this.id,
@@ -21,6 +22,7 @@ class JournalEntry {
     this.notes,
     this.tags = const [],
     this.disciplineScore,
+    this.disciplineBreakdown,
   });
 
   factory JournalEntry.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -39,6 +41,7 @@ class JournalEntry {
       notes: data['notes'] as String?,
       tags: List<String>.from(data['tags'] ?? <String>[]),
       disciplineScore: data['disciplineScore'] as int?,
+      disciplineBreakdown: data['disciplineBreakdown'] is Map ? Map<String, dynamic>.from(data['disciplineBreakdown']) : null,
     );
   }
 
@@ -51,5 +54,6 @@ class JournalEntry {
         'notes': notes,
         'tags': tags,
         'disciplineScore': disciplineScore,
+        'disciplineBreakdown': disciplineBreakdown,
       };
 }

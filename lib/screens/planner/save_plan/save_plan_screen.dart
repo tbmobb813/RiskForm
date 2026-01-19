@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../state/planner_notifier.dart';
 import '../../backtest/backtest_screen.dart';
 import '../../../models/backtest/backtest_config.dart';
@@ -10,6 +11,7 @@ import '../../../models/comparison/comparison_config.dart';
 import '../../../services/engines/comparison_helper.dart';
 import '../../comparison/comparison_screen.dart';
 import '../../journal/journal_screen.dart';
+import '../../../execution/execute_trade_modal.dart';
 // trade plan persistence handled by PlannerNotifier
 import '../components/confirmation_summary_card.dart';
 import '../components/notes_field.dart';
@@ -136,23 +138,52 @@ class SavePlanScreen extends ConsumerWidget {
 
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    final ok = await planner.savePlan();
-                    if (!ok) return;
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () async {
+                        final ok = await planner.savePlan();
+                        if (!ok) return;
 
-                    // The notifier handled persistence and wheel update.
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Trade plan saved. No position has been placed."),
+                            ),
+                          );
+                          context.goNamed("dashboard");
+                        }
+                      },
+                      child: const Text("Save Trade Plan"),
+                    ),
+                    const SizedBox(height: 8),
+                    OutlinedButton(
+                      onPressed: () async {
+                        // Create a minimal journal entry and open the execute modal.
+                        try {
+                          final firestore = FirebaseFirestore.instance;
+                          final ref = firestore.collection('journalEntries').doc();
+                          await ref.set({
+                            'createdAt': FieldValue.serverTimestamp(),
+                            'strategyId': state.strategyId ?? 'unknown',
+                            'cycleState': 'planned',
+                            'notes': state.notes ?? '',
+                            'tags': state.tags ?? <String>[],
+                          });
 
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Trade plan saved. No position has been placed."),
-                        ),
-                      );
-                      context.goNamed("dashboard");
-                    }
-                  },
-                  child: const Text("Save Trade Plan"),
+                          if (!context.mounted) return;
+                          await ExecuteTradeModal.show(context, planId: ref.id, strategyId: state.strategyId ?? 'unknown');
+                        } catch (e) {
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Failed to start execution: $e')),
+                          );
+                        }
+                      },
+                      child: const Text('Execute Trade'),
+                    ),
+                  ],
                 ),
               ),
             ],

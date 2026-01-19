@@ -109,6 +109,31 @@ class _JournalDetailScreenState extends State<JournalDetailScreen> {
                   const SizedBox(height: 16),
                   if (data['disciplineScore'] != null) ...[
                     Text('Discipline score: ${data['disciplineScore']}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    if (data['disciplineBreakdown'] != null)
+                      Builder(builder: (context) {
+                        final breakdown = Map<String, dynamic>.from(data['disciplineBreakdown'] ?? <String, dynamic>{});
+                        final adherence = breakdown['adherence'] ?? 0;
+                        final timing = breakdown['timing'] ?? 0;
+                        final risk = breakdown['risk'] ?? 0;
+                        return Card(
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Adherence: $adherence/40'),
+                                const SizedBox(height: 6),
+                                Text('Timing: $timing/30'),
+                                const SizedBox(height: 6),
+                                Text('Risk: $risk/30'),
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
                     const SizedBox(height: 12),
                   ],
                   Row(

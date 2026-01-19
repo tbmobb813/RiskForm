@@ -6,6 +6,7 @@ import '../journal/journal_list_screen.dart';
 import '../screens/backtest/cloud_job_status_screen.dart';
 import '../screens/backtest/cloud_backtest_result_screen.dart';
 import '../screens/backtest/cloud_backtest_history_screen.dart';
+import '../behavior/behavior_dashboard_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -54,6 +55,11 @@ final GoRouter appRouter = GoRouter(
         final userId = state.pathParameters['userId']!;
         return CloudBacktestHistoryScreen(userId: userId);
       },
+    ),
+    GoRoute(
+      path: '/behavior',
+      name: 'behavior',
+      builder: (context, state) => const BehaviorDashboardScreen(),
     ),
   ],
 );

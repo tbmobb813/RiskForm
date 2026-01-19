@@ -4,7 +4,8 @@
     "lint": "eslint --ext .js,.ts .",
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "serve": "npm run build && firebase emulators:start --only functions",
+    "serve": "npm run build && firebase emulators:start --only functions,firestore",
+    "test:integration": "npm run build && mocha -r ts-node/register test/**/*.integration.test.ts --timeout 20000",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
@@ -27,6 +28,9 @@
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-import": "^2.25.4",
     "firebase-functions-test": "^3.4.1",
+    "mocha": "^10.2.0",
+    "ts-node": "^10.9.1",
+    "@types/mocha": "^10.0.1",
     "typescript": "^5.7.3"
   ,
     "@types/node-fetch": "^2.6.2"
