@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../services/firebase/auth_service.dart';
 import 'package:go_router/go_router.dart';
 import 'tool_tile.dart';
 import 'strategy_tile.dart';
@@ -13,6 +14,8 @@ class ToolsAndStrategyLibrary extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isPro = ref.watch(isProUserProvider);
+    final auth = ref.watch(authServiceProvider);
+    final signedIn = auth.currentUserId != null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,13 +56,23 @@ class ToolsAndStrategyLibrary extends ConsumerWidget {
                 GoRouter.of(context).pushNamed("journal");
               },
             ),
-            ToolTile(
-              label: "Journal (Cloud)",
-              icon: Icons.cloud_outlined,
-              onTap: () {
-                GoRouter.of(context).pushNamed("journalFirestore");
-              },
-            ),
+            if (signedIn)
+              ToolTile(
+                label: "Journal (Cloud)",
+                icon: Icons.cloud_outlined,
+                onTap: () {
+                  GoRouter.of(context).pushNamed("journalFirestore");
+                },
+              ),
+            if (!signedIn)
+              ToolTile(
+                label: "Journal (Cloud)",
+                icon: Icons.cloud_outlined,
+                locked: true,
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sign in to access cloud journal')));
+                },
+              ),
             ToolTile(
               label: "Wheel Tracker",
               icon: Icons.sync_alt,

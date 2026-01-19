@@ -14,6 +14,22 @@ class JournalListScreen extends StatelessWidget {
         .orderBy('createdAt', descending: true)
         .snapshots();
 
+    String _strategyName(String id) {
+      // Minimal local mapping for friendly names; extend as needed.
+      const map = {
+        'csp': 'Cash-Secured Put',
+        'cc': 'Covered Call',
+        'credit_spread': 'Credit Spread',
+        'protective_put': 'Protective Put',
+        'collar': 'Collar',
+        'long_call': 'Long Call',
+        'long_put': 'Long Put',
+        'debit_spread': 'Debit Spread',
+        'wheel': 'Wheel',
+      };
+      return map[id] ?? id;
+    }
+
     return Scaffold(
       appBar: AppBar(title: const Text('Journal')),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
@@ -34,7 +50,7 @@ class JournalListScreen extends StatelessWidget {
               final entry = JournalEntry.fromFirestore(doc);
 
               return ListTile(
-                title: Text(entry.strategyId),
+                title: Text(_strategyName(entry.strategyId)),
                 subtitle: Text(
                     '${entry.cycleState} • ${entry.createdAt.toLocal().toString().split('.').first}'),
                 trailing: entry.disciplineScore != null
