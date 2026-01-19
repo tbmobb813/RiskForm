@@ -36,7 +36,7 @@ void main() {
 
     // Scroll to the assignment entry and verify it's visible
     final assignmentKey = ValueKey('entry-a1');
-    final verticalScrollable = find.byWidgetPredicate((w) => w is Scrollable && (w as Scrollable).axisDirection == AxisDirection.down);
+    final verticalScrollable = find.byWidgetPredicate((w) => w is Scrollable && (w).axisDirection == AxisDirection.down);
     await tester.scrollUntilVisible(
       find.byKey(assignmentKey),
       200.0,

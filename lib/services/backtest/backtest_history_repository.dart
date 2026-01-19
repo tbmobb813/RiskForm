@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import '../../models/backtest/backtest_result.dart';
 
 class BacktestHistoryEntry {

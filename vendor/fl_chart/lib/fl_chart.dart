@@ -1,4 +1,4 @@
-library fl_chart;
+library;
 
 import 'package:flutter/widgets.dart';
 

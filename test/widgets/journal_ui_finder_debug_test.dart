@@ -11,13 +11,13 @@ import 'package:flutter_application_2/models/journal/journal_entry.dart';
 import 'package:flutter_application_2/state/journal_providers.dart';
 
 void main() {
-  final _runDiag = io.Platform.environment['DIAGNOSTIC_TEST'] == '1';
+  final runDiag = io.Platform.environment['DIAGNOSTIC_TEST'] == '1';
   // Default to writing logs when diagnostics are enabled unless DIAGNOSTIC_LOG
   // is explicitly set. Set DIAGNOSTIC_LOG=0 to disable.
-  final _writeLog = io.Platform.environment.containsKey('DIAGNOSTIC_LOG')
+  final writeLog = io.Platform.environment.containsKey('DIAGNOSTIC_LOG')
       ? io.Platform.environment['DIAGNOSTIC_LOG'] == '1'
-      : _runDiag;
-  final _logDir = io.Platform.environment['DIAGNOSTIC_LOG_DIR'] ?? 'test_output/diagnostics';
+      : runDiag;
+  final logDir = io.Platform.environment['DIAGNOSTIC_LOG_DIR'] ?? 'test_output/diagnostics';
 
   testWidgets('JournalScreen finder diagnostics', (tester) async {
     final repo = JournalRepository();
@@ -66,7 +66,7 @@ void main() {
         if (k == targetKey) foundByEquality.add(e);
         e.visitChildren(findByKeyEquality);
       }
-      final rootElement = WidgetsBinding.instance.renderViewElement;
+      final rootElement = WidgetsBinding.instance.rootElement;
       if (rootElement != null) findByKeyEquality(rootElement);
       print('Direct equality matches for $targetKey: ${foundByEquality.length}');
       void printAncestorsTrimmed(Element e) {
@@ -82,11 +82,13 @@ void main() {
         const max = 12;
         final toPrint = ancestors.length > max ? ancestors.sublist(0, max) : ancestors;
         print('  Ancestor chain (top ${toPrint.length} of ${ancestors.length}):');
-        for (var a in toPrint) print('    $a');
+        for (var a in toPrint) {
+          print('    $a');
+        }
         if (ancestors.length > max) print('    ... ${ancestors.length - max} more');
         if (e is RenderObjectElement) {
           final ro = e.renderObject;
-          print('  RenderObject attached=${ro?.attached}');
+          print('  RenderObject attached=${ro.attached}');
         }
       }
       for (final e in foundByEquality) {
@@ -149,9 +151,9 @@ void main() {
       buffer.writeln('Zoned error: $e\n$s');
     }, zoneSpecification: zoneSpec);
 
-    if (_writeLog) {
+    if (writeLog) {
       final name = 'journal_ui_diagnostic_${DateTime.now().toIso8601String().replaceAll(':', '-')}.log';
-      final dir = io.Directory(_logDir.replaceAll('\\', '/'));
+      final dir = io.Directory(logDir.replaceAll('\\', '/'));
       try {
         if (!dir.existsSync()) dir.createSync(recursive: true);
         final out = io.File('${dir.path}/$name');
@@ -162,5 +164,5 @@ void main() {
         print('Failed to write diagnostic log: $e');
       }
     }
-  }, skip: !_runDiag);
+  }, skip: !runDiag);
 }

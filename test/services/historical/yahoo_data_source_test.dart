@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:flutter_application_2/services/historical/yahoo_data_source.dart';
-import 'package:flutter_application_2/models/historical/historical_price.dart';
 
 import 'yahoo_data_source_test.mocks.dart';
 
