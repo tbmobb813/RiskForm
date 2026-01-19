@@ -4,7 +4,10 @@
       "Bash(npm run build:*)",
       "Bash(gcloud projects add-iam-policy-binding:*)",
       "Bash(firebase deploy:*)",
-      "Bash(gcloud services enable:*)"
+      "Bash(gcloud services enable:*)",
+      "Bash(git -C \"c:\\\\Users\\\\jsnni\\\\Projects\\\\RiskForm\" status)",
+      "Bash(find:*)",
+      "Bash(flutter pub get:*)"
     ]
   }
 }

@@ -1,6 +1,6 @@
 import 'package:go_router/go_router.dart';
 import '../screens/dashboard/dashboard_screen.dart';
-import '../screens/planner//strategy_selector/strategy_selector_screen.dart';
+import '../screens/planner/strategy_selector/strategy_selector_screen.dart';
 import '../screens/journal/journal_screen.dart';
 import '../journal/journal_list_screen.dart';
 import '../screens/backtest/cloud_job_status_screen.dart';
