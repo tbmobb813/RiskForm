@@ -1,4 +1,4 @@
-Utility helpers for Firestore and callables
+# Utility helpers for Firestore and callables
 
 - `serialize_for_callable.dart`: recursively converts `DateTime` and
   Firestore `Timestamp` into UTC ISO8601 strings suitable for `httpsCallable`.
@@ -19,7 +19,7 @@ final payload = pb.buildScoreTradePayload(journalId: 'j1', plannedParams: planne
 final res = await callable.call(payload);
 ```
 
-2) Prepare Firestore-friendly map before write:
+1) Prepare Firestore-friendly map before write:
 
 ```dart
 import 'utils/firestore_helpers.dart' as fh;
