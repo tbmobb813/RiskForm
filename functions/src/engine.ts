@@ -3,11 +3,31 @@ import { defineString } from "firebase-functions/params";
 // Use the global fetch available in Node 18+ rather than depending on node-fetch
 declare const fetch: typeof globalThis.fetch;
 
-// Define the Cloud Run URL as a Firebase parameter
-// This can be set via environment variable or Firebase parameter configuration
-const cloudRunUrlParam = defineString("CLOUD_RUN_URL", {
+// Define the Cloud Run URL as a Firebase parameter (for params API migration)
+// This can be set via environment variable or Firebase parameter configuration.
+const cloudRunUrlParam = defineString("backtest.cloud_run_url", {
   description: "URL of the Cloud Run backtest worker service",
 });
+
+// Resolve the Cloud Run URL with fallbacks:
+// 1. `process.env.CLOUD_RUN_URL` (local testing / env var)
+// 2. Firebase Functions Params (`backtest.cloud_run_url`)
+// 3. empty string (caller will handle/error)
+function resolveCloudRunUrl(): string {
+  if (process.env.CLOUD_RUN_URL) return process.env.CLOUD_RUN_URL;
+
+  try {
+    // `value()` is available when params are configured; guard in case it's absent.
+    if (cloudRunUrlParam && typeof (cloudRunUrlParam as any).value === "function") {
+      const v = (cloudRunUrlParam as any).value();
+      if (v) return v as string;
+    }
+  } catch (_) {
+    // ignore and fall through
+  }
+
+  return "";
+}
 
 /**
  * Backtest result structure returned from Cloud Run Dart engine.
@@ -68,7 +88,10 @@ export interface RegimeSegment {
 export async function runBacktestEngine(
   configUsed: Record<string, unknown>
 ): Promise<BacktestResult> {
-  const cloudRunUrl = cloudRunUrlParam.value();
+  const cloudRunUrl = resolveCloudRunUrl();
+  if (!cloudRunUrl) {
+    throw new Error("Cloud Run URL is not configured. Set CLOUD_RUN_URL env var or Functions params 'backtest.cloud_run_url'.");
+  }
   const res = await fetch(`${cloudRunUrl}/run-backtest`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
