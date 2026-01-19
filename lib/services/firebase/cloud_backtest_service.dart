@@ -69,6 +69,20 @@ class CloudBacktestService {
     });
   }
 
+  /// Alias for jobStream - matches spec naming convention
+  Stream<CloudBacktestJob?> watchJob(String jobId) => jobStream(jobId);
+
+  /// Stream all jobs for a specific user, ordered by submission time
+  Stream<List<CloudBacktestJob>> watchUserJobs(String userId) {
+    return _jobs
+        .where('userId', isEqualTo: userId)
+        .orderBy('submittedAt', descending: true)
+        .snapshots()
+        .map((snap) => snap.docs
+            .map((d) => CloudBacktestJob.fromMap(d.data() as Map<String, dynamic>))
+            .toList());
+  }
+
   Future<List<CloudBacktestJob>> listJobs({String? userId, int limit = 50}) async {
     Query q = _jobs;
     if (userId != null) q = q.where('userId', isEqualTo: userId);
