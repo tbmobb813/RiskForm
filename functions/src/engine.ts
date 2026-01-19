@@ -13,20 +13,22 @@ const cloudRunUrlParam = defineString("backtest.cloud_run_url", {
 // 1. `process.env.CLOUD_RUN_URL` (local testing / env var)
 // 2. Firebase Functions Params (`backtest.cloud_run_url`)
 // 3. empty string (caller will handle/error)
-function resolveCloudRunUrl(): string {
-  if (process.env.CLOUD_RUN_URL) return process.env.CLOUD_RUN_URL;
+function resolveCloudRunUrl(): { url: string; source: "env" | "params" | "none" } {
+  if (process.env.CLOUD_RUN_URL) {
+    return { url: process.env.CLOUD_RUN_URL, source: "env" };
+  }
 
   try {
     // `value()` is available when params are configured; guard in case it's absent.
     if (cloudRunUrlParam && typeof (cloudRunUrlParam as any).value === "function") {
       const v = (cloudRunUrlParam as any).value();
-      if (v) return v as string;
+      if (v) return { url: v as string, source: "params" };
     }
   } catch (_) {
     // ignore and fall through
   }
 
-  return "";
+  return { url: "", source: "none" };
 }
 
 /**
@@ -88,7 +90,10 @@ export interface RegimeSegment {
 export async function runBacktestEngine(
   configUsed: Record<string, unknown>
 ): Promise<BacktestResult> {
-  const cloudRunUrl = resolveCloudRunUrl();
+  const resolved = resolveCloudRunUrl();
+  const cloudRunUrl = resolved.url;
+  // Log which source provided the Cloud Run URL to aid debugging
+  console.info(`Cloud Run URL source: ${resolved.source}`);
   if (!cloudRunUrl) {
     throw new Error("Cloud Run URL is not configured. Set CLOUD_RUN_URL env var or Functions params 'backtest.cloud_run_url'.");
   }
