@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/cloud/cloud_backtest_job.dart';
 import '../../models/cloud/cloud_backtest_result.dart';
 import '../../state/backtest_providers.dart';
-import 'backtest_screen.dart';
+import 'cloud_backtest_result_screen.dart';
 
 class CloudJobStatusScreen extends ConsumerWidget {
   final String jobId;
@@ -315,8 +315,8 @@ class CloudJobStatusScreen extends ConsumerWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => BacktestScreen(
-                                  config: result.backtestResult.configUsed,
+                                builder: (_) => CloudBacktestResultScreen(
+                                  result: result,
                                 ),
                               ),
                             );
