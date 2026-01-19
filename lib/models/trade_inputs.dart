@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../utils/parse_date.dart' as pd;
 
 class TradeInputs extends Equatable {
   final double? strike;
@@ -89,12 +90,7 @@ class TradeInputs extends Equatable {
 
   factory TradeInputs.fromJson(Map<String, dynamic> json) {
     DateTime? parseDate(dynamic v) {
-      if (v == null) return null;
-      try {
-        if (v is String) return DateTime.parse(v);
-        if (v is DateTime) return v;
-      } catch (_) {}
-      return null;
+      return pd.parseDate(v);
     }
 
     return TradeInputs(

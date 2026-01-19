@@ -9,8 +9,8 @@ final wheelCycleServiceProvider = Provider<WheelCycleService>((ref) {
 });
 
 class WheelCycleService {
-  FirebaseFirestore? _db;
-  FirebaseFirestore get _database => _db ??= FirebaseFirestore.instance;
+  FirebaseFirestore? _dbInstance;
+  FirebaseFirestore get _database => _dbInstance ??= FirebaseFirestore.instance;
   final _controller = WheelCycleController();
 
   /// Update the wheel cycle for [uid]. If [previous] is provided it will be
@@ -55,19 +55,19 @@ class WheelCycleService {
   }
 
   Future<WheelCycle?> getCycle(String uid) async {
-    final doc = await _db
+    final doc = await _database
         .collection("users")
         .doc(uid)
         .collection("wheel")
         .doc("cycle")
         .get();
-    
+
     if (!doc.exists) return null;
 
     final data = doc.data()!;
 
     return WheelCycle(
-      state: _deserializeState(data["state"]),
+      state: deserializeStateForTesting(data["state"]),
       lastTransition: (data["lastTransition"] as Timestamp?)?.toDate(),
       cycleCount: data["cycleCount"] ?? 0,
     );
@@ -89,7 +89,7 @@ class WheelCycleService {
   }
 
   Future<void> saveCycle(String uid, WheelCycle cycle) async {
-    await _db
+    await _database
         .collection("users")
         .doc(uid)
         .collection("wheel")

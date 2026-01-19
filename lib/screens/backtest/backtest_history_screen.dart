@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/backtest/backtest_history_repository.dart';
 
-final _dummyProvider = Provider((ref) => null);
-
 class BacktestHistoryScreen extends ConsumerWidget {
   final BacktestHistoryRepository repository;
 
@@ -19,7 +17,7 @@ class BacktestHistoryScreen extends ConsumerWidget {
           : ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: items.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, i) {
                 final e = items[i];
                 return Card(

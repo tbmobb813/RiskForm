@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,6 +13,9 @@ import '../../models/comparison/comparison_config.dart';
 import '../../screens/comparison/comparison_screen.dart';
 import '../../state/backtest_providers.dart';
 import '../../services/backtest/backtest_history_repository.dart';
+import '../../services/firebase/auth_service.dart';
+import '../../models/cloud/cloud_backtest_job.dart';
+import 'cloud_job_status_screen.dart';
 import 'components/backtest_metrics_card.dart';
 import 'components/backtest_equity_chart.dart';
 import 'components/backtest_cycle_breakdown_card.dart';
@@ -30,6 +35,12 @@ class _BacktestScreenState extends ConsumerState<BacktestScreen> {
   BacktestResult? _result;
   final List<BacktestConfig> _comparisonConfigs = [];
   BacktestConfig? _lastRunConfig;
+
+  // Cloud backtest state
+  String? _cloudJobId;
+  CloudBacktestJob? _cloudJob;
+  bool _isSubmittingToCloud = false;
+  StreamSubscription<CloudBacktestJob?>? _cloudJobSub;
 
   @override
   void initState() {
@@ -137,18 +148,88 @@ class _BacktestScreenState extends ConsumerState<BacktestScreen> {
   }
 
   Widget _buildRunButtons() {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ElevatedButton(
-          onPressed: _runBacktest,
-          child: const Text('Run Backtest'),
+        Row(
+          children: [
+            ElevatedButton(
+              onPressed: _runBacktest,
+              child: const Text('Run Backtest'),
+            ),
+            const SizedBox(width: 12),
+            ElevatedButton(
+              onPressed: _isSubmittingToCloud ? null : _submitToCloud,
+              child: _isSubmittingToCloud
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Run in Cloud'),
+            ),
+            const SizedBox(width: 12),
+            ElevatedButton(
+              onPressed: _comparisonConfigs.length < 2 ? null : _runComparison,
+              child: const Text('Compare Strategies'),
+            ),
+          ],
         ),
-        const SizedBox(width: 12),
-        ElevatedButton(
-          onPressed: _comparisonConfigs.length < 2 ? null : _runComparison,
-          child: const Text('Compare Strategies'),
-        ),
+        if (_cloudJob != null) ...[
+          const SizedBox(height: 12),
+          _buildCloudJobStatus(),
+        ],
       ],
+    );
+  }
+
+  Widget _buildCloudJobStatus() {
+    final job = _cloudJob!;
+    final statusColor = switch (job.status) {
+      CloudBacktestStatus.queued => Colors.orange,
+      CloudBacktestStatus.running => Colors.blue,
+      CloudBacktestStatus.completed => Colors.green,
+      CloudBacktestStatus.failed => Colors.red,
+    };
+
+    return Card(
+      child: InkWell(
+        onTap: () {
+          if (_cloudJobId != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => CloudJobStatusScreen(jobId: _cloudJobId!),
+              ),
+            );
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Icon(Icons.cloud, color: statusColor),
+              const SizedBox(width: 8),
+              Text('Cloud Job: ${job.status.name}'),
+              if (job.status == CloudBacktestStatus.running) ...[
+                const SizedBox(width: 8),
+                const SizedBox(
+                  width: 12,
+                  height: 12,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ],
+              const Spacer(),
+              Text(
+                'ID: ${_cloudJobId?.substring(0, 8) ?? ""}...',
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+              const SizedBox(width: 4),
+              const Icon(Icons.chevron_right, size: 16, color: Colors.grey),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -222,5 +303,74 @@ class _BacktestScreenState extends ConsumerState<BacktestScreen> {
       context,
       MaterialPageRoute(builder: (c) => ComparisonScreen(result: result)),
     );
+  }
+
+  @override
+  void dispose() {
+    // Ensure any active Cloud job subscription is cancelled to avoid leaks
+    _cloudJobSub?.cancel();
+    _cloudJobSub = null;
+    super.dispose();
+  }
+
+  Future<void> _submitToCloud() async {
+    final auth = ref.read(authServiceProvider);
+    final userId = auth.currentUserId;
+    if (userId == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please sign in to run cloud backtests')),
+      );
+      return;
+    }
+
+    setState(() => _isSubmittingToCloud = true);
+
+    try {
+      final cloudService = ref.read(cloudBacktestServiceProvider);
+      final jobId = await cloudService.submitJob(
+        userId: userId,
+        configMap: widget.config.toMap(),
+        engineVersion: '1.0.0',
+      );
+
+      setState(() {
+        _cloudJobId = jobId;
+        _isSubmittingToCloud = false;
+      });
+
+      // Cancel any previous subscription to avoid leaks, then listen for updates
+      await _cloudJobSub?.cancel();
+      _cloudJobSub = cloudService.jobStream(jobId).listen((job) async {
+        if (!mounted) return;
+        setState(() => _cloudJob = job);
+
+        if (job?.status == CloudBacktestStatus.completed) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Cloud backtest completed!')),
+          );
+          // Stop listening once the job is finished
+          await _cloudJobSub?.cancel();
+          _cloudJobSub = null;
+        } else if (job?.status == CloudBacktestStatus.failed) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Cloud backtest failed: ${job?.errorMessage ?? "Unknown error"}')),
+          );
+          await _cloudJobSub?.cancel();
+          _cloudJobSub = null;
+        }
+      });
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Submitted to cloud. Job ID: $jobId')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isSubmittingToCloud = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to submit: $e')),
+      );
+    }
   }
 }

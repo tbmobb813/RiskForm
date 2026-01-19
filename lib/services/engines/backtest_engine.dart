@@ -60,7 +60,8 @@ class BacktestEngine {
     // cycle analytics
     final cycles = <CycleStats>[];
     int currentCycleIndex = 0;
-    double? cycleStartEquity;
+    double cycleStartEquity = 0.0;
+    bool cycleStartSet = false;
     int cycleDuration = 0;
     bool cycleHadAssignment = false;
     int? cycleStartIndex;
@@ -86,7 +87,10 @@ class BacktestEngine {
       if (sim.csp != null) sim.csp!.dte -= 1;
       if (sim.cc != null) sim.cc!.dte -= 1;
       final equityBefore = sim.capital + sim.shares * price;
-      cycleStartEquity ??= equityBefore;
+      if (!cycleStartSet) {
+        cycleStartEquity = equityBefore;
+        cycleStartSet = true;
+      }
       cycleStartIndex ??= dayIndex;
 
       // Capture option strikes before simulation step (they get nulled on assignment/called-away)
@@ -145,10 +149,19 @@ class BacktestEngine {
 
       if (lastNote.contains('called away') || lastNote.contains('Cycle completed') || lastNote.contains('CC expired ITM')) {
         // complete cycle
+        // Compute a non-null local start equity to avoid analyzer warnings
+        // about null-aware expressions used defensively elsewhere.
+        double startEquityLocal;
+        if (!cycleStartSet) {
+          startEquityLocal = equity;
+        } else {
+          startEquityLocal = cycleStartEquity;
+        }
+
         cycles.add(CycleStats(
           cycleId: currentCycleId,
           index: currentCycleIndex,
-          startEquity: cycleStartEquity ?? equity,
+          startEquity: startEquityLocal,
           endEquity: equity,
           durationDays: cycleDuration,
           hadAssignment: cycleHadAssignment,
@@ -161,7 +174,8 @@ class BacktestEngine {
           calledAwayStrike: currentCalledAwayStrike,
         ));
         currentCycleIndex += 1;
-        cycleStartEquity = null;
+        cycleStartSet = false;
+        cycleStartEquity = 0.0;
         cycleDuration = 0;
         cycleHadAssignment = false;
         cycleStartIndex = null;
