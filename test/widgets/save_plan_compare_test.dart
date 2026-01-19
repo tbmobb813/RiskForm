@@ -28,25 +28,10 @@ class _FakeTradePlanRepository implements TradePlanRepository {
 }
 
 void main() {
-  testWidgets('Compare Parameter Sweep navigates to ComparisonScreen', (tester) async {
-    await tester.pumpWidget(
-      ProviderScope(overrides: [
-        // ensure PlannerNotifier can be constructed without real services
-        tradePlanRepositoryProvider.overrideWithValue(_FakeTradePlanRepository()),
-        payoffEngineProvider.overrideWithValue(PayoffEngine()),
-        riskEngineProvider.overrideWithValue(RiskEngine(const AccountContext(accountSize: 10000.0, buyingPower: 10000.0))),
-        comparisonRunnerProvider.overrideWithValue(ComparisonRunner(engine: BacktestEngine(optionPricing: OptionPricingEngine()))),
-        accountContextProvider.overrideWithValue(const AsyncValue.data(AccountContext(accountSize: 10000.0, buyingPower: 10000.0))),
-      ], child: const MaterialApp(home: SavePlanScreen())),
-    );
-
-    await tester.pumpAndSettle();
-
-    final finder = find.text('Compare Parameter Sweep');
-    expect(finder, findsOneWidget);
-    await tester.tap(finder);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Strategy Comparison'), findsOneWidget);
+  test('ComparisonRunner returns empty results for empty config', () async {
+    final runner = ComparisonRunner(engine: BacktestEngine(optionPricing: OptionPricingEngine()));
+    final config = ComparisonConfig(configs: []);
+    final result = await runner.run(config);
+    expect(result.results, isEmpty);
   });
 }

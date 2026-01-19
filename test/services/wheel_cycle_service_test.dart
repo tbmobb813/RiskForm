@@ -81,9 +81,9 @@ void main() {
       };
 
       for (final entry in testCases.entries) {
-        final result = service.deserializeStateForTesting(entry.key);
+        final result = WheelCycleService.deserializeStateForTesting(entry.key);
         expect(result, equals(entry.value),
-            reason: 'String "${entry.key}" should deserialize to ${entry.value}');
+        reason: 'String "${entry.key}" should deserialize to ${entry.value}');
       }
     });
 
@@ -98,9 +98,9 @@ void main() {
       };
 
       for (final entry in testCases.entries) {
-        final result = service.deserializeStateForTesting(entry.key);
+        final result = WheelCycleService.deserializeStateForTesting(entry.key);
         expect(result, equals(entry.value),
-            reason: 'Integer ${entry.key} should deserialize to ${entry.value}');
+        reason: 'Integer ${entry.key} should deserialize to ${entry.value}');
       }
     });
 
@@ -117,19 +117,19 @@ void main() {
       ];
 
       for (final invalid in invalidInputs) {
-        final result = service.deserializeStateForTesting(invalid);
+        final result = WheelCycleService.deserializeStateForTesting(invalid);
         expect(result, equals(WheelCycleState.idle),
-            reason: 'Invalid input "$invalid" should default to idle');
+        reason: 'Invalid input "$invalid" should default to idle');
       }
     });
 
     test('_deserializeState handles out of bounds integer', () {
       // Test negative index
-      expect(service.deserializeStateForTesting(-1), equals(WheelCycleState.idle));
+      expect(WheelCycleService.deserializeStateForTesting(-1), equals(WheelCycleState.idle));
       
       // Test index beyond enum length
       final tooLarge = WheelCycleState.values.length;
-      expect(service.deserializeStateForTesting(tooLarge), equals(WheelCycleState.idle));
+      expect(WheelCycleService.deserializeStateForTesting(tooLarge), equals(WheelCycleState.idle));
     });
   });
 }

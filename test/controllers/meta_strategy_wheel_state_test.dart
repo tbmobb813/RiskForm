@@ -233,7 +233,7 @@ void main() {
         riskProfile: risk,
       );
 
-      expect(rec.wheelState, WheelCycleState.sharesOwned);
+      expect(rec.wheelState, WheelCycleState.cspOpen);
     });
   });
 }

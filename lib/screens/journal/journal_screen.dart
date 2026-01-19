@@ -120,8 +120,12 @@ class _JournalListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: ListTile(
-        title: Text(_titleFor(entry)),
+      child: Semantics(
+        container: true,
+        label: 'entry-${entry.id}',
+        child: ListTile(
+          key: ValueKey('entry-${entry.id}'),
+          title: Text(_titleFor(entry)),
         subtitle: Text(
           '${entry.timestamp.toLocal()}${_isLive(entry) ? " • LIVE" : ""}',
           style: const TextStyle(fontSize: 12),
@@ -133,6 +137,7 @@ class _JournalListTile extends StatelessWidget {
             MaterialPageRoute(builder: (_) => JournalEntryDetail(entry: entry)),
           );
         },
+        ),
       ),
     );
   }

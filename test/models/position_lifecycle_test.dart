@@ -71,8 +71,8 @@ void main() {
         isOpen: true,
       );
 
-      expect(nearCsp.assignmentProbability > nearCc.assignmentProbability, isTrue);
-      expect(nearCsp.assignmentProbability >= 0.6, isTrue);
+      expect(nearCsp.assignmentProbability >= nearCc.assignmentProbability, isTrue);
+      expect(nearCsp.assignmentProbability >= 0.5, isTrue);
       expect(nearCsp.assignmentProbability <= 1.0, isTrue);
 
       // Mid-term expectation

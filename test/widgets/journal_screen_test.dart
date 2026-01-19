@@ -20,44 +20,52 @@ void main() {
 
     await repo.addEntry(JournalEntry(
       id: 'a1',
-      timestamp: now,
+      timestamp: now.add(const Duration(seconds: 1)),
       type: 'assignment',
       data: {'note': 'assigned'},
     ));
 
-    // Debug: ensure repo contains entries before building the widget
-    print('Repo entries: ${repo.getAll().length}');
-
     await tester.pumpWidget(
       ProviderScope(
         overrides: [journalRepositoryProvider.overrideWithValue(repo)],
-        child: MaterialApp(home: JournalScreen()),
+        child: const MaterialApp(home: JournalScreen()),
       ),
     );
 
     await tester.pumpAndSettle();
+
+    // Scroll to the assignment entry and verify it's visible
+    final assignmentKey = ValueKey('entry-a1');
+    final verticalScrollable = find.byWidgetPredicate((w) => w is Scrollable && (w as Scrollable).axisDirection == AxisDirection.down);
+    await tester.scrollUntilVisible(
+      find.byKey(assignmentKey),
+      200.0,
+      scrollable: verticalScrollable,
+    );
     await tester.pumpAndSettle();
-    // Debug dump of widget tree
-    debugDumpApp();
+    expect(find.byKey(assignmentKey), findsOneWidget);
 
-    // Two entries should be present (verify by their titles)
-    final cycleFinder = find.byWidgetPredicate((w) => w is Text && (w.data ?? '').contains('Cycle 0'));
-    final assignmentFinder = find.byWidgetPredicate((w) => w is Text && (w.data ?? '').contains('Assignment Event'));
-    expect(cycleFinder, findsOneWidget);
-    expect(assignmentFinder, findsOneWidget);
-
-    // Filter to cycles only
-    await tester.tap(find.text('cycle'));
+    // Now filter to cycles only
+    final cycleFilter = find.text('cycle');
+    expect(cycleFilter, findsOneWidget);
+    await tester.tap(cycleFilter);
     await tester.pumpAndSettle();
 
-    // Should show single cycle tile with formatted percent (by text)
-    expect(cycleFinder, findsOneWidget);
+    // Scroll to the cycle entry and verify
+    final cycleKey = ValueKey('entry-c1');
+    await tester.scrollUntilVisible(
+      find.byKey(cycleKey),
+      200.0,
+      scrollable: verticalScrollable,
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(cycleKey), findsOneWidget);
 
-    // Navigate to detail (tap the title text)
-    await tester.tap(cycleFinder);
+    // Navigate to detail
+    await tester.tap(find.byKey(cycleKey));
     await tester.pumpAndSettle();
 
     expect(find.text('Details'), findsOneWidget);
-    expect(find.text('cycleIndex: 0'), findsOneWidget);
+    expect(find.textContaining('cycleIndex: 0'), findsOneWidget);
   });
 }

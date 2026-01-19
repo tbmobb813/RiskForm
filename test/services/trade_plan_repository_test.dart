@@ -23,6 +23,16 @@ class FakeService implements TradePlanService {
   }
 }
 
+class FakeWheelCycleService implements WheelCycleService {
+  @override
+  Future<WheelCycle?> getCycle(String uid) async => null;
+
+  @override
+  Future<WheelCycle> updateCycle({required String uid, WheelCycle? previous, required List<Position> positions, bool persist = true}) async {
+    return previous ?? WheelCycle(state: WheelCycleState.idle);
+  }
+}
+
 class FakeAuth implements AuthService {
   final String? uid;
   FakeAuth(this.uid);
@@ -35,7 +45,7 @@ void main() {
   test('TradePlanRepository.savePlan forwards to service with uid', () async {
     final service = FakeService();
     final auth = FakeAuth('user-123');
-    final repo = TradePlanRepository(service, auth);
+    final repo = TradePlanRepository(service, auth, FakeWheelCycleService());
 
     final plan = TradePlan(
       id: 'p1',
@@ -58,7 +68,7 @@ void main() {
   test('TradePlanRepository.fetchPlans returns service results', () async {
     final service = FakeService();
     final auth = FakeAuth('user-123');
-    final repo = TradePlanRepository(service, auth);
+    final repo = TradePlanRepository(service, auth, FakeWheelCycleService());
 
     final plan = TradePlan(
       id: 'p2',
