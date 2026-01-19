@@ -54,8 +54,9 @@ class BehaviorAnalytics {
       final timing = (b['timing'] ?? 0) as num;
       final risk = (b['risk'] ?? 0) as num;
       final minVal = [adherence, timing, risk].reduce((a, b) => a < b ? a : b);
-      if (minVal == adherence) counts['adherence'] = counts['adherence']! + 1;
-      else if (minVal == timing) counts['timing'] = counts['timing']! + 1;
+      if (minVal == adherence) {
+        counts['adherence'] = counts['adherence']! + 1;
+      } else if (minVal == timing) counts['timing'] = counts['timing']! + 1;
       else counts['risk'] = counts['risk']! + 1;
     }
     final sorted = counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
