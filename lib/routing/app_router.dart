@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import '../screens/dashboard/dashboard_screen.dart';
 import '../screens/planner//strategy_selector/strategy_selector_screen.dart';
 import '../screens/journal/journal_screen.dart';
+import '../journal/journal_list_screen.dart';
 import '../screens/backtest/cloud_job_status_screen.dart';
 import '../screens/backtest/cloud_backtest_result_screen.dart';
 import '../screens/backtest/cloud_backtest_history_screen.dart';
@@ -23,6 +24,11 @@ final GoRouter appRouter = GoRouter(
       path: '/journal',
       name: 'journal',
       builder: (context, state) => const JournalScreen(),
+    ),
+    GoRoute(
+      path: '/journal/firestore',
+      name: 'journalFirestore',
+      builder: (context, state) => const JournalListScreen(),
     ),
     // Cloud Backtest Routes
     GoRoute(

@@ -54,6 +54,13 @@ class ToolsAndStrategyLibrary extends ConsumerWidget {
               },
             ),
             ToolTile(
+              label: "Journal (Cloud)",
+              icon: Icons.cloud_outlined,
+              onTap: () {
+                GoRouter.of(context).pushNamed("journalFirestore");
+              },
+            ),
+            ToolTile(
               label: "Wheel Tracker",
               icon: Icons.sync_alt,
               onTap: () {
