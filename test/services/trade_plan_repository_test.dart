@@ -2,6 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_application_2/services/data/trade_plan_repository.dart';
 import 'package:flutter_application_2/services/firebase/trade_plan_service.dart';
 import 'package:flutter_application_2/services/firebase/auth_service.dart';
+import 'package:flutter_application_2/services/firebase/wheel_cycle_service.dart';
+import 'package:flutter_application_2/models/wheel_cycle.dart';
+import 'package:flutter_application_2/models/position.dart';
 import 'package:flutter_application_2/models/trade_plan.dart';
 import 'package:flutter_application_2/models/trade_inputs.dart';
 import 'package:flutter_application_2/models/payoff_result.dart';
@@ -30,6 +33,11 @@ class FakeWheelCycleService implements WheelCycleService {
   @override
   Future<WheelCycle> updateCycle({required String uid, WheelCycle? previous, required List<Position> positions, bool persist = true}) async {
     return previous ?? WheelCycle(state: WheelCycleState.idle);
+  }
+
+  @override
+  Future<void> saveCycle(String uid, WheelCycle cycle) async {
+    // no-op for tests
   }
 }
 

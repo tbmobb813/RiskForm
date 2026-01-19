@@ -64,11 +64,6 @@ void main() {
   });
 
   group('WheelCycleService - State Deserialization', () {
-    late WheelCycleService service;
-
-    setUp(() {
-      service = WheelCycleService();
-    });
 
     test('_deserializeState handles string enum names', () {
       final testCases = {

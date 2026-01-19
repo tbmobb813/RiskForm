@@ -14,37 +14,52 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
   const initializeCoreChannel = MethodChannel(
     'dev.flutter.pigeon.firebase_core_platform_interface.FirebaseCoreHostApi.initializeCore',
   );
-  initializeCoreChannel.setMockMethodCallHandler((MethodCall method) async {
-    return <String, dynamic>{'name': 'flutterTestApp', 'options': <String, dynamic>{}};
-  });
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+    initializeCoreChannel,
+    (MethodCall method) async {
+      return <String, dynamic>{'name': 'flutterTestApp', 'options': <String, dynamic>{}};
+    },
+  );
 
   const initializeAppChannel = MethodChannel(
     'dev.flutter.pigeon.firebase_core_platform_interface.FirebaseCoreHostApi.initializeApp',
   );
-  initializeAppChannel.setMockMethodCallHandler((MethodCall method) async {
-    return <String, dynamic>{'name': 'flutterTestApp', 'appName': 'flutterTestApp'};
-  });
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+    initializeAppChannel,
+    (MethodCall method) async {
+      return <String, dynamic>{'name': 'flutterTestApp', 'appName': 'flutterTestApp'};
+    },
+  );
 
   const allAppsChannel = MethodChannel(
     'dev.flutter.pigeon.firebase_core_platform_interface.FirebaseCoreHostApi.allApps',
   );
-  allAppsChannel.setMockMethodCallHandler((MethodCall method) async {
-    return <Map<String, dynamic>>[];
-  });
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+    allAppsChannel,
+    (MethodCall method) async {
+      return <Map<String, dynamic>>[];
+    },
+  );
 
   const appChannel = MethodChannel(
     'dev.flutter.pigeon.firebase_core_platform_interface.FirebaseCoreHostApi.app',
   );
-  appChannel.setMockMethodCallHandler((MethodCall method) async {
-    return <String, dynamic>{'name': 'flutterTestApp', 'options': <String, dynamic>{}};
-  });
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+    appChannel,
+    (MethodCall method) async {
+      return <String, dynamic>{'name': 'flutterTestApp', 'options': <String, dynamic>{}};
+    },
+  );
 
   const deleteAppChannel = MethodChannel(
     'dev.flutter.pigeon.firebase_core_platform_interface.FirebaseCoreHostApi.deleteApp',
   );
-  deleteAppChannel.setMockMethodCallHandler((MethodCall method) async {
-    return null;
-  });
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+    deleteAppChannel,
+    (MethodCall method) async {
+      return null;
+    },
+  );
 
   await testMain();
 }

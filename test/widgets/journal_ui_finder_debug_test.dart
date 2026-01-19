@@ -68,7 +68,7 @@ void main() {
       }
       final rootElement = WidgetsBinding.instance.rootElement;
       if (rootElement != null) findByKeyEquality(rootElement);
-      print('Direct equality matches for $targetKey: ${foundByEquality.length}');
+      debugPrint('Direct equality matches for $targetKey: ${foundByEquality.length}');
       void printAncestorsTrimmed(Element e) {
         final ancestors = <String>[];
         e.visitAncestorElements((a) {
@@ -76,23 +76,23 @@ void main() {
           return true;
         });
         if (ancestors.isEmpty) {
-          print('  (no ancestors)');
+          debugPrint('  (no ancestors)');
           return;
         }
         const max = 12;
         final toPrint = ancestors.length > max ? ancestors.sublist(0, max) : ancestors;
-        print('  Ancestor chain (top ${toPrint.length} of ${ancestors.length}):');
+        debugPrint('  Ancestor chain (top ${toPrint.length} of ${ancestors.length}):');
         for (var a in toPrint) {
-          print('    $a');
+          debugPrint('    $a');
         }
-        if (ancestors.length > max) print('    ... ${ancestors.length - max} more');
+        if (ancestors.length > max) debugPrint('    ... ${ancestors.length - max} more');
         if (e is RenderObjectElement) {
           final ro = e.renderObject;
-          print('  RenderObject attached=${ro.attached}');
+          debugPrint('  RenderObject attached=${ro.attached}');
         }
       }
       for (final e in foundByEquality) {
-        print('Found element widget=${e.widget.runtimeType} key=${e.widget.key} mounted=${e.mounted}');
+        debugPrint('Found element widget=${e.widget.runtimeType} key=${e.widget.key} mounted=${e.mounted}');
         printAncestorsTrimmed(e);
       }
 
@@ -131,7 +131,7 @@ void main() {
         final name = entry.key;
         final f = entry.value;
         final count = f.evaluate().length;
-        print('Finder $name -> $count');
+        debugPrint('Finder $name -> $count');
         for (final el in f.evaluate()) {
           final w = el.widget;
           final key = w.key;
@@ -140,7 +140,7 @@ void main() {
             final t = w.title;
             if (t is Text) title = t.data ?? '<null text>';
           }
-          print('  widget ${w.runtimeType} key=$key title=$title');
+          debugPrint('  widget ${w.runtimeType} key=$key title=$title');
         }
       }
 
@@ -159,9 +159,9 @@ void main() {
         final out = io.File('${dir.path}/$name');
         out.writeAsStringSync(buffer.toString());
         // Use stdout so it's captured by the test harness as well.
-        print('Wrote diagnostic log to ${out.path}');
+        debugPrint('Wrote diagnostic log to ${out.path}');
       } catch (e) {
-        print('Failed to write diagnostic log: $e');
+        debugPrint('Failed to write diagnostic log: $e');
       }
     }
   }, skip: !runDiag);

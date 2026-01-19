@@ -75,7 +75,7 @@ class _PayoffPainter extends CustomPainter {
 
     // draw regime background bands first (if provided)
     if (regimes != null && regimes!.isNotEmpty) {
-      for (final seg in regimes!) {
+          for (final seg in regimes!) {
         final start = seg.startIndex.toDouble();
         final end = seg.endIndex.toDouble();
         final left = _mapX(start, minX, maxX, size.width);
@@ -83,13 +83,13 @@ class _PayoffPainter extends CustomPainter {
         Color bandColor;
         switch (seg.regime) {
           case MarketRegime.uptrend:
-            bandColor = Colors.green.withOpacity(0.08);
+            	bandColor = Colors.green.withAlpha((0.08 * 255).round());
             break;
           case MarketRegime.downtrend:
-            bandColor = Colors.red.withOpacity(0.08);
+            	bandColor = Colors.red.withAlpha((0.08 * 255).round());
             break;
           case MarketRegime.sideways:
-            bandColor = Colors.yellow.withOpacity(0.06);
+            	bandColor = Colors.yellow.withAlpha((0.06 * 255).round());
             break;
         }
         final rect = Rect.fromLTRB(left, 0, right, size.height);

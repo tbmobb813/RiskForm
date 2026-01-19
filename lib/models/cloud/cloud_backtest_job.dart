@@ -53,7 +53,13 @@ class CloudBacktestJob {
     DateTime? parseDate(dynamic v) {
       if (v == null) return null;
       if (v is DateTime) return v;
-      if (v is String) return DateTime.parse(v);
+      if (v is String) {
+        try {
+          return DateTime.parse(v);
+        } catch (_) {
+          // fall through to other attempts and eventually return null
+        }
+      }
       if (v is int) return DateTime.fromMillisecondsSinceEpoch(v);
       if (v is Timestamp) return v.toDate();
       try {
