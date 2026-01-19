@@ -1,7 +1,9 @@
 import * as functions from "firebase-functions";
-import fetch from "node-fetch";
 
-const CLOUD_RUN_URL = functions.config().backtest.cloud_run_url as string;
+// Use the global fetch available in Node 18+ rather than depending on node-fetch
+declare const fetch: any;
+
+const CLOUD_RUN_URL = (functions.config() as any)?.backtest?.cloud_run_url as string;
 
 /**
  * Backtest result structure returned from Cloud Run Dart engine.

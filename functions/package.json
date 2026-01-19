@@ -1,31 +1,35 @@
 {
-  "name": "riskform-cloud-functions",
-  "description": "Cloud Functions for RiskForm backtest worker",
-  "main": "lib/index.js",
+  "name": "functions",
   "scripts": {
+    "lint": "eslint --ext .js,.ts .",
     "build": "tsc",
     "build:watch": "tsc --watch",
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log",
-    "lint": "eslint --ext .ts src/"
+    "logs": "firebase functions:log"
   },
   "engines": {
-    "node": "20"
+    "node": "24"
   },
+  "main": "lib/index.js",
   "dependencies": {
-    "firebase-admin": "^12.0.0",
-    "firebase-functions": "^6.0.0",
-    "node-fetch": "^2.7.0"
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0",
+    "graphql": "^16.7.1",
+    "node-fetch": "^2.6.7"
   },
   "devDependencies": {
-    "@types/node-fetch": "^2.6.11",
-    "@typescript-eslint/eslint-plugin": "^7.0.0",
-    "@typescript-eslint/parser": "^7.0.0",
-    "eslint": "^8.57.0",
-    "typescript": "^5.4.0"
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.4.1",
+    "typescript": "^5.7.3"
+  ,
+    "@types/node-fetch": "^2.6.2"
   },
   "private": true
 }

@@ -39,20 +39,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.runBacktestEngine = runBacktestEngine;
 const functions = __importStar(require("firebase-functions"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
-/**
- * Get Cloud Run URL from Firebase Functions config.
- *
- * Set via: firebase functions:config:set backtest.cloud_run_url="https://..."
- */
-function getCloudRunUrl() {
-    const config = functions.config();
-    const url = config.backtest?.cloud_run_url;
-    if (!url) {
-        throw new Error("CLOUD_RUN_URL not configured. " +
-            "Run: firebase functions:config:set backtest.cloud_run_url=\"https://your-service.run.app\"");
-    }
-    return url;
-}
+const CLOUD_RUN_URL = functions.config().backtest.cloud_run_url;
 /**
  * Call the Cloud Run Dart backtest engine.
  *
@@ -60,40 +47,16 @@ function getCloudRunUrl() {
  * @returns The BacktestResult from the Dart engine
  */
 async function runBacktestEngine(configUsed) {
-    const cloudRunUrl = getCloudRunUrl();
-    const endpoint = `${cloudRunUrl}/run-backtest`;
-    console.log(JSON.stringify({
-        severity: "INFO",
-        event: "engine_call_started",
-        endpoint,
-    }));
-    const startTime = Date.now();
-    const response = await (0, node_fetch_1.default)(endpoint, {
+    const res = await (0, node_fetch_1.default)(`${CLOUD_RUN_URL}/run-backtest`, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ configUsed }),
     });
-    const durationMs = Date.now() - startTime;
-    if (!response.ok) {
-        const errorText = await response.text();
-        console.error(JSON.stringify({
-            severity: "ERROR",
-            event: "engine_call_failed",
-            statusCode: response.status,
-            errorText,
-            durationMs,
-        }));
-        throw new Error(`Cloud Run error ${response.status}: ${errorText}`);
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Cloud Run error ${res.status}: ${text}`);
     }
-    const json = await response.json();
-    console.log(JSON.stringify({
-        severity: "INFO",
-        event: "engine_call_completed",
-        durationMs,
-        cyclesCompleted: json.backtestResult.cyclesCompleted,
-    }));
+    const json = await res.json();
     return json.backtestResult;
 }
 //# sourceMappingURL=engine.js.map

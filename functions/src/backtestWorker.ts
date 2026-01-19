@@ -14,11 +14,11 @@ const db = admin.firestore();
  * 4. Write result to backtestResults collection
  * 5. Mark job as "completed" or "failed"
  */
-export const onBacktestJobCreated = functions.firestore
+export const onBacktestJobCreated = (functions.firestore as any)
   .document("backtestJobs/{jobId}")
-  .onCreate(async (snap, context) => {
-    const jobId = context.params.jobId as string;
-    const job = snap.data();
+  .onCreate(async (snap: any, context: any) => {
+    const jobId = (context?.params?.jobId) as string;
+    const job = snap?.data?.();
 
     if (!job) return;
 
