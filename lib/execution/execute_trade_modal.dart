@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import '../utils/serialize_for_callable.dart' as ser;
 import '../utils/payload_builders.dart' as pb;
 import 'package:flutter/material.dart';
 
