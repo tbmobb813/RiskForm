@@ -14,15 +14,9 @@ void main() async {
   try {
     // On web we must provide FirebaseOptions when creating the default app.
     if (kIsWeb) {
-      final opts = DefaultFirebaseOptions.currentPlatform;
-      if (opts == null) {
-        throw FlutterError(
-          'Missing Firebase web configuration. Generate firebase_options.dart with the FlutterFire CLI:\n'
-          '  dart pub global activate flutterfire_cli && flutterfire configure\n'
-          'Or run: flutter pub run flutterfire_cli configure'
-        );
-      }
-      await Firebase.initializeApp(options: opts);
+      // `DefaultFirebaseOptions.currentPlatform` is generated and non-null for supported
+      // platforms; the previous null-check is unnecessary and caused analyzer warnings.
+      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
     } else {
       await Firebase.initializeApp();
     }
