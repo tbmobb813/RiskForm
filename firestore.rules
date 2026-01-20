@@ -1,18 +1,133 @@
-rules_version='2'
+// ===============================
+//  Strategy Lifecycle Engine Rules
+// ===============================
 
+rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      // This rule allows anyone with your database reference to view, edit,
-      // and delete all data in your database. It is useful for getting
-      // started, but it is configured to expire after 30 days because it
-      // leaves your app open to attackers. At that time, all client
-      // requests to your database will be denied.
-      //
-      // Make sure to write security rules for your app before that time, or
-      // else all client requests to your database will be denied until you
-      // update your rules.
-      allow read, write: if request.time < timestamp.date(2026, 2, 18);
+
+    // -------------------------------
+    // strategies/{strategyId}
+    // -------------------------------
+    match /strategies/{strategyId} {
+
+      allow read: if request.auth != null;
+
+      // Create a strategy
+      allow create: if request.auth != null
+                    && isValidStrategyCreate();
+
+      // Update strategy metadata or state
+      allow update: if request.auth != null
+                    && isValidStrategyUpdate();
+
+      // Never allow delete
+      allow delete: if false;
+
+      // -------------------------------
+      // Validation Functions
+      // -------------------------------
+      function isValidStrategyCreate() {
+        return request.resource.data.keys().hasOnly([
+          'name',
+          'description',
+          'state',
+          'tags',
+          'constraints',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.state in ['active', 'experimental']
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && isValidConstraints(request.resource.data.constraints);
+      }
+
+      function isValidStrategyUpdate() {
+        let old = resource.data;
+        let neu = request.resource.data;
+
+        // Prevent deletion of required fields
+        if !(neu.name is string) return false;
+        if !(neu.state is string) return false;
+
+        // Validate state transitions
+        if !isValidStateTransition(old.state, neu.state) return false;
+
+        // updatedAt must be server timestamp
+        if neu.updatedAt != request.time return false;
+
+        // If retiring, retiredAt must be set
+        if neu.state == 'retired' && !(neu.retiredAt == request.time) {
+          return false;
+        }
+
+        // Constraints must remain valid
+        if neu.constraints != null && !isValidConstraints(neu.constraints) {
+          return false;
+        }
+
+        return true;
+      }
+
+      function isValidStateTransition(oldState, newState) {
+        let allowed = {
+          active:      ['paused', 'retired', 'experimental'],
+          paused:      ['active', 'retired'],
+          experimental:['active', 'paused', 'retired'],
+          created:     ['active', 'experimental']
+        };
+
+        // Cannot transition from retired
+        if oldState == 'retired' return false;
+
+        return newState in allowed[oldState];
+      }
+
+      function isValidConstraints(c) {
+        return c == null
+          || (
+              (!('maxRisk' in c) || c.maxRisk is number)
+              && (!('maxDrawdown' in c) || c.maxDrawdown is number)
+              && (!('allowedRegimes' in c) || c.allowedRegimes is list)
+              && (!('minDisciplineScore' in c) || c.minDisciplineScore is number)
+          );
+      }
+    }
+
+    // -------------------------------
+    // strategyEvents/{eventId}
+    // -------------------------------
+    match /strategyEvents/{eventId} {
+
+      allow read: if request.auth != null;
+
+      // Events are append-only
+      allow create: if request.auth != null
+                    && isValidEventCreate();
+
+      // No updates or deletes
+      allow update: if false;
+      allow delete: if false;
+
+      function isValidEventCreate() {
+        return request.resource.data.keys().hasOnly([
+          'strategyId',
+          'type',
+          'timestamp',
+          'reason',
+          'previousState',
+          'nextState'
+        ])
+        && request.resource.data.timestamp == request.time
+        && request.resource.data.type in [
+            'created',
+            'activated',
+            'paused',
+            'resumed',
+            'retired'
+        ];
+      }
     }
   }
 }
