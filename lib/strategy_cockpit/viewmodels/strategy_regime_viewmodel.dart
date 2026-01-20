@@ -30,7 +30,7 @@ class StrategyRegimeViewModel extends ChangeNotifier {
     StrategyHealthService? healthService,
     RegimeService? regimeService,
   })  : _healthService = healthService ?? StrategyHealthService(),
-        _regime_service = regimeService ?? RegimeService() {
+        _regimeService = regimeService ?? RegimeService() {
     _init();
   }
 

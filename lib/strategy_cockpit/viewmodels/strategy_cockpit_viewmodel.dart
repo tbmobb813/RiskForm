@@ -4,13 +4,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../models/strategy.dart';
 import '../../models/strategy_health_snapshot.dart';
-import '../../services/strategy/strategy_service.dart';
+import '../../services/strategy/strategy_service.dart' as strategy_service;
 import '../services/strategy_health_service.dart';
 import '../services/strategy_backtest_service.dart';
 import '../../regime/regime_service.dart';
 
 class StrategyCockpitViewModel extends ChangeNotifier {
-  final StrategyService _strategyService;
+  final strategy_service.StrategyService _strategyService;
   final StrategyHealthService _healthService;
   final StrategyBacktestService _backtestService;
   final RegimeService _regimeService;
@@ -32,11 +32,11 @@ class StrategyCockpitViewModel extends ChangeNotifier {
 
   StrategyCockpitViewModel({
     required this.strategyId,
-    StrategyService? strategyService,
+    strategy_service.StrategyService? strategyService,
     StrategyHealthService? healthService,
     StrategyBacktestService? backtestService,
     RegimeService? regimeService,
-  })  : _strategyService = strategyService ?? StrategyService(),
+  })  : _strategyService = strategyService ?? strategy_service.StrategyService(),
         _healthService = healthService ?? StrategyHealthService(),
         _backtestService = backtestService ?? StrategyBacktestService(),
         _regimeService = regimeService ?? RegimeService() {
@@ -137,7 +137,7 @@ class StrategyCockpitViewModel extends ChangeNotifier {
   Future<void> pauseStrategy({String? reason}) async {
     await _strategyService.changeStrategyState(
       strategyId: strategyId,
-      nextState: StrategyState.paused,
+      nextState: strategy_service.StrategyState.paused,
       reason: reason,
     );
   }
@@ -145,7 +145,7 @@ class StrategyCockpitViewModel extends ChangeNotifier {
   Future<void> resumeStrategy({String? reason}) async {
     await _strategyService.changeStrategyState(
       strategyId: strategyId,
-      nextState: StrategyState.active,
+      nextState: strategy_service.StrategyState.active,
       reason: reason,
     );
   }
@@ -153,7 +153,7 @@ class StrategyCockpitViewModel extends ChangeNotifier {
   Future<void> retireStrategy({String? reason}) async {
     await _strategyService.changeStrategyState(
       strategyId: strategyId,
-      nextState: StrategyState.retired,
+      nextState: strategy_service.StrategyState.retired,
       reason: reason,
     );
   }
