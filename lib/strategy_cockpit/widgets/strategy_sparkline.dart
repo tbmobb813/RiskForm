@@ -22,7 +22,7 @@ class StrategySparkline extends StatelessWidget {
           height: 60,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(6),
-            color: Theme.of(context).colorScheme.surfaceVariant,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
           ),
           alignment: Alignment.center,
           child: Text(

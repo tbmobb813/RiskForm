@@ -40,8 +40,8 @@ class StrategyRegimeSection extends StatelessWidget {
               children: [
                 // Current Regime Card
                 _CurrentRegimeCard(
-                  currentRegime: vm.currentRegime ?? '',
-                  hint: vm.currentRegimeHint ?? '',
+                  currentRegime: vm.currentRegime,
+                  hint: vm.currentRegimeHint,
                 ),
                 const SizedBox(height: 16),
 

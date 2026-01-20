@@ -153,7 +153,7 @@ class _StateBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withAlpha((0.15 * 255).round()),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
@@ -330,7 +330,7 @@ class StrategySparkline extends StatelessWidget {
           height: 60,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(6),
-            color: Theme.of(context).colorScheme.surfaceVariant,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
           ),
           alignment: Alignment.center,
           child: Text(
@@ -600,7 +600,7 @@ class _DisciplineSparkline extends StatelessWidget {
           height: 60,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(6),
-            color: Theme.of(context).colorScheme.surfaceVariant,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
           ),
           alignment: Alignment.center,
           child: Text(
@@ -804,7 +804,7 @@ class StrategyRegimeSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _CurrentRegimeCard(
-                  currentRegime: vm.currentRegime ?? '',
+                  currentRegime: vm.currentRegime,
                   hint: vm.currentRegimeHint,
                 ),
                 const SizedBox(height: 16),
@@ -1044,7 +1044,7 @@ class _HistoryTile extends StatelessWidget {
     final summary = item['summary'] ?? {};
     final pnl = (summary['totalPnl'] ?? 0).toDouble();
     final winRate = (summary['winRate'] ?? 0).toDouble();
-    final completedAt = item['completedAt'] ?? null;
+    final completedAt = item['completedAt'];
 
     return Card(
       elevation: 0,
@@ -1136,17 +1136,38 @@ class _LifecycleButtons extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = vm.strategy?.state.name ?? 'unknown';
 
-    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      if (state == 'active') ...[
-        OutlinedButton(onPressed: () async { await vm.pauseStrategy(); _notify(context, 'Strategy paused'); }, child: const Text('Pause Strategy')),
-        const SizedBox(height: 12),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (state == 'active') ...[
+          OutlinedButton(
+            onPressed: () async {
+              await vm.pauseStrategy();
+              if (context.mounted) _notify(context, 'Strategy paused');
+            },
+            child: const Text('Pause Strategy'),
+          ),
+          const SizedBox(height: 12),
+        ],
+        if (state == 'paused') ...[
+          OutlinedButton(
+            onPressed: () async {
+              await vm.resumeStrategy();
+              if (context.mounted) _notify(context, 'Strategy resumed');
+            },
+            child: const Text('Resume Strategy'),
+          ),
+          const SizedBox(height: 12),
+        ],
+        OutlinedButton(
+          onPressed: () async {
+            await vm.retireStrategy();
+            if (context.mounted) _notify(context, 'Strategy retired');
+          },
+          child: const Text('Retire Strategy'),
+        ),
       ],
-      if (state == 'paused') ...[
-        OutlinedButton(onPressed: () async { await vm.resumeStrategy(); _notify(context, 'Strategy resumed'); }, child: const Text('Resume Strategy')),
-        const SizedBox(height: 12),
-      ],
-      OutlinedButton(onPressed: () async { await vm.retireStrategy(); _notify(context, 'Strategy retired'); }, child: const Text('Retire Strategy')),
-    ]);
+    );
   }
 
   void _notify(BuildContext context, String msg) {

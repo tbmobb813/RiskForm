@@ -71,7 +71,7 @@ class _LifecycleButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final state = vm.strategy?.state?.toString() ?? 'unknown';
+    final state = vm.strategy?.state.name ?? 'unknown';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -80,7 +80,7 @@ class _LifecycleButtons extends StatelessWidget {
           OutlinedButton(
             onPressed: () async {
               await vm.pauseStrategy();
-              _notify(context, 'Strategy paused');
+              if (context.mounted) _notify(context, 'Strategy paused');
             },
             child: const Text('Pause Strategy'),
           ),
@@ -91,7 +91,7 @@ class _LifecycleButtons extends StatelessWidget {
           OutlinedButton(
             onPressed: () async {
               await vm.resumeStrategy();
-              _notify(context, 'Strategy resumed');
+              if (context.mounted) _notify(context, 'Strategy resumed');
             },
             child: const Text('Resume Strategy'),
           ),
@@ -101,7 +101,7 @@ class _LifecycleButtons extends StatelessWidget {
         OutlinedButton(
           onPressed: () async {
             await vm.retireStrategy();
-            _notify(context, 'Strategy retired');
+            if (context.mounted) _notify(context, 'Strategy retired');
           },
           child: const Text('Retire Strategy'),
         ),

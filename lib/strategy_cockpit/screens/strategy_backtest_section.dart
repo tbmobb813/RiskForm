@@ -143,7 +143,7 @@ class _HistoryTile extends StatelessWidget {
     final summary = item['summary'] ?? {};
     final pnl = (summary['totalPnl'] ?? 0).toDouble();
     final winRate = (summary['winRate'] ?? 0).toDouble();
-    final completedAt = item['completedAt'] ?? null;
+    final completedAt = item['completedAt'];
 
     return Card(
       elevation: 0,
