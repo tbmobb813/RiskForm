@@ -2,5 +2,6 @@
     "chat.tools.terminal.autoApprove": {
         "flutter": true
     },
-    "cmake.sourceDirectory": "C:/Users/jsnni/Projects/RiskForm/linux"
+    "cmake.sourceDirectory": "C:/Users/jsnni/Projects/RiskForm/linux",
+    "java.configuration.updateBuildConfiguration": "interactive"
 }
