@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_application_2/services/historical/historical_repository.dart';
-import 'package:flutter_application_2/services/historical/historical_cache.dart';
-import 'package:flutter_application_2/models/historical/historical_price.dart';
+import 'package:riskform/services/historical/historical_repository.dart';
+import 'package:riskform/services/historical/historical_cache.dart';
+import 'package:riskform/models/historical/historical_price.dart';
 import '../fakes/fake_historical_data_source.dart';
 import '../fakes/fake_box.dart';
 

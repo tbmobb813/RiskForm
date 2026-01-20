@@ -1,13 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_application_2/state/planner_notifier.dart';
-import 'package:flutter_application_2/models/trade_inputs.dart';
-import 'package:flutter_application_2/models/payoff_result.dart';
-import 'package:flutter_application_2/models/risk_result.dart';
-import 'package:flutter_application_2/models/trade_plan.dart';
-import 'package:flutter_application_2/models/account_context.dart';
-import 'package:flutter_application_2/services/engines/payoff_engine.dart';
-import 'package:flutter_application_2/services/engines/risk_engine.dart';
-import 'package:flutter_application_2/services/data/trade_plan_repository.dart';
+import 'package:riskform/state/planner_notifier.dart';
+import 'package:riskform/models/trade_inputs.dart';
+import 'package:riskform/models/payoff_result.dart';
+import 'package:riskform/models/risk_result.dart';
+import 'package:riskform/models/trade_plan.dart';
+import 'package:riskform/models/account_context.dart';
+import 'package:riskform/services/engines/payoff_engine.dart';
+import 'package:riskform/services/engines/risk_engine.dart';
+import 'package:riskform/services/data/trade_plan_repository.dart';
 
 // Fakes
 class FakeTradePlanRepository implements TradePlanRepository {

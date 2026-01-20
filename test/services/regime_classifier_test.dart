@@ -1,9 +1,9 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_application_2/services/analytics/regime_classifier.dart';
-import 'package:flutter_application_2/models/historical/historical_price.dart';
-import 'package:flutter_application_2/models/analytics/market_regime.dart';
+import 'package:riskform/services/analytics/regime_classifier.dart';
+import 'package:riskform/models/historical/historical_price.dart';
+import 'package:riskform/models/analytics/market_regime.dart';
 
 void main() {
   group('RegimeClassifier', () {

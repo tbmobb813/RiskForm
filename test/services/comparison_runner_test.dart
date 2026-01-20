@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:flutter_application_2/services/engines/backtest_engine.dart';
-import 'package:flutter_application_2/services/engines/option_pricing_engine.dart';
-import 'package:flutter_application_2/services/engines/comparison_runner.dart';
-import 'package:flutter_application_2/models/backtest/backtest_config.dart';
-import 'package:flutter_application_2/models/comparison/comparison_config.dart';
+import 'package:riskform/services/engines/backtest_engine.dart';
+import 'package:riskform/services/engines/option_pricing_engine.dart';
+import 'package:riskform/services/engines/comparison_runner.dart';
+import 'package:riskform/models/backtest/backtest_config.dart';
+import 'package:riskform/models/comparison/comparison_config.dart';
 
 void main() {
   test('ComparisonRunner runs multiple backtests deterministically', () {

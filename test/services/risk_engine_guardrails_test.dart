@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_application_2/services/engines/risk_engine.dart';
-import 'package:flutter_application_2/models/account_context.dart';
-import 'package:flutter_application_2/models/trade_inputs.dart';
-import 'package:flutter_application_2/models/payoff_result.dart';
+import 'package:riskform/services/engines/risk_engine.dart';
+import 'package:riskform/models/account_context.dart';
+import 'package:riskform/models/trade_inputs.dart';
+import 'package:riskform/models/payoff_result.dart';
 
 void main() {
   group('RiskEngine guardrails and exposure', () {

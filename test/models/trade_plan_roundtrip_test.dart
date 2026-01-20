@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_application_2/models/trade_plan.dart';
-import 'package:flutter_application_2/models/trade_inputs.dart';
-import 'package:flutter_application_2/models/payoff_result.dart';
-import 'package:flutter_application_2/models/risk_result.dart';
+import 'package:riskform/models/trade_plan.dart';
+import 'package:riskform/models/trade_inputs.dart';
+import 'package:riskform/models/payoff_result.dart';
+import 'package:riskform/models/risk_result.dart';
 
 void main() {
   test('TradePlan toJson/fromMap roundtrip preserves timestamps', () {

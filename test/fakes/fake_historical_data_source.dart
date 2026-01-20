@@ -1,5 +1,5 @@
-import 'package:flutter_application_2/services/historical/historical_data_source.dart';
-import 'package:flutter_application_2/models/historical/historical_price.dart';
+import 'package:riskform/services/historical/historical_data_source.dart';
+import 'package:riskform/models/historical/historical_price.dart';
 
 /// Fake implementation of HistoricalDataSource for testing
 class FakeHistoricalDataSource implements HistoricalDataSource {

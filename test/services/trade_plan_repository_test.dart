@@ -1,15 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_application_2/services/data/trade_plan_repository.dart';
-import 'package:flutter_application_2/services/firebase/trade_plan_service.dart';
-import 'package:flutter_application_2/services/firebase/auth_service.dart';
-import 'package:flutter_application_2/services/firebase/wheel_cycle_service.dart';
-import 'package:flutter_application_2/models/wheel_cycle.dart';
-import 'package:flutter_application_2/models/position.dart';
-import 'package:flutter_application_2/models/trade_plan.dart';
-import 'package:flutter_application_2/models/trade_inputs.dart';
-import 'package:flutter_application_2/models/payoff_result.dart';
-import 'package:flutter_application_2/models/risk_result.dart';
+import 'package:riskform/services/data/trade_plan_repository.dart';
+import 'package:riskform/services/firebase/trade_plan_service.dart';
+import 'package:riskform/services/firebase/auth_service.dart';
+import 'package:riskform/services/firebase/wheel_cycle_service.dart';
+import 'package:riskform/models/wheel_cycle.dart';
+import 'package:riskform/models/position.dart';
+import 'package:riskform/models/trade_plan.dart';
+import 'package:riskform/models/trade_inputs.dart';
+import 'package:riskform/models/payoff_result.dart';
+import 'package:riskform/models/risk_result.dart';
 
 class FakeService implements TradePlanService {
   String? savedUid;

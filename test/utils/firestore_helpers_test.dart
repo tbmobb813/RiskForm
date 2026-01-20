@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_application_2/utils/firestore_helpers.dart' as fh;
+import 'package:riskform/utils/firestore_helpers.dart' as fh;
 
 void main() {
   test('toFirestoreMap converts DateTime to Timestamp and preserves numbers', () {

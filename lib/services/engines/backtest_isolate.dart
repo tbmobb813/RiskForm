@@ -1,6 +1,6 @@
-import 'package:flutter_application_2/models/backtest/backtest_config.dart';
-import 'package:flutter_application_2/services/engines/backtest_engine.dart';
-import 'package:flutter_application_2/services/engines/option_pricing_engine.dart';
+import 'package:riskform/models/backtest/backtest_config.dart';
+import 'package:riskform/services/engines/backtest_engine.dart';
+import 'package:riskform/services/engines/option_pricing_engine.dart';
 
 /// Entry point for `compute` worker. Accepts a Map (serialized BacktestConfig)
 /// and returns a Map (serialized BacktestResult).
