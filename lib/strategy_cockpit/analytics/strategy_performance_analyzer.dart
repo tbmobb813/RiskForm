@@ -108,4 +108,120 @@ class StrategyPerformanceAnalyzer {
 
     return grossProfit / grossLoss;
   }
+
+  // ------------------------------------------------------------
+  // Cycle-level adapter (static) for Execution → Cycle wiring
+  // ------------------------------------------------------------
+  static CyclePerformanceResult computeCyclePerformance({
+    required List<Map<String, dynamic>> executions,
+  }) {
+    double realized = 0;
+    int wins = 0;
+    int total = executions.length;
+
+    Map<String, dynamic>? best;
+    Map<String, dynamic>? worst;
+    double bestVal = double.negativeInfinity;
+    double worstVal = double.infinity;
+
+    for (final e in executions) {
+      final type = (e['type'] ?? '').toString().toUpperCase();
+      final premium = (e['premium'] ?? 0).toDouble();
+      final qty = (e['qty'] ?? 1).toDouble();
+      final pnl = (type.contains('SELL') ? premium * 100 * qty : -premium * 100 * qty);
+
+      realized += pnl;
+
+      if (pnl > 0) wins++;
+
+      if (pnl > bestVal) {
+        bestVal = pnl;
+        best = e;
+      }
+      if (pnl < worstVal) {
+        worstVal = pnl;
+        worst = e;
+      }
+    }
+
+    final winRate = total == 0 ? 0.0 : wins / total;
+
+    return CyclePerformanceResult(
+      realizedPnl: realized,
+      unrealizedPnl: 0.0,
+      cycleReturn: 0.0,
+      winRate: winRate,
+      maxDrawdown: 0.0,
+      bestTrade: best,
+      worstTrade: worst,
+    );
+  }
+}
+
+class CyclePerformanceResult {
+  final double realizedPnl;
+  final double unrealizedPnl;
+  final double cycleReturn;
+  final double winRate;
+  final double maxDrawdown;
+  final Map<String, dynamic>? bestTrade;
+  final Map<String, dynamic>? worstTrade;
+
+  CyclePerformanceResult({
+    required this.realizedPnl,
+    required this.unrealizedPnl,
+    required this.cycleReturn,
+    required this.winRate,
+    required this.maxDrawdown,
+    this.bestTrade,
+    this.worstTrade,
+  });
+}
+
+/// Adapter for cycle-level performance computation.
+extension StrategyPerformanceAdapter on StrategyPerformanceAnalyzer {
+  static CyclePerformanceResult computeCyclePerformance({
+    required List<Map<String, dynamic>> executions,
+  }) {
+    double realized = 0;
+    int wins = 0;
+    int total = executions.length;
+
+    Map<String, dynamic>? best;
+    Map<String, dynamic>? worst;
+    double bestVal = double.negativeInfinity;
+    double worstVal = double.infinity;
+
+    for (final e in executions) {
+      final type = (e['type'] ?? '').toString().toUpperCase();
+      final premium = (e['premium'] ?? 0).toDouble();
+      final qty = (e['qty'] ?? 1).toDouble();
+      final pnl = (type.contains('SELL') ? premium * 100 * qty : -premium * 100 * qty);
+
+      realized += pnl;
+
+      if (pnl > 0) wins++;
+
+      if (pnl > bestVal) {
+        bestVal = pnl;
+        best = e;
+      }
+      if (pnl < worstVal) {
+        worstVal = pnl;
+        worst = e;
+      }
+    }
+
+    final winRate = total == 0 ? 0.0 : wins / total;
+
+    return CyclePerformanceResult(
+      realizedPnl: realized,
+      unrealizedPnl: 0.0,
+      cycleReturn: 0.0,
+      winRate: winRate,
+      maxDrawdown: 0.0,
+      bestTrade: best,
+      worstTrade: worst,
+    );
+  }
 }

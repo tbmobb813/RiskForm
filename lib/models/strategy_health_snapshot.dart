@@ -1,105 +1,121 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+/// The authoritative, aggregated health state for a strategy.
+/// Computed by StrategyHealthService.recomputeHealth().
 class StrategyHealthSnapshot {
   final String strategyId;
 
-  // -----------------------------
-  // Performance
-  // -----------------------------
-  final List<double> pnlTrend; // normalized or raw PnL values
-  final List<Map<String, dynamic>> cycleSummaries;
+  // Performance trend (cycle-level PnL)
+  final List<double> pnlTrend;
 
-  // -----------------------------
-  // Discipline
-  // -----------------------------
+  // Discipline trend (cycle-level discipline score)
   final List<double> disciplineTrend;
 
-  // -----------------------------
-  // Regime
-  // -----------------------------
-  final Map<String, dynamic> regimePerformance;
-  // e.g. { "uptrend": {...}, "downtrend": {...} }
+  // Regime performance breakdown
+  final Map<String, Map<String, dynamic>> regimePerformance;
 
-  // -----------------------------
-  // Flags (optional)
-  // -----------------------------
-  final List<String> flags;
+  // Cycle summaries for UI tables
+  final List<Map<String, dynamic>> cycleSummaries;
 
-  // -----------------------------
-  // Metadata
-  // -----------------------------
+  // Weakness flags (discipline slipping, recent losses, regime mismatch, etc.)
+  final List<String> regimeWeaknesses;
+
+  // Current regime + hint
+  final String? currentRegime;
+  final String? currentRegimeHint;
+
+  // Last recompute timestamp
   final DateTime updatedAt;
 
   const StrategyHealthSnapshot({
     required this.strategyId,
     required this.pnlTrend,
-    required this.cycleSummaries,
     required this.disciplineTrend,
     required this.regimePerformance,
-    required this.flags,
+    required this.cycleSummaries,
+    required this.regimeWeaknesses,
+    required this.currentRegime,
+    required this.currentRegimeHint,
     required this.updatedAt,
   });
 
-  // ------------------------------------------------------------
-  // Firestore → Model
-  // ------------------------------------------------------------
-  factory StrategyHealthSnapshot.fromFirestore(
-    DocumentSnapshot doc,
-  ) {
+  /// Empty snapshot (used when no cycles exist yet)
+  factory StrategyHealthSnapshot.empty(String strategyId) {
+    return StrategyHealthSnapshot(
+      strategyId: strategyId,
+      pnlTrend: const [],
+      disciplineTrend: const [],
+      regimePerformance: const {},
+      cycleSummaries: const [],
+      regimeWeaknesses: const [],
+      currentRegime: null,
+      currentRegimeHint: null,
+      updatedAt: DateTime.now(),
+    );
+  }
+
+  /// Firestore → Model
+  factory StrategyHealthSnapshot.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
 
     return StrategyHealthSnapshot(
       strategyId: data['strategyId'] as String,
       pnlTrend: List<double>.from(
-        (data['pnlTrend'] ?? []).map((e) => (e as num).toDouble()),
-      ),
-      cycleSummaries: List<Map<String, dynamic>>.from(
-        data['cycleSummaries'] ?? [],
+        (data['pnlTrend'] ?? []).map((v) => (v as num).toDouble()),
       ),
       disciplineTrend: List<double>.from(
-        (data['disciplineTrend'] ?? []).map((e) => (e as num).toDouble()),
+        (data['disciplineTrend'] ?? []).map((v) => (v as num).toDouble()),
       ),
-      regimePerformance: Map<String, dynamic>.from(
-        data['regimePerformance'] ?? {},
+      regimePerformance: Map<String, Map<String, dynamic>>.from(
+        (data['regimePerformance'] ?? {}).map(
+          (k, v) => MapEntry(k, Map<String, dynamic>.from(v)),
+        ),
       ),
-      flags: List<String>.from(data['flags'] ?? []),
-      updatedAt: (data['updatedAt'] as Timestamp).toDate(),
+      cycleSummaries: List<Map<String, dynamic>>.from(
+        (data['cycleSummaries'] ?? []).map((v) => Map<String, dynamic>.from(v)),
+      ),
+      regimeWeaknesses: List<String>.from(data['regimeWeaknesses'] ?? []),
+      currentRegime: data['currentRegime'],
+      currentRegimeHint: data['currentRegimeHint'],
+      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
 
-  // ------------------------------------------------------------
-  // Model → Firestore
-  // ------------------------------------------------------------
+  /// Model → Firestore
   Map<String, dynamic> toFirestore() {
     return {
       'strategyId': strategyId,
       'pnlTrend': pnlTrend,
-      'cycleSummaries': cycleSummaries,
       'disciplineTrend': disciplineTrend,
       'regimePerformance': regimePerformance,
-      'flags': flags,
+      'cycleSummaries': cycleSummaries,
+      'regimeWeaknesses': regimeWeaknesses,
+      'currentRegime': currentRegime,
+      'currentRegimeHint': currentRegimeHint,
       'updatedAt': updatedAt,
     };
   }
 
-  // ------------------------------------------------------------
-  // Immutable Copy
-  // ------------------------------------------------------------
+  /// Immutable copy
   StrategyHealthSnapshot copyWith({
     List<double>? pnlTrend,
-    List<Map<String, dynamic>>? cycleSummaries,
     List<double>? disciplineTrend,
-    Map<String, dynamic>? regimePerformance,
-    List<String>? flags,
+    Map<String, Map<String, dynamic>>? regimePerformance,
+    List<Map<String, dynamic>>? cycleSummaries,
+    List<String>? regimeWeaknesses,
+    String? currentRegime,
+    String? currentRegimeHint,
     DateTime? updatedAt,
   }) {
     return StrategyHealthSnapshot(
       strategyId: strategyId,
       pnlTrend: pnlTrend ?? this.pnlTrend,
-      cycleSummaries: cycleSummaries ?? this.cycleSummaries,
       disciplineTrend: disciplineTrend ?? this.disciplineTrend,
       regimePerformance: regimePerformance ?? this.regimePerformance,
-      flags: flags ?? this.flags,
+      cycleSummaries: cycleSummaries ?? this.cycleSummaries,
+      regimeWeaknesses: regimeWeaknesses ?? this.regimeWeaknesses,
+      currentRegime: currentRegime ?? this.currentRegime,
+      currentRegimeHint: currentRegimeHint ?? this.currentRegimeHint,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }

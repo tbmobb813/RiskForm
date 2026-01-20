@@ -123,4 +123,76 @@ class StrategyDisciplineAnalyzer {
 
     return sorted.first.key;
   }
+
+  // ------------------------------------------------------------
+  // Cycle-level adapter (static) for Execution → Cycle wiring
+  // ------------------------------------------------------------
+  static CycleDisciplineResult computeCycleDiscipline({
+    required List<Map<String, dynamic>> executions,
+    required List<String> disciplineFlags,
+    required Map<String, dynamic> constraints,
+  }) {
+    // Simple heuristic: start at 100, subtract per flag and small penalty per violation
+    double score = 100;
+    score -= (disciplineFlags.length * 5);
+
+    final Map<String, int> violations = {};
+    // Placeholder: detect simple timing/risk issues from executions
+    for (final e in executions) {
+      final type = (e['type'] ?? '').toString().toLowerCase();
+      if (type.contains('late') || type.contains('slippage')) {
+        violations['timing'] = (violations['timing'] ?? 0) + 1;
+        score -= 2;
+      }
+    }
+
+    if (score < 0) score = 0;
+
+    return CycleDisciplineResult(
+      score: score,
+      violations: violations,
+      streakImpact: 0.0,
+    );
+  }
+}
+class CycleDisciplineResult {
+  final double score;
+  final Map<String, dynamic> violations;
+  final double streakImpact;
+
+  CycleDisciplineResult({
+    required this.score,
+    required this.violations,
+    required this.streakImpact,
+  });
+}
+
+extension StrategyDisciplineAdapter on StrategyDisciplineAnalyzer {
+  static CycleDisciplineResult computeCycleDiscipline({
+    required List<Map<String, dynamic>> executions,
+    required List<String> disciplineFlags,
+    required Map<String, dynamic> constraints,
+  }) {
+    // Simple heuristic: start at 100, subtract per flag and small penalty per violation
+    double score = 100;
+    score -= (disciplineFlags.length * 5);
+
+    final Map<String, int> violations = {};
+    // Placeholder: detect simple timing/risk issues from executions
+    for (final e in executions) {
+      final type = (e['type'] ?? '').toString().toLowerCase();
+      if (type.contains('late') || type.contains('slippage')) {
+        violations['timing'] = (violations['timing'] ?? 0) + 1;
+        score -= 2;
+      }
+    }
+
+    if (score < 0) score = 0;
+
+    return CycleDisciplineResult(
+      score: score,
+      violations: violations,
+      streakImpact: 0.0,
+    );
+  }
 }

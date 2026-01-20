@@ -30,7 +30,6 @@ class StrategyRegimeAnalyzer {
     grouped.forEach((regime, list) {
       double totalPnl = 0;
       int wins = 0;
-      int losses = 0;
       double totalDiscipline = 0;
 
       for (final cycle in list) {
@@ -41,7 +40,7 @@ class StrategyRegimeAnalyzer {
         totalDiscipline += discipline;
 
         if (pnl > 0) wins++;
-        if (pnl < 0) losses++;
+      
       }
 
       final winRate = list.isEmpty ? 0 : wins / list.length;
@@ -130,5 +129,45 @@ class StrategyRegimeAnalyzer {
     }
 
     return "Performance in $currentRegime regimes has been mixed.";
+  }
+
+  // ------------------------------------------------------------
+  // Cycle-level adapter (static) for Execution → Cycle wiring
+  // ------------------------------------------------------------
+  static CycleRegimeResult computeCycleRegime({
+    required List<Map<String, dynamic>> executions,
+    required String? currentRegime,
+  }) {
+    // Simple adapter: use currentRegime as dominant, score/align placeholders
+    return CycleRegimeResult(
+      dominantRegime: currentRegime,
+      regimeScore: 0.0,
+      regimeAlignment: 0.0,
+    );
+  }
+}
+class CycleRegimeResult {
+  final String? dominantRegime;
+  final double regimeScore;
+  final double regimeAlignment;
+
+  CycleRegimeResult({
+    required this.dominantRegime,
+    required this.regimeScore,
+    required this.regimeAlignment,
+  });
+}
+
+extension StrategyRegimeAdapter on StrategyRegimeAnalyzer {
+  static CycleRegimeResult computeCycleRegime({
+    required List<Map<String, dynamic>> executions,
+    required String? currentRegime,
+  }) {
+    // Simple adapter: use currentRegime as dominant, score/align placeholders
+    return CycleRegimeResult(
+      dominantRegime: currentRegime,
+      regimeScore: 0.0,
+      regimeAlignment: 0.0,
+    );
   }
 }
