@@ -26,6 +26,10 @@ class StrategyHealthSnapshot {
 
   // Last recompute timestamp
   final DateTime updatedAt;
+  // Health score summary
+  final double? healthScore;
+  final List<double>? healthTrend;
+  final String? healthLabel;
 
   const StrategyHealthSnapshot({
     required this.strategyId,
@@ -37,6 +41,9 @@ class StrategyHealthSnapshot {
     required this.currentRegime,
     required this.currentRegimeHint,
     required this.updatedAt,
+    this.healthScore,
+    this.healthTrend,
+    this.healthLabel,
   });
 
   /// Empty snapshot (used when no cycles exist yet)
@@ -51,6 +58,9 @@ class StrategyHealthSnapshot {
       currentRegime: null,
       currentRegimeHint: null,
       updatedAt: DateTime.now(),
+      healthScore: null,
+      healthTrend: null,
+      healthLabel: null,
     );
   }
 
@@ -78,6 +88,11 @@ class StrategyHealthSnapshot {
       currentRegime: data['currentRegime'],
       currentRegimeHint: data['currentRegimeHint'],
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      healthScore: (data['healthScore'] as num?)?.toDouble(),
+      healthTrend: data['healthTrend'] == null
+          ? null
+          : List<double>.from((data['healthTrend'] as List).map((v) => (v as num).toDouble())),
+      healthLabel: data['healthLabel'],
     );
   }
 
@@ -93,6 +108,9 @@ class StrategyHealthSnapshot {
       'currentRegime': currentRegime,
       'currentRegimeHint': currentRegimeHint,
       'updatedAt': updatedAt,
+      'healthScore': healthScore,
+      'healthTrend': healthTrend,
+      'healthLabel': healthLabel,
     };
   }
 
@@ -106,6 +124,9 @@ class StrategyHealthSnapshot {
     String? currentRegime,
     String? currentRegimeHint,
     DateTime? updatedAt,
+    double? healthScore,
+    List<double>? healthTrend,
+    String? healthLabel,
   }) {
     return StrategyHealthSnapshot(
       strategyId: strategyId,
@@ -117,6 +138,9 @@ class StrategyHealthSnapshot {
       currentRegime: currentRegime ?? this.currentRegime,
       currentRegimeHint: currentRegimeHint ?? this.currentRegimeHint,
       updatedAt: updatedAt ?? this.updatedAt,
+      healthScore: healthScore ?? this.healthScore,
+      healthTrend: healthTrend ?? this.healthTrend,
+      healthLabel: healthLabel ?? this.healthLabel,
     );
   }
 }

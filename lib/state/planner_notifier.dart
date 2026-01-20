@@ -23,9 +23,9 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
   final TradePlanRepository _repository;
   final PayoffEngine _payoffEngine;
   final RiskEngine _riskEngine;
-  final ExecutionService _executionService;
+    final ExecutionService? _executionService;
 
-  PlannerNotifier(this._repository, this._payoffEngine, this._riskEngine, this._executionService)
+    PlannerNotifier(this._repository, this._payoffEngine, this._riskEngine, [this._executionService])
       : super(PlannerState.initial());
 
   // Strategy selection
@@ -191,7 +191,12 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
         cycleId: null,
       );
 
-      final result = await _executionService.executeStrategyTrade(request);
+      if (_executionService == null) {
+        state = state.copyWith(isLoading: false, errorMessage: 'Execution service not available.');
+        return false;
+      }
+
+      final result = await _executionService!.executeStrategyTrade(request);
 
       if (!result.success) {
         state = state.copyWith(isLoading: false, errorMessage: result.errorMessage);

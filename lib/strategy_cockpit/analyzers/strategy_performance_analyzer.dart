@@ -51,8 +51,8 @@ class StrategyPerformanceAnalyzer {
 
     for (final e in executions) {
       final type = (e['type'] ?? '').toString().toUpperCase();
-      final premium = (e['premium'] ?? 0).toDouble();
-      final qty = (e['qty'] ?? 1).toDouble();
+      final premium = ((e['premium'] as num?) ?? 0).toDouble();
+      final qty = ((e['qty'] as num?) ?? 1).toDouble();
 
       // Simple options PnL approximation: premium * 100 * qty
       double tradePnl = 0;
@@ -90,7 +90,7 @@ class StrategyPerformanceAnalyzer {
     }
 
     final totalTrades = wins + losses;
-    final winRate = totalTrades == 0 ? 0 : wins / totalTrades;
+    final winRate = totalTrades == 0 ? 0.0 : wins / totalTrades;
 
     // cycleReturn: for now, just realized PnL; later you can divide by capital/risk.
     final cycleReturn = realized;

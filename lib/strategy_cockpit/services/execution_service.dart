@@ -5,6 +5,7 @@ import '../../services/journal/journal_repository.dart';
 import '../../services/strategy/strategy_service.dart';
 import 'strategy_cycle_service.dart';
 import 'strategy_health_service.dart';
+import '../../planner/models/planner_strategy_context.dart';
 
 /// Minimal, production-minded ExecutionService that accepts a
 /// strategy-aware execution envelope, journals the trade, enforces
@@ -73,12 +74,29 @@ class ExecutionService {
 
     await _journalRepo.addEntry(entry);
 
-    // Persist trade to Firestore trades collection for cycles
-    await _cycleService.appendTradeToCycle(strategyId, execution, context);
+    // Persist trade inside a transaction and mark health dirty
+    await _firestore.runTransaction((tx) async {
+      // Build a minimal PlannerStrategyContext from strategy doc + context hints
+      final plannerContext = PlannerStrategyContext(
+        strategyId: strategyId,
+        strategyName: strategyData['name'] as String? ?? '',
+        state: state,
+        tags: List<String>.from(strategyData['tags'] ?? []),
+        constraintsSummary: strategyData['constraintsSummary'],
+        constraints: Map<String, dynamic>.from(strategyData['constraints'] ?? {}),
+        currentRegime: strategyData['currentRegime'],
+        disciplineFlags: List<String>.from(strategyData['disciplineFlags'] ?? []),
+        updatedAt: DateTime.now(),
+      );
 
-    // Recompute health (fire-and-forget)
-    await _healthService.updateHealthFields(strategyId: strategyId, fields: {
-      'updatedAt': FieldValue.serverTimestamp(),
+      await _cycleService.appendExecutionToCycleInTx(
+        tx: tx,
+        strategyId: strategyId,
+        execution: execution,
+        strategyContext: plannerContext,
+      );
+
+      await _healthService.markHealthDirtyInTx(tx: tx, strategyId: strategyId);
     });
   }
 }

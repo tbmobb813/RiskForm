@@ -152,8 +152,8 @@ class ExecutionService {
   double _estimateRisk(Map<String, dynamic> execution) {
     // Placeholder: you can wire this to a real risk engine.
     // For now, assume premium * 100 * qty for options.
-    final premium = (execution['premium'] ?? 0).toDouble();
-    final qty = (execution['qty'] ?? 1).toDouble();
+    final premium = ((execution['premium'] as num?) ?? 0).toDouble();
+    final qty = ((execution['qty'] as num?) ?? 1).toDouble();
     return premium * 100 * qty;
   }
 
