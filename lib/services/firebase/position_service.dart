@@ -22,8 +22,8 @@ class PositionService {
           .get();
 
       return snapshot.docs.map((doc) {
-        final data = doc.data();
-        data['id'] = doc.id;
+        // make a new map that includes the Firestore document ID so the model can capture it
+        final data = {...doc.data(), 'id': doc.id};
         return Position.fromJson(data);
       }).toList();
     } catch (e) {

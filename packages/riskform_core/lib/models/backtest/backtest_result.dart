@@ -62,19 +62,28 @@ class CycleStats {
 
   factory CycleStats.fromMap(Map<String, dynamic> m) {
     MarketRegime? regime;
-    if (m['dominantRegime'] != null) {
-      final s = (m['dominantRegime'] as String).split('.').last;
-      regime = MarketRegime.values.firstWhere((e) => e.toString().split('.').last == s);
+    final dr = m['dominantRegime'];
+      if (dr is String && dr.isNotEmpty) {
+        final s = dr.split('.').last;
+        regime = MarketRegime.values.firstWhere(
+          (e) => e.toString().split('.').last == s,
+          orElse: () => MarketRegime.sideways,
+        );
     }
 
     CycleOutcome? outcome;
-    if (m['outcome'] != null) {
-      final s = (m['outcome'] as String).split('.').last;
-      outcome = CycleOutcome.values.firstWhere((e) => e.toString().split('.').last == s);
+    final o = m['outcome'];
+      if (o is String && o.isNotEmpty) {
+        final s = o.split('.').last;
+        try {
+          outcome = CycleOutcome.values.firstWhere((e) => e.toString().split('.').last == s);
+        } catch (_) {
+          outcome = null;
+        }
     }
 
     return CycleStats(
-      cycleId: m['cycleId'] as String,
+      cycleId: m['cycleId'] as String? ?? '',
       index: (m['index'] as num).toInt(),
       startEquity: (m['startEquity'] as num).toDouble(),
       endEquity: (m['endEquity'] as num).toDouble(),
@@ -82,8 +91,8 @@ class CycleStats {
       hadAssignment: m['hadAssignment'] as bool,
       outcome: outcome,
       dominantRegime: regime,
-      startIndex: m['startIndex'] as int?,
-      endIndex: m['endIndex'] as int?,
+      startIndex: (m['startIndex'] as num?)?.toInt(),
+      endIndex: (m['endIndex'] as num?)?.toInt(),
       assignmentPrice: (m['assignmentPrice'] as num?)?.toDouble(),
       assignmentStrike: (m['assignmentStrike'] as num?)?.toDouble(),
       calledAwayPrice: (m['calledAwayPrice'] as num?)?.toDouble(),
