@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_application_2/screens/planner/risk_summary/risk_metrics_card.dart';
-import 'package:flutter_application_2/models/risk_result.dart';
+import 'package:riskform/screens/planner/risk_summary/risk_metrics_card.dart';
+import 'package:riskform/models/risk_result.dart';
 
 void main() {
   testWidgets('RiskMetricsCard displays metrics correctly', (WidgetTester tester) async {

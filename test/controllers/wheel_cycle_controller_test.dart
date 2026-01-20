@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_application_2/controllers/wheel_cycle_controller.dart';
-import 'package:flutter_application_2/models/wheel_cycle.dart';
-import 'package:flutter_application_2/models/position.dart';
+import 'package:riskform/controllers/wheel_cycle_controller.dart';
+import 'package:riskform/models/wheel_cycle.dart';
+import 'package:riskform/models/position.dart';
 
 void main() {
   final controller = WheelCycleController();

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_application_2/screens/planner/payoff/inputs_recap.dart';
-import 'package:flutter_application_2/models/trade_inputs.dart';
+import 'package:riskform/screens/planner/payoff/inputs_recap.dart';
+import 'package:riskform/models/trade_inputs.dart';
 
 void main() {
   testWidgets('InputsRecap shows title and entries when expanded', (WidgetTester tester) async {

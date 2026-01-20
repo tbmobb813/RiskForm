@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_application_2/services/firebase/wheel_cycle_service.dart';
-import 'package:flutter_application_2/models/wheel_cycle.dart';
-import 'package:flutter_application_2/models/position.dart';
+import 'package:riskform/services/firebase/wheel_cycle_service.dart';
+import 'package:riskform/models/wheel_cycle.dart';
+import 'package:riskform/models/position.dart';
 
 void main() {
   group('WheelCycleService - Cycle Count Logic', () {

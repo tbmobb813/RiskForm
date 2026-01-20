@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_application_2/services/journal/live_trade_ingestion_service.dart';
-import 'package:flutter_application_2/models/trade/live_trade_event.dart';
-import 'package:flutter_application_2/services/journal/journal_repository.dart';
+import 'package:riskform/services/journal/live_trade_ingestion_service.dart';
+import 'package:riskform/models/trade/live_trade_event.dart';
+import 'package:riskform/services/journal/journal_repository.dart';
 
 void main() {
   group('LiveTradeIngestionService', () {

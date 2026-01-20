@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_application_2/screens/planner/components/payoff_chart_card.dart';
-import 'package:flutter_application_2/models/payoff_result.dart';
+import 'package:riskform/screens/planner/components/payoff_chart_card.dart';
+import 'package:riskform/models/payoff_result.dart';
 
 void main() {
   testWidgets('PayoffChartCard shows placeholder text', (WidgetTester tester) async {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_application_2/screens/dashboard/strategy_tile.dart';
+import 'package:riskform/screens/dashboard/strategy_tile.dart';
 
 void main() {
   testWidgets('StrategyTile displays texts and reacts to tap', (WidgetTester tester) async {

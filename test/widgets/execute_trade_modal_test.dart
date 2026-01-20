@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_application_2/execution/execute_trade_modal.dart';
+import 'package:riskform/execution/execute_trade_modal.dart';
 
 void main() {
   testWidgets('ExecuteTradeModal builds and shows title', (WidgetTester tester) async {

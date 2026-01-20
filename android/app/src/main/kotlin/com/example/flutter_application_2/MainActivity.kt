@@ -1,4 +1,4 @@
-package com.example.flutter_application_2
+package com.riskform.riskform
 
 import io.flutter.embedding.android.FlutterActivity
 

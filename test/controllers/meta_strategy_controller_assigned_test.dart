@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_application_2/controllers/meta_strategy_controller.dart';
-import 'package:flutter_application_2/models/wheel_cycle.dart';
-import 'package:flutter_application_2/models/position.dart';
-import 'package:flutter_application_2/models/account_snapshot.dart';
-import 'package:flutter_application_2/models/risk_profile.dart';
+import 'package:riskform/controllers/meta_strategy_controller.dart';
+import 'package:riskform/models/wheel_cycle.dart';
+import 'package:riskform/models/position.dart';
+import 'package:riskform/models/account_snapshot.dart';
+import 'package:riskform/models/risk_profile.dart';
 
 void main() {
   test('MetaStrategyController returns assigned when previous wheel state was cspOpen and shares are present', () {

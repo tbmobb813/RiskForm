@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_application_2/services/journal/discipline_timeline_service.dart';
-import 'package:flutter_application_2/services/journal/discipline_scoring_service.dart';
-import 'package:flutter_application_2/models/journal/daily_discipline_snapshot.dart';
-import 'package:flutter_application_2/models/journal/journal_entry.dart';
+import 'package:riskform/services/journal/discipline_timeline_service.dart';
+import 'package:riskform/services/journal/discipline_scoring_service.dart';
+import 'package:riskform/models/journal/daily_discipline_snapshot.dart';
+import 'package:riskform/models/journal/journal_entry.dart';
 
 void main() {
   group('DisciplineTimelineService', () {

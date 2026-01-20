@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_application_2/services/engines/payoff_engine.dart';
-import 'package:flutter_application_2/models/trade_inputs.dart';
+import 'package:riskform/services/engines/payoff_engine.dart';
+import 'package:riskform/models/trade_inputs.dart';
 
 void main() {
   group('PayoffEngine payoffAtPrice', () {

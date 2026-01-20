@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_application_2/services/journal/journal_repository.dart';
-import 'package:flutter_application_2/models/journal/journal_entry.dart';
+import 'package:riskform/services/journal/journal_repository.dart';
+import 'package:riskform/models/journal/journal_entry.dart';
 
 void main() {
   test('JournalRepository add and getAll', () async {

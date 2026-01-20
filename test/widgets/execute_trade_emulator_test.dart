@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_application_2/execution/execute_trade_modal.dart';
+import 'package:riskform/execution/execute_trade_modal.dart';
 
 void main() {
   testWidgets('ExecuteTradeModal writes discipline score to journal (mock firestore)', (WidgetTester tester) async {

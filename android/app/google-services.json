@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1036674076829",
+    "project_id": "riskform-484809",
+    "storage_bucket": "riskform-484809.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1036674076829:android:dc9d7c6c0779fc11548474",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDNvkgv6ZAYYujuKP5-TMt0SaR32_610h4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1036674076829:android:b8c04084d8f67efa548474",
+        "android_client_info": {
+          "package_name": "com.riskform.riskform"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDNvkgv6ZAYYujuKP5-TMt0SaR32_610h4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

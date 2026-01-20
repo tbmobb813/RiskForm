@@ -1,3 +1,5 @@
+/// <reference types="mocha" />
+
 import * as assert from 'assert';
 import * as admin from 'firebase-admin';
 import * as fft from 'firebase-functions-test';
@@ -37,7 +39,7 @@ describe('scoreTrade integration', () => {
       maxRiskPercent: 2,
     });
 
-    const wrapped = test.wrap(scoreTrade);
+    const wrapped = test.wrap(scoreTrade) as any;
 
     const plannedParams = {
       plannedEntryTime: new Date(Date.now() - 600000).toISOString(),

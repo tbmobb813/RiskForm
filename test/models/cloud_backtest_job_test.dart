@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_application_2/models/cloud/cloud_backtest_job.dart';
+import 'package:riskform/models/cloud/cloud_backtest_job.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 
 Map<String, dynamic> _baseMap(dynamic submittedAt, {dynamic startedAt, dynamic completedAt}) {

@@ -1,22 +1,21 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_application_2/models/backtest/backtest_config.dart';
-import 'package:flutter_application_2/models/backtest/backtest_result.dart';
-import 'package:flutter_application_2/models/backtest/backtest_step.dart';
-import 'package:flutter_application_2/models/backtest/wheel_sim_state.dart';
-import 'package:flutter_application_2/models/wheel_cycle.dart';
-import 'package:flutter_application_2/services/engines/wheel_helpers.dart';
-import 'package:flutter_application_2/services/engines/option_pricing_engine.dart';
-import 'package:uuid/uuid.dart';
+import 'package:riskform/models/backtest/backtest_config.dart';
+import 'package:riskform/models/backtest/backtest_result.dart';
+import 'package:riskform/models/backtest/backtest_step.dart';
+import 'package:riskform/models/backtest/wheel_sim_state.dart';
+import 'package:riskform/models/wheel_cycle.dart';
+import 'package:riskform/services/engines/wheel_helpers.dart';
+import 'package:riskform/services/engines/option_pricing_engine.dart';
 import 'dart:math';
 
-import 'package:flutter_application_2/models/historical/historical_price.dart';
-import 'package:flutter_application_2/services/analytics/regime_classifier.dart';
-import 'package:flutter_application_2/models/analytics/market_regime.dart';
-import 'package:flutter_application_2/models/analytics/regime_segment.dart';
+// historical/regime classification helpers are now provided by the
+// shared `riskform_core` package when needed; avoid unused imports here.
+import 'package:riskform/models/analytics/market_regime.dart';
+import 'package:riskform/models/analytics/regime_segment.dart';
+import 'package:riskform_core/backtest/backtest_engine.dart' as core;
 
 /// Pure, deterministic backtest engine scaffold.
 class BacktestEngine {
-  static const _uuid = Uuid();
   static const engineVersion = '1.0.0';
 
   // Using dynamic here keeps the scaffold decoupled from concrete engine
@@ -36,231 +35,14 @@ class BacktestEngine {
   });
 
   BacktestResult run(BacktestConfig config) {
-    if (config.pricePath.isEmpty) {
-      throw Exception('Backtest requires a non-empty price path.');
-    }
-
-    // build historical price list with daily spacing from config.startDate
-    final historical = <HistoricalPrice>[];
-    for (var i = 0; i < config.pricePath.length; i++) {
-      final d = config.startDate.add(Duration(days: i));
-      final p = config.pricePath[i];
-      historical.add(HistoricalPrice(date: d, open: p, high: p, low: p, close: p, volume: 0));
-    }
-
-    // classify regimes
-    final classifier = RegimeClassifier();
-    final regimeSegments = classifier.classify(historical);
-
-    // Initialize simulation state for wheel simulation
-    final equityCurve = <double>[];
-    final notes = <String>[];
-    final steps = <BacktestStep>[];
-
-    // cycle analytics
-    final cycles = <CycleStats>[];
-    int currentCycleIndex = 0;
-    double cycleStartEquity = 0.0;
-    bool cycleStartSet = false;
-    int cycleDuration = 0;
-    bool cycleHadAssignment = false;
-    int? cycleStartIndex;
-    int dayIndex = 0;
-    String currentCycleId = _uuid.v4();
-    CycleOutcome? currentCycleOutcome;
-
-    // Track assignment and called-away details for journal entries
-    double? currentAssignmentPrice;
-    double? currentAssignmentStrike;
-    double? currentCalledAwayPrice;
-    double? currentCalledAwayStrike;
-
-    final sim = WheelSimState(
-      capital: config.startingCapital,
-      shares: 0,
-      costBasis: 0.0,
-      cycle: WheelCycle(state: WheelCycleState.idle),
-    );
-
-    for (final price in config.pricePath) {
-      // decrement DTE for active options before processing today's price
-      if (sim.csp != null) sim.csp!.dte -= 1;
-      if (sim.cc != null) sim.cc!.dte -= 1;
-      final equityBefore = sim.capital + sim.shares * price;
-      if (!cycleStartSet) {
-        cycleStartEquity = equityBefore;
-        cycleStartSet = true;
-      }
-      cycleStartIndex ??= dayIndex;
-
-      // Capture option strikes before simulation step (they get nulled on assignment/called-away)
-      final cspStrikeBefore = sim.csp?.strike;
-      final ccStrikeBefore = sim.cc?.strike;
-
-      final newSim = _simulateWheelStep(
-        price: price,
-        state: sim,
-        config: config,
-        notes: notes,
-      );
-
-      // compute equity as capital + current shares * price
-      final equity = newSim.capital + (newSim.shares * price);
-
-      steps.add(BacktestStep(
-        price: price,
-        equity: equity,
-        action: newSim.cycle.state.toString(),
-        reason: notes.isNotEmpty ? notes.last : '',
-      ));
-
-      equityCurve.add(equity);
-      // advance sim for next iteration (mutating behavior kept simple)
-      sim.capital = newSim.capital;
-      sim.shares = newSim.shares;
-      sim.costBasis = newSim.costBasis;
-      sim.cycle = newSim.cycle;
-      sim.csp = newSim.csp;
-      sim.cc = newSim.cc;
-
-      // cycle bookkeeping
-      cycleDuration += 1;
-      final lastNote = notes.isNotEmpty ? notes.last : '';
-
-      // Track assignment events
-      if (lastNote.contains('assigned') || lastNote.contains('CSP expired ITM')) {
-        cycleHadAssignment = true;
-        currentCycleOutcome = CycleOutcome.assigned;
-        currentAssignmentPrice = price;
-        currentAssignmentStrike = cspStrikeBefore;
-      }
-
-      // Track OTM expiration (CSP expired worthless, no assignment)
-      if (lastNote.contains('CSP expired OTM')) {
-        currentCycleOutcome = CycleOutcome.expiredOTM;
-      }
-
-      // Track called away events
-      if (lastNote.contains('called away') || lastNote.contains('CC expired ITM')) {
-        currentCycleOutcome = CycleOutcome.calledAway;
-        currentCalledAwayPrice = price;
-        currentCalledAwayStrike = ccStrikeBefore;
-      }
-
-      if (lastNote.contains('called away') || lastNote.contains('Cycle completed') || lastNote.contains('CC expired ITM')) {
-        // complete cycle
-        // Compute a non-null local start equity to avoid analyzer warnings
-        // about null-aware expressions used defensively elsewhere.
-        double startEquityLocal;
-        if (!cycleStartSet) {
-          startEquityLocal = equity;
-        } else {
-          startEquityLocal = cycleStartEquity;
-        }
-
-        cycles.add(CycleStats(
-          cycleId: currentCycleId,
-          index: currentCycleIndex,
-          startEquity: startEquityLocal,
-          endEquity: equity,
-          durationDays: cycleDuration,
-          hadAssignment: cycleHadAssignment,
-          outcome: currentCycleOutcome,
-          startIndex: cycleStartIndex,
-          endIndex: dayIndex,
-          assignmentPrice: currentAssignmentPrice,
-          assignmentStrike: currentAssignmentStrike,
-          calledAwayPrice: currentCalledAwayPrice,
-          calledAwayStrike: currentCalledAwayStrike,
-        ));
-        currentCycleIndex += 1;
-        cycleStartSet = false;
-        cycleStartEquity = 0.0;
-        cycleDuration = 0;
-        cycleHadAssignment = false;
-        cycleStartIndex = null;
-        currentCycleId = _uuid.v4();
-        currentCycleOutcome = null;
-        currentAssignmentPrice = null;
-        currentAssignmentStrike = null;
-        currentCalledAwayPrice = null;
-        currentCalledAwayStrike = null;
-      }
-      dayIndex += 1;
-    }
-    final avgReturn = cycles.isEmpty
-        ? 0.0
-        : cycles.map((c) => c.cycleReturn).reduce((a, b) => a + b) / cycles.length;
-    final avgDuration = cycles.isEmpty
-        ? 0.0
-        : cycles.map((c) => c.durationDays).reduce((a, b) => a + b) / cycles.length;
-    final assignmentRate = cycles.isEmpty ? 0.0 : cycles.where((c) => c.hadAssignment).length / cycles.length;
-
-    // enrich cycles with dominant regimes
-    List<CycleStats> enriched = cycles.map((c) {
-      final dom = _dominantRegimeForCycle(cycle: c, segments: regimeSegments);
-      return CycleStats(
-        cycleId: c.cycleId,
-        index: c.index,
-        startEquity: c.startEquity,
-        endEquity: c.endEquity,
-        durationDays: c.durationDays,
-        hadAssignment: c.hadAssignment,
-        outcome: c.outcome,
-        dominantRegime: dom,
-        startIndex: c.startIndex,
-        endIndex: c.endIndex,
-        assignmentPrice: c.assignmentPrice,
-        assignmentStrike: c.assignmentStrike,
-        calledAwayPrice: c.calledAwayPrice,
-        calledAwayStrike: c.calledAwayStrike,
-      );
-    }).toList();
-
-    double avgCycleReturnForRegime(List<CycleStats> cyclesList, MarketRegime regime) {
-      final filtered = cyclesList.where((c) => c.dominantRegime == regime).toList();
-      if (filtered.isEmpty) return 0.0;
-      final sum = filtered.fold<double>(0, (a, c) => a + c.cycleReturn);
-      return sum / filtered.length;
-    }
-
-    double assignmentRateForRegime(List<CycleStats> cyclesList, MarketRegime regime) {
-      final filtered = cyclesList.where((c) => c.dominantRegime == regime).toList();
-      if (filtered.isEmpty) return 0.0;
-      final assigned = filtered.where((c) => c.hadAssignment).length;
-      return assigned / filtered.length;
-    }
-
-    final upRet = avgCycleReturnForRegime(enriched, MarketRegime.uptrend);
-    final downRet = avgCycleReturnForRegime(enriched, MarketRegime.downtrend);
-    final sideRet = avgCycleReturnForRegime(enriched, MarketRegime.sideways);
-
-    final upAssign = assignmentRateForRegime(enriched, MarketRegime.uptrend);
-    final downAssign = assignmentRateForRegime(enriched, MarketRegime.downtrend);
-    final sideAssign = assignmentRateForRegime(enriched, MarketRegime.sideways);
-
-    return BacktestResult(
-      configUsed: config,
-      equityCurve: equityCurve,
-      maxDrawdown: _maxDrawdown(equityCurve),
-      totalReturn: (equityCurve.isNotEmpty ? (equityCurve.last - config.startingCapital) / config.startingCapital : 0.0),
-      cyclesCompleted: cycles.length,
-      notes: notes,
-      cycles: enriched,
-      avgCycleReturn: avgReturn,
-      avgCycleDurationDays: avgDuration.toDouble(),
-      assignmentRate: assignmentRate.toDouble(),
-      uptrendAvgCycleReturn: upRet,
-      downtrendAvgCycleReturn: downRet,
-      sidewaysAvgCycleReturn: sideRet,
-      uptrendAssignmentRate: upAssign,
-      downtrendAssignmentRate: downAssign,
-      sidewaysAssignmentRate: sideAssign,
-      engineVersion: engineVersion,
-      regimeSegments: regimeSegments,
-    );
+    // Delegate to the shared core engine and convert the returned map
+    // into the app's `BacktestResult` model.
+    final coreEngine = core.CloudBacktestEngine();
+    final resultMap = coreEngine.run(config.toMap());
+    return BacktestResult.fromMap(Map<String, dynamic>.from(resultMap));
   }
 
+  // ignore: unused_element
   MarketRegime? _dominantRegimeForCycle({
     required CycleStats cycle,
     required List<RegimeSegment> segments,
@@ -285,6 +67,7 @@ class BacktestEngine {
   }
 
   // --- Wheel simulation ---
+  // ignore: unused_element
   WheelSimState _simulateWheelStep({
     required double price,
     required WheelSimState state,
@@ -293,18 +76,19 @@ class BacktestEngine {
   }) {
     // Operate on a copy to keep changes explicit
     final s = state.copy();
+    final symbol = config.symbol;
 
     switch (s.cycle.state) {
       case WheelCycleState.idle:
         return _handleIdle(price, s, notes);
       case WheelCycleState.cspOpen:
-        return _handleCspOpen(price, s, notes);
+        return _handleCspOpen(price, s, notes, symbol);
       case WheelCycleState.assigned:
         return _handleAssigned(price, s, notes);
       case WheelCycleState.sharesOwned:
         return _handleSharesOwned(price, s, notes);
       case WheelCycleState.ccOpen:
-        return _handleCcOpen(price, s, notes);
+        return _handleCcOpen(price, s, notes, symbol);
       case WheelCycleState.calledAway:
         return _handleCalledAway(price, s, notes);
     }
@@ -348,7 +132,7 @@ class BacktestEngine {
     return state;
   }
 
-  WheelSimState _handleCspOpen(double price, WheelSimState state, List<String> notes) {
+  WheelSimState _handleCspOpen(double price, WheelSimState state, List<String> notes, String symbol) {
     // Use the in-sim option if present
     final csp = state.csp;
     if (csp == null) {
@@ -362,7 +146,7 @@ class BacktestEngine {
 
     // Early-assignment heuristic (deterministic, rare)
     if (shouldEarlyAssign(
-      symbol: configSymbolOrUnknown(),
+      symbol: symbol,
       strike: strike,
       dte: csp.dte,
       isPut: true,
@@ -443,7 +227,7 @@ class BacktestEngine {
     return state;
   }
 
-  WheelSimState _handleCcOpen(double price, WheelSimState state, List<String> notes) {
+  WheelSimState _handleCcOpen(double price, WheelSimState state, List<String> notes, String symbol) {
     final cc = state.cc;
     if (cc == null) {
       notes.add('CC open but option missing; keeping shares.');
@@ -455,7 +239,7 @@ class BacktestEngine {
     final isITM = price > strike;
 
     if (shouldEarlyAssign(
-      symbol: configSymbolOrUnknown(),
+      symbol: symbol,
       strike: strike,
       dte: cc.dte,
       isPut: false,
@@ -574,6 +358,7 @@ class BacktestEngine {
     );
   }
 
+  // ignore: unused_element
   double _maxDrawdown(List<double> curve) {
     if (curve.isEmpty) return 0.0;
     double peak = curve.first;

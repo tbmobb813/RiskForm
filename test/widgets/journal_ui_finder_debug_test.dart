@@ -5,10 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:flutter_application_2/screens/journal/journal_screen.dart';
-import 'package:flutter_application_2/services/journal/journal_repository.dart';
-import 'package:flutter_application_2/models/journal/journal_entry.dart';
-import 'package:flutter_application_2/state/journal_providers.dart';
+import 'package:riskform/screens/journal/journal_screen.dart';
+import 'package:riskform/services/journal/journal_repository.dart';
+import 'package:riskform/models/journal/journal_entry.dart';
+import 'package:riskform/state/journal_providers.dart';
 
 void main() {
   final runDiag = io.Platform.environment['DIAGNOSTIC_TEST'] == '1';

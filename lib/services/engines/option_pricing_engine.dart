@@ -1,10 +1,89 @@
 import 'dart:math';
 
+/// LRU cache for option pricing calculations.
+class _PricingCache {
+  final int maxSize;
+  final Map<String, double> _cache = {};
+  final List<String> _accessOrder = [];
+
+  _PricingCache({this.maxSize = 10000});
+
+  double? get(String key) {
+    final value = _cache[key];
+    if (value != null) {
+      // Move to end (most recently used)
+      _accessOrder.remove(key);
+      _accessOrder.add(key);
+    }
+    return value;
+  }
+
+  void put(String key, double value) {
+    if (_cache.containsKey(key)) {
+      _cache[key] = value;
+      _accessOrder.remove(key);
+      _accessOrder.add(key);
+    } else {
+      if (_cache.length >= maxSize) {
+        // Remove least recently used
+        final lruKey = _accessOrder.removeAt(0);
+        _cache.remove(lruKey);
+      }
+      _cache[key] = value;
+      _accessOrder.add(key);
+    }
+  }
+
+  void clear() {
+    _cache.clear();
+    _accessOrder.clear();
+  }
+
+  int get size => _cache.length;
+}
+
 class OptionPricingEngine {
   // risk-free rate (annualized, decimal)
   final double riskFreeRate;
 
-  OptionPricingEngine({this.riskFreeRate = 0.02});
+  /// Enable/disable caching (useful for testing)
+  final bool enableCache;
+
+  /// Cache for put prices
+  final _PricingCache _putCache;
+
+  /// Cache for call prices
+  final _PricingCache _callCache;
+
+  OptionPricingEngine({
+    this.riskFreeRate = 0.02,
+    this.enableCache = true,
+    int cacheSize = 10000,
+  })  : _putCache = _PricingCache(maxSize: cacheSize),
+        _callCache = _PricingCache(maxSize: cacheSize);
+
+  /// Generates a cache key from pricing inputs.
+  /// Rounds values to reduce cache misses from floating point variance.
+  String _cacheKey(double spot, double strike, double volatility, double time) {
+    // Round to 4 decimal places for reasonable precision
+    final s = spot.toStringAsFixed(4);
+    final k = strike.toStringAsFixed(4);
+    final v = volatility.toStringAsFixed(4);
+    final t = time.toStringAsFixed(6);
+    return '$s|$k|$v|$t';
+  }
+
+  /// Clears the pricing cache.
+  void clearCache() {
+    _putCache.clear();
+    _callCache.clear();
+  }
+
+  /// Returns cache statistics for monitoring.
+  Map<String, int> get cacheStats => {
+        'putCacheSize': _putCache.size,
+        'callCacheSize': _callCache.size,
+      };
 
   double priceEuropeanPut({
     required double spot,
@@ -16,6 +95,21 @@ class OptionPricingEngine {
       return max(strike - spot, 0);
     }
 
+    // Check cache first
+    if (enableCache) {
+      final key = _cacheKey(spot, strike, volatility, timeToExpiryYears);
+      final cached = _putCache.get(key);
+      if (cached != null) return cached;
+
+      final price = _computePutPrice(spot, strike, volatility, timeToExpiryYears);
+      _putCache.put(key, price);
+      return price;
+    }
+
+    return _computePutPrice(spot, strike, volatility, timeToExpiryYears);
+  }
+
+  double _computePutPrice(double spot, double strike, double volatility, double timeToExpiryYears) {
     final d1 = (log(spot / strike) +
             (riskFreeRate + 0.5 * pow(volatility, 2)) * timeToExpiryYears) /
         (volatility * sqrt(timeToExpiryYears));
@@ -37,6 +131,21 @@ class OptionPricingEngine {
       return max(spot - strike, 0);
     }
 
+    // Check cache first
+    if (enableCache) {
+      final key = _cacheKey(spot, strike, volatility, timeToExpiryYears);
+      final cached = _callCache.get(key);
+      if (cached != null) return cached;
+
+      final price = _computeCallPrice(spot, strike, volatility, timeToExpiryYears);
+      _callCache.put(key, price);
+      return price;
+    }
+
+    return _computeCallPrice(spot, strike, volatility, timeToExpiryYears);
+  }
+
+  double _computeCallPrice(double spot, double strike, double volatility, double timeToExpiryYears) {
     final d1 = (log(spot / strike) +
             (riskFreeRate + 0.5 * pow(volatility, 2)) * timeToExpiryYears) /
         (volatility * sqrt(timeToExpiryYears));

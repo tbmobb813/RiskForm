@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_application_2/screens/dashboard/position_card.dart';
-import 'package:flutter_application_2/models/position.dart';
+import 'package:riskform/screens/dashboard/position_card.dart';
+import 'package:riskform/models/position.dart';
 
 void main() {
   testWidgets('PositionCard displays symbol, strategy and shows snackbar on tap', (WidgetTester tester) async {

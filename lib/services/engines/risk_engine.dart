@@ -5,6 +5,17 @@ import '../../models/risk_result.dart';
 import '../../models/account_context.dart';
 import '../../state/account_context_provider.dart';
 
+/// Risk threshold constants for guardrail warnings.
+class RiskThresholds {
+  RiskThresholds._();
+
+  /// Warning threshold: trade locks more than this % of account (moderate risk).
+  static const double moderateRiskPercent = 5.0;
+
+  /// Warning threshold: trade locks more than this % of account (high risk).
+  static const double highRiskPercent = 10.0;
+}
+
 final riskEngineProvider = Provider<RiskEngine>((ref) {
   final accountAsync = ref.watch(accountContextProvider);
 
@@ -89,11 +100,11 @@ class RiskEngine {
   }) {
     final warnings = <String>[];
 
-    if (riskPercent > 5) {
-      warnings.add("This trade locks more than 5% of your account.");
+    if (riskPercent > RiskThresholds.moderateRiskPercent) {
+      warnings.add("This trade locks more than ${RiskThresholds.moderateRiskPercent.toInt()}% of your account.");
     }
-    if (riskPercent > 10) {
-      warnings.add("This trade locks more than 10% of your account.");
+    if (riskPercent > RiskThresholds.highRiskPercent) {
+      warnings.add("This trade locks more than ${RiskThresholds.highRiskPercent.toInt()}% of your account.");
     }
     if (assignmentExposure) {
       warnings.add("This strategy carries assignment exposure.");

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_2/screens/planner/components/tags_section.dart';
+import 'package:riskform/screens/planner/components/tags_section.dart';
 
 void main() {
   testWidgets('TagsSection toggles tag selection and calls onChanged', (WidgetTester tester) async {

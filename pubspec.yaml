@@ -1,4 +1,4 @@
-name: flutter_application_2
+name: riskform
 description: "A new Flutter project."
 publish_to: 'none'
 version: 0.1.0
@@ -22,6 +22,11 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   uuid: ^4.5.1
+  riskform_core:
+    path: packages/riskform_core
+  riskform_cloud_worker:
+    path: cloud_worker
+  flutterfire_cli: ^1.3.1
 
 dev_dependencies:
   flutter_test:

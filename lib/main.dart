@@ -1,17 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'constants.dart';
 import 'app.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   try {
-    await Firebase.initializeApp();
-    
+    // On web we must provide FirebaseOptions when creating the default app.
+    if (kIsWeb) {
+      // `DefaultFirebaseOptions.currentPlatform` is generated and non-null for supported
+      // platforms; the previous null-check is unnecessary and caused analyzer warnings.
+      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    } else {
+      await Firebase.initializeApp();
+    }
+
     // Initialize Hive
     await Hive.initFlutter();
     

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_application_2/models/payoff_result.dart';
+import 'package:riskform/models/payoff_result.dart';
 
 void main() {
   test('PayoffResult formatting strings', () {

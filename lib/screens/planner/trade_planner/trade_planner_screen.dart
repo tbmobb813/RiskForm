@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../state/planner_notifier.dart';
 import '../components/input_section.dart';
 import '../components/optional_inputs_section.dart';
@@ -76,7 +77,7 @@ class TradePlannerScreen extends ConsumerWidget {
                           if (!ok) return;
                           if (!context.mounted) return;
 
-                          Navigator.of(context).pushNamed("payoff");
+                          context.pushNamed("payoff");
                         },
                   child: const Text("Review Payoff & Risk"),
                 ),

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_application_2/models/trade_plan.dart';
+import 'package:riskform/models/trade_plan.dart';
 
 void main() {
   group('TradePlan.fromMap timestamp parsing', () {
