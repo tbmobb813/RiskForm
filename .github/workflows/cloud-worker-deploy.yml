@@ -6,8 +6,26 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  preflight:
     runs-on: ubuntu-latest
+    outputs:
+      have_gcp_sa_key: ${{ steps.check.outputs.have_key }}
+    steps:
+      - name: Check for GCP_SA_KEY
+        id: check
+        run: |
+          if [ -z "${{ secrets.GCP_SA_KEY }}" ]; then
+            echo "have_key=false" >> $GITHUB_OUTPUT
+            echo "::warning::GCP_SA_KEY secret not set. Deploy job will be skipped."
+          else
+            echo "have_key=true" >> $GITHUB_OUTPUT
+            echo "GCP_SA_KEY present."
+          fi
+
+  build-and-deploy:
+    needs: preflight
+    runs-on: ubuntu-latest
+    if: ${{ needs.preflight.outputs.have_gcp_sa_key == 'true' }}
     permissions:
       contents: read
 

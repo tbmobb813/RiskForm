@@ -1,6 +1,8 @@
 name: riskform_cloud_worker
 description: Cloud Run backtest worker service for RiskForm
 
+publish_to: none
+
 version: 1.0.0
 
 environment:
