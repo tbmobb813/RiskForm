@@ -7,6 +7,8 @@ import 'viewmodels/strategy_discipline_viewmodel.dart';
 import 'viewmodels/strategy_regime_viewmodel.dart';
 import 'viewmodels/strategy_backtest_viewmodel.dart';
 import 'viewmodels/strategy_cockpit_viewmodel.dart';
+import 'widgets/recommendations_panel.dart';
+import 'package:riskform/models/strategy.dart';
 
 /// =============================================================
 /// ROOT SCREEN
@@ -56,14 +58,28 @@ class StrategyCockpitScreen extends StatelessWidget {
 
 class StrategyHeader extends StatelessWidget {
   final String strategyId;
+  final dynamic viewModel; // optional injection for tests / previews
 
   const StrategyHeader({
     super.key,
     required this.strategyId,
+    this.viewModel,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Allow injecting a pre-built viewmodel (useful for tests) via `viewModel`.
+    if (viewModel != null) {
+      return ChangeNotifierProvider<StrategyCockpitViewModel>.value(
+        value: viewModel as StrategyCockpitViewModel,
+        child: Consumer<StrategyCockpitViewModel>(
+          builder: (context, vm, _) {
+            return _buildHeader(context, vm);
+          },
+        ),
+      );
+    }
+
     return ChangeNotifierProvider<StrategyCockpitViewModel>(
       create: (_) => StrategyCockpitViewModel(strategyId: strategyId),
       child: Consumer<StrategyCockpitViewModel>(
@@ -82,51 +98,62 @@ class StrategyHeader extends StatelessWidget {
             );
           }
 
-          final strategy = vm.strategy!;
-
-          return Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        strategy.name,
-                        style: Theme.of(context).textTheme.headlineSmall,
-                      ),
-                    ),
-                    _StateBadge(state: strategy.state.name),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                if (strategy.tags.isNotEmpty)
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: strategy.tags
-                        .map((t) => Chip(label: Text(t)))
-                        .toList(),
-                  ),
-                if (strategy.tags.isNotEmpty) const SizedBox(height: 12),
-                if (strategy.constraints.isNotEmpty)
-                  Text(
-                    strategy.constraints.toString(),
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                if (strategy.constraints.isNotEmpty)
-                  const SizedBox(height: 12),
-                Text(
-                  'Updated ${_formatDate(strategy.updatedAt)}',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                const SizedBox(height: 16),
-                _HeaderActions(vm: vm),
-              ],
-            ),
-          );
+          return _buildHeader(context, vm);
         },
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, dynamic vm) {
+    final strategy = vm.strategy!;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  strategy.name,
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+              ),
+              _StateBadge(state: strategy.state.toString().split('.').last),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (strategy.tags.isNotEmpty)
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: strategy.tags.map((t) => Chip(label: Text(t))).toList(),
+            ),
+          if (strategy.tags.isNotEmpty) const SizedBox(height: 12),
+          if (strategy.constraints.isNotEmpty)
+            Text(
+              strategy.constraints.toString(),
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          if (strategy.constraints.isNotEmpty) const SizedBox(height: 12),
+          Text(
+            'Updated ${_formatDate(strategy.updatedAt)}',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 16),
+          _HeaderActions(vm: vm),
+          const SizedBox(height: 12),
+          // Recommendations Panel (top-of-left-column)
+          if (vm.recommendations != null) ...[
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Builder(builder: (ctx) {
+                return RecommendationsPanel(bundle: vm.recommendations);
+              }),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -175,7 +202,7 @@ class _HeaderActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final state = vm.strategy?.state.name ?? 'unknown';
+    final state = vm.strategy?.state.toString().split('.').last ?? 'unknown';
 
     return Row(
       children: [
@@ -1134,7 +1161,7 @@ class _LifecycleButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final state = vm.strategy?.state.name ?? 'unknown';
+    final state = vm.strategy?.state.toString().split('.').last ?? 'unknown';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

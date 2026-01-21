@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/legacy.dart';
 import '../models/trade_inputs.dart';
+import 'package:riskform/strategy_cockpit/analytics/regime_aware_planner_hints.dart' as planner_hints;
+import 'package:riskform/strategy_cockpit/analytics/strategy_recommendations_engine.dart' as recs;
 import '../models/trade_plan.dart';
 import '../services/data/trade_plan_repository.dart';
 import '../services/engines/payoff_engine.dart';
@@ -46,6 +48,42 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
       risk: null,
       clearError: true,
     );
+    // Compute planner hints with best-effort context derived from current planner state.
+    try {
+      final dte = inputs.expiration != null
+          ? inputs.expiration!.difference(DateTime.now()).inDays
+          : 30;
+      final width = (inputs.shortStrike != null && inputs.longStrike != null)
+          ? (inputs.shortStrike! - inputs.longStrike!).abs()
+          : 20.0;
+      final delta = 0.20; // placeholder: delta not captured by TradeInputs yet
+      final size = inputs.sharesOwned ?? 1;
+
+      final pstate = planner_hints.PlannerState(
+        dte: dte,
+        delta: delta,
+        width: width,
+        size: size,
+        type: state.strategyId ?? 'unknown',
+      );
+
+      final constraints = recs.Constraints(maxRisk: 100, maxPositions: 5);
+      final ctx = recs.StrategyContext(
+        healthScore: 50,
+        pnlTrend: const [],
+        disciplineTrend: const [],
+        recentCycles: const [],
+        constraints: constraints,
+        currentRegime: 'sideways',
+        drawdown: 0.0,
+        backtestComparison: null,
+      );
+
+      final hints = planner_hints.generateHints(pstate, ctx);
+      state = state.copyWith(hintsBundle: hints);
+    } catch (_) {
+      // non-fatal: do not block UI on hint generation errors
+    }
   }
 
   // Notes

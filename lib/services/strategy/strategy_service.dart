@@ -1,11 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-enum StrategyState {
-  active,
-  paused,
-  retired,
-  experimental,
-}
+import 'package:riskform/models/strategy.dart';
 
 class StrategyService {
   final FirebaseFirestore _firestore;
@@ -33,8 +27,8 @@ class StrategyService {
     final docRef = _strategies.doc();
 
     final state = experimental
-        ? StrategyState.experimental.name
-        : StrategyState.active.name;
+      ? StrategyState.experimental.toString().split('.').last
+      : StrategyState.active.toString().split('.').last;
 
     await docRef.set({
       'name': name,
@@ -95,10 +89,10 @@ class StrategyService {
     final data = doc.data() as Map<String, dynamic>;
     final previousState = (data['state'] as String?) ?? 'created';
 
-    _validateTransition(previousState, nextState.name);
+    _validateTransition(previousState, nextState.toString().split('.').last);
 
     final updateData = {
-      'state': nextState.name,
+      'state': nextState.toString().split('.').last,
       'updatedAt': FieldValue.serverTimestamp(),
     };
 
@@ -110,11 +104,11 @@ class StrategyService {
 
     await _events.add({
       'strategyId': strategyId,
-      'type': _eventType(previousState, nextState.name),
+      'type': _eventType(previousState, nextState.toString().split('.').last),
       'timestamp': FieldValue.serverTimestamp(),
       'reason': reason,
       'previousState': previousState,
-      'nextState': nextState.name,
+      'nextState': nextState.toString().split('.').last,
     });
   }
 

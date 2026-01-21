@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../viewmodels/strategy_cockpit_viewmodel.dart';
 import '../widgets/strategy_section_container.dart';
+import 'package:riskform/models/strategy.dart';
 
 class StrategyActionsSection extends StatefulWidget {
   final String strategyId;
@@ -100,7 +101,7 @@ class _LifecycleButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final state = vm.strategy?.state.name ?? 'unknown';
+    final state = vm.strategy?.state.toString().split('.').last ?? 'unknown';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

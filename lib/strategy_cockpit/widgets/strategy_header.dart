@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../viewmodels/strategy_cockpit_viewmodel.dart';
+import 'package:riskform/models/strategy.dart';
 
 class StrategyHeader extends StatelessWidget {
   final String strategyId;
@@ -32,7 +33,7 @@ class StrategyHeader extends StatelessWidget {
           }
 
           final strategy = vm.strategy!;
-          final stateName = strategy.state.name;
+          final stateName = strategy.state.toString().split('.').last;
           final constraintsSummary =
               (strategy.constraints.isNotEmpty) ? strategy.constraints.toString() : null;
 
@@ -147,7 +148,7 @@ class _HeaderActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final stateName = vm.strategy?.state.name ?? 'unknown';
+    final stateName = vm.strategy?.state.toString().split('.').last ?? 'unknown';
 
     return Row(
       children: [

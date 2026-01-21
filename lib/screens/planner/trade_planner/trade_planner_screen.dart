@@ -5,6 +5,7 @@ import '../../../state/planner_notifier.dart';
 import '../components/input_section.dart';
 import '../components/optional_inputs_section.dart';
 import '../components/account_context_card.dart';
+import '../components/hints_section.dart';
 
 class TradePlannerScreen extends ConsumerWidget {
   const TradePlannerScreen({super.key});
@@ -56,6 +57,9 @@ class TradePlannerScreen extends ConsumerWidget {
                   planner.updateInputs(inputs);
                 },
               ),
+
+              const SizedBox(height: 12),
+              const HintsSection(),
 
               const SizedBox(height: 16),
 

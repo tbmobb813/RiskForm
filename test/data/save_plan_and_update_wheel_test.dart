@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:riskform/services/data/trade_plan_repository.dart';
 import 'package:riskform/services/firebase/trade_plan_service.dart';
 import 'package:riskform/services/firebase/auth_service.dart';
@@ -57,13 +58,20 @@ class FakeAuth implements AuthService {
   }
 }
 
-class FakeWheel extends WheelCycleService {
+class FakeWheel implements WheelCycleService {
   bool updated = false;
+
   @override
   Future<WheelCycle> updateCycle({required String uid, WheelCycle? previous, required positions, bool persist = true}) async {
     updated = true;
     return WheelCycle(state: WheelCycleState.idle, lastTransition: null, cycleCount: 0);
   }
+
+  @override
+  Future<WheelCycle?> getCycle(String uid) async => null;
+
+  @override
+  Future<void> saveCycle(String uid, WheelCycle cycle) async {}
 }
 
 void main() {

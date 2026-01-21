@@ -7,6 +7,7 @@ import '../../services/strategy/strategy_service.dart' as strategy_service;
 import '../services/strategy_health_service.dart';
 import '../services/strategy_backtest_service.dart';
 import '../../regime/regime_service.dart';
+import '../analytics/strategy_recommendations_engine.dart';
 
 class StrategyCockpitViewModel extends ChangeNotifier {
   final strategy_service.StrategyService _strategyService;
@@ -20,6 +21,7 @@ class StrategyCockpitViewModel extends ChangeNotifier {
   StrategyHealthSnapshot? health;
   Map<String, dynamic>? latestBacktest;
   String? currentRegime;
+  StrategyRecommendationsBundle? recommendations;
 
   bool isLoading = true;
   bool hasError = false;
@@ -77,6 +79,7 @@ class StrategyCockpitViewModel extends ChangeNotifier {
       (snapshot) {
         if (snapshot != null) {
           health = snapshot;
+          _maybeGenerateRecommendations();
         }
         _setLoaded();
       },
@@ -91,6 +94,7 @@ class StrategyCockpitViewModel extends ChangeNotifier {
     _backtestSub = _backtestService.watchLatestBacktest(strategyId).listen(
       (data) {
         latestBacktest = data;
+        _maybeGenerateRecommendations();
         _setLoaded();
       },
       onError: (_) => _setError(),
@@ -104,10 +108,77 @@ class StrategyCockpitViewModel extends ChangeNotifier {
     _regimeSub = _regimeService.watchCurrentRegime().listen(
       (regime) {
         currentRegime = regime;
+        _maybeGenerateRecommendations();
         _setLoaded();
       },
       onError: (_) => _setError(),
     );
+  }
+
+  void _maybeGenerateRecommendations() {
+    // Require health + strategy + regime to generate meaningful recommendations.
+    if (health == null || strategy == null || currentRegime == null) return;
+
+    final healthScore = (health!.healthScore ?? 50).toInt();
+
+    final pnlTrend = List<double>.from(health!.pnlTrend);
+
+    // Convert discipline trend to ints [0..100]
+    final disciplineTrend = health!.disciplineTrend.map((d) => d.round()).toList();
+
+    // Recent cycles: map last up to 5 summaries to CycleSummary
+    final cycleMaps = health!.cycleSummaries;
+    final recent = <CycleSummary>[];
+    for (var i = cycleMaps.length - 1; i >= 0 && recent.length < 5; i--) {
+      final m = cycleMaps[i];
+      final ds = (m['disciplineScore'] is num) ? (m['disciplineScore'] as num).toInt() : 50;
+      final pnl = (m['pnl'] is num) ? (m['pnl'] as num).toDouble() : 0.0;
+      final r = (m['regime'] is String) ? m['regime'] as String : currentRegime!;
+      recent.add(CycleSummary(disciplineScore: ds, pnl: pnl, regime: r));
+    }
+
+    // Backtest summary
+    final backtest = latestBacktest == null
+        ? null
+        : BacktestSummary(bestConfig: latestBacktest, weakConfig: null, summaryNote: null);
+
+    // Constraints -> map to engine Constraints
+    final c = strategy!.constraints;
+    final constraints = Constraints(
+      maxRisk: (c['maxRisk'] is int) ? c['maxRisk'] as int : 100,
+      maxPositions: (c['maxPositions'] is int) ? c['maxPositions'] as int : 10,
+      allowedDteRange: c['allowedDteRange'] is List ? List<int>.from(c['allowedDteRange']) : null,
+      allowedDeltaRange: c['allowedDeltaRange'] is List ? List<double>.from(c['allowedDeltaRange'].map((v) => (v as num).toDouble())) : null,
+    );
+
+    // Compute drawdown from pnlTrend
+    double drawdown = 0.0;
+    if (pnlTrend.isNotEmpty) {
+      double peak = double.negativeInfinity;
+      double equity = 0.0;
+      double maxDd = 0.0;
+      for (final p in pnlTrend) {
+        equity += p;
+        if (equity > peak) peak = equity;
+        final dd = peak - equity;
+        if (dd > maxDd) maxDd = dd;
+      }
+      drawdown = maxDd;
+    }
+
+    final ctx = StrategyContext(
+      healthScore: healthScore,
+      pnlTrend: pnlTrend,
+      disciplineTrend: disciplineTrend,
+      recentCycles: recent,
+      constraints: constraints,
+      currentRegime: currentRegime ?? 'unknown',
+      drawdown: drawdown,
+      backtestComparison: backtest,
+    );
+
+    recommendations = generateRecommendations(ctx);
+    notifyListeners();
   }
 
   // -----------------------------
@@ -132,7 +203,7 @@ class StrategyCockpitViewModel extends ChangeNotifier {
   Future<void> pauseStrategy({String? reason}) async {
     await _strategyService.changeStrategyState(
       strategyId: strategyId,
-      nextState: strategy_service.StrategyState.paused,
+      nextState: StrategyState.paused,
       reason: reason,
     );
   }
@@ -140,7 +211,7 @@ class StrategyCockpitViewModel extends ChangeNotifier {
   Future<void> resumeStrategy({String? reason}) async {
     await _strategyService.changeStrategyState(
       strategyId: strategyId,
-      nextState: strategy_service.StrategyState.active,
+      nextState: StrategyState.active,
       reason: reason,
     );
   }
@@ -148,7 +219,7 @@ class StrategyCockpitViewModel extends ChangeNotifier {
   Future<void> retireStrategy({String? reason}) async {
     await _strategyService.changeStrategyState(
       strategyId: strategyId,
-      nextState: strategy_service.StrategyState.retired,
+      nextState: StrategyState.retired,
       reason: reason,
     );
   }

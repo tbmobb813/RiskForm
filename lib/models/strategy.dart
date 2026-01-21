@@ -7,6 +7,10 @@ enum StrategyState {
   experimental,
 }
 
+extension StrategyStateString on StrategyState {
+  String get stringValue => toString().split('.').last;
+}
+
 class Strategy {
   final String id;
   final String name;
@@ -80,7 +84,7 @@ class Strategy {
     return {
       'name': name,
       'description': description,
-      'state': state.name,
+      'state': state.toString().split('.').last,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
       if (retiredAt != null) 'retiredAt': Timestamp.fromDate(retiredAt!),
