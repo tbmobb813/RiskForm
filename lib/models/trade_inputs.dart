@@ -18,6 +18,8 @@ class TradeInputs extends Equatable {
   final int? sharesOwned;
 
   final DateTime? expiration;
+  final double? delta;
+  final double? width;
 
   const TradeInputs({
     this.strike,
@@ -31,6 +33,8 @@ class TradeInputs extends Equatable {
     this.costBasis,
     this.sharesOwned,
     this.expiration,
+    this.delta,
+    this.width,
   });
 
   // Construct from UI controllers
@@ -69,6 +73,8 @@ class TradeInputs extends Equatable {
       costBasis: d("Cost Basis"),
       sharesOwned: i("Shares Owned"),
       expiration: date("Expiration Date"),
+      delta: null,
+      width: null,
     );
   }
 
@@ -86,6 +92,8 @@ class TradeInputs extends Equatable {
       "costBasis": costBasis,
       "sharesOwned": sharesOwned,
       "expiration": expiration?.toIso8601String(),
+      "delta": delta,
+      "width": width,
     };
   }
 
@@ -106,6 +114,8 @@ class TradeInputs extends Equatable {
       costBasis: (json['costBasis'] as num?)?.toDouble(),
       sharesOwned: (json['sharesOwned'] as num?)?.toInt(),
       expiration: parseDate(json['expiration']),
+      delta: (json['delta'] as num?)?.toDouble(),
+      width: (json['width'] as num?)?.toDouble(),
     );
   }
 
@@ -123,6 +133,8 @@ class TradeInputs extends Equatable {
       'Cost Basis': costBasis,
       'Shares Owned': sharesOwned,
       'Expiration': expiration?.toIso8601String(),
+      'Delta': delta,
+      'Width': width,
     };
   }
 
@@ -234,5 +246,7 @@ class TradeInputs extends Equatable {
         costBasis,
         sharesOwned,
         expiration,
+      delta,
+      width,
       ];
 }

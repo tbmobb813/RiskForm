@@ -15,6 +15,7 @@ class StrategySelectorScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final planner = ref.read(plannerNotifierProvider.notifier);
+    final symbolFromUrl = Uri.base.queryParameters['symbol']?.toString().toUpperCase();
 
     return Scaffold(
       appBar: AppBar(
@@ -48,7 +49,7 @@ class StrategySelectorScreen extends ConsumerWidget {
                 color: Colors.greenAccent,
                 onTap: () {
                   planner.setStrategy("csp", "Cash-Secured Put",
-                      "Sell a put and set aside cash for assignment.");
+                      "Sell a put and set aside cash for assignment.", symbol: symbolFromUrl);
                   context.pushNamed("trade_planner");
                 },
               ),
@@ -58,7 +59,7 @@ class StrategySelectorScreen extends ConsumerWidget {
                 color: Colors.greenAccent,
                 onTap: () {
                   planner.setStrategy("cc", "Covered Call",
-                      "Sell a call against shares you already own.");
+                      "Sell a call against shares you already own.", symbol: symbolFromUrl);
                   context.pushNamed("trade_planner");
                 },
               ),
@@ -68,7 +69,7 @@ class StrategySelectorScreen extends ConsumerWidget {
                 color: Colors.greenAccent,
                 onTap: () {
                   planner.setStrategy("credit_spread", "Credit Spread",
-                      "Sell a put and buy a lower strike put to define risk.");
+                      "Sell a put and buy a lower strike put to define risk.", symbol: symbolFromUrl);
                   context.pushNamed("trade_planner");
                 },
               ),
@@ -84,7 +85,7 @@ class StrategySelectorScreen extends ConsumerWidget {
                 color: Colors.yellowAccent,
                 onTap: () {
                   planner.setStrategy("protective_put", "Protective Put",
-                      "Buy a put to limit downside risk.");
+                      "Buy a put to limit downside risk.", symbol: symbolFromUrl);
                   context.pushNamed("trade_planner");
                 },
               ),
@@ -94,7 +95,7 @@ class StrategySelectorScreen extends ConsumerWidget {
                 color: Colors.yellowAccent,
                 onTap: () {
                   planner.setStrategy("collar", "Collar",
-                      "Sell a call and buy a put to cap upside and limit downside.");
+                      "Sell a call and buy a put to cap upside and limit downside.", symbol: symbolFromUrl);
                   context.pushNamed("trade_planner");
                 },
               ),
@@ -111,7 +112,7 @@ class StrategySelectorScreen extends ConsumerWidget {
                 color: Colors.blueAccent,
                 onTap: () {
                   planner.setStrategy("long_call", "Long Call",
-                      "Buy a call for directional upside exposure.");
+                      "Buy a call for directional upside exposure.", symbol: symbolFromUrl);
                   context.pushNamed("trade_planner");
                 },
               ),
@@ -121,7 +122,7 @@ class StrategySelectorScreen extends ConsumerWidget {
                 color: Colors.blueAccent,
                 onTap: () {
                   planner.setStrategy("long_put", "Long Put",
-                      "Buy a put for directional downside exposure.");
+                      "Buy a put for directional downside exposure.", symbol: symbolFromUrl);
                   context.pushNamed("trade_planner");
                 },
               ),
@@ -131,7 +132,7 @@ class StrategySelectorScreen extends ConsumerWidget {
                 color: Colors.blueAccent,
                 onTap: () {
                   planner.setStrategy("debit_spread", "Debit Spread",
-                      "Buy a call and sell a higher strike call to reduce cost.");
+                      "Buy a call and sell a higher strike call to reduce cost.", symbol: symbolFromUrl);
                   context.pushNamed("trade_planner");
                 },
               ),

@@ -6,6 +6,8 @@ import '../components/input_section.dart';
 import '../components/optional_inputs_section.dart';
 import '../components/account_context_card.dart';
 import '../components/hints_section.dart';
+import '../components/recommended_range_slider.dart';
+import '../components/input_summary_card.dart';
 
 class TradePlannerScreen extends ConsumerWidget {
   const TradePlannerScreen({super.key});
@@ -57,6 +59,18 @@ class TradePlannerScreen extends ConsumerWidget {
                   planner.updateInputs(inputs);
                 },
               ),
+
+              const SizedBox(height: 12),
+              // Parameter sliders with recommended overlays
+              const RecommendedRangeSlider(field: 'delta', min: 0.0, max: 1.0),
+              const SizedBox(height: 12),
+              const RecommendedRangeSlider(field: 'dte', min: 1.0, max: 120.0),
+              const SizedBox(height: 12),
+              const RecommendedRangeSlider(field: 'width', min: 1.0, max: 100.0),
+
+              const SizedBox(height: 12),
+              // Summary card that reflects persisted slider values
+              const InputSummaryCard(),
 
               const SizedBox(height: 12),
               const HintsSection(),

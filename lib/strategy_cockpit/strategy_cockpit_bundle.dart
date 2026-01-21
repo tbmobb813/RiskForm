@@ -8,6 +8,7 @@ import 'viewmodels/strategy_regime_viewmodel.dart';
 import 'viewmodels/strategy_backtest_viewmodel.dart';
 import 'viewmodels/strategy_cockpit_viewmodel.dart';
 import 'widgets/recommendations_panel.dart';
+import 'widgets/strategy_narrative_panel.dart';
 import 'package:riskform/models/strategy.dart';
 
 /// =============================================================
@@ -144,6 +145,12 @@ class StrategyHeader extends StatelessWidget {
           const SizedBox(height: 16),
           _HeaderActions(vm: vm),
           const SizedBox(height: 12),
+          // Narrative Panel (top summary)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: StrategyNarrativePanel(vm: vm),
+          ),
+          const SizedBox(height: 8),
           // Recommendations Panel (top-of-left-column)
           if (vm.recommendations != null) ...[
             Padding(

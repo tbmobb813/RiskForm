@@ -7,6 +7,7 @@ import '../models/risk_result.dart';
 class PlannerState extends Equatable {
   final String? strategyId;
   final String? strategyName;
+  final String? strategySymbol;
   final String? strategyDescription;
 
   final TradeInputs? inputs;
@@ -23,6 +24,7 @@ class PlannerState extends Equatable {
   const PlannerState({
     this.strategyId,
     this.strategyName,
+    this.strategySymbol,
     this.strategyDescription,
     this.inputs,
     this.payoff,
@@ -39,6 +41,7 @@ class PlannerState extends Equatable {
   PlannerState copyWith({
     String? strategyId,
     String? strategyName,
+    String? strategySymbol,
     String? strategyDescription,
     TradeInputs? inputs,
     PayoffResult? payoff,
@@ -53,6 +56,7 @@ class PlannerState extends Equatable {
     return PlannerState(
       strategyId: strategyId ?? this.strategyId,
       strategyName: strategyName ?? this.strategyName,
+      strategySymbol: strategySymbol ?? this.strategySymbol,
       strategyDescription: strategyDescription ?? this.strategyDescription,
       inputs: inputs ?? this.inputs,
       payoff: payoff ?? this.payoff,
@@ -69,6 +73,7 @@ class PlannerState extends Equatable {
   List<Object?> get props => [
         strategyId,
         strategyName,
+      strategySymbol,
         strategyDescription,
         inputs,
         payoff,

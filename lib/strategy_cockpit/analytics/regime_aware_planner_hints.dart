@@ -30,8 +30,17 @@ class PlannerHint {
 class PlannerHintBundle {
   final List<PlannerHint> hints;
   final Map<String, RangeValues> recommendedRanges;
+  // Optional weak configuration zones (e.g. ranges to avoid)
+  final Map<String, RangeValues> weakRanges;
+  // Best-config exact points (backtest best suggestions) as numeric values
+  final Map<String, double> bestPoints;
 
-  const PlannerHintBundle({required this.hints, required this.recommendedRanges});
+  const PlannerHintBundle({
+    required this.hints,
+    required this.recommendedRanges,
+    this.weakRanges = const {},
+    this.bestPoints = const {},
+  });
 }
 
 /// Pure function generating planner hints from current planner state and
@@ -39,6 +48,8 @@ class PlannerHintBundle {
 PlannerHintBundle generateHints(PlannerState state, StrategyContext ctx) {
   final hints = <PlannerHint>[];
   final ranges = <String, RangeValues>{};
+  final weakRanges = <String, RangeValues>{};
+  final bestPoints = <String, double>{};
 
   final regime = ctx.currentRegime.toLowerCase();
 
@@ -65,21 +76,24 @@ PlannerHintBundle generateHints(PlannerState state, StrategyContext ctx) {
   // --- Backtest Rules ---
   final best = ctx.backtestComparison?.bestConfig;
   final weak = ctx.backtestComparison?.weakConfig;
-  if (best != null && best.isNotEmpty) {
+    if (best != null && best.isNotEmpty) {
     final parts = <String>[];
     if (best.containsKey('dte')) {
       final b = best['dte'];
       if (b is num) ranges['dte'] = RangeValues(b.toDouble(), b.toDouble());
+        if (b is num) bestPoints['dte'] = b.toDouble();
       parts.add('DTE ${b}');
     }
     if (best.containsKey('delta')) {
       final b = best['delta'];
       if (b is num) ranges['delta'] = RangeValues(b.toDouble(), b.toDouble());
+        if (b is num) bestPoints['delta'] = b.toDouble();
       parts.add('delta ${b}');
     }
     if (best.containsKey('width')) {
       final b = best['width'];
       if (b is num) ranges['width'] = RangeValues(b.toDouble(), b.toDouble());
+        if (b is num) bestPoints['width'] = b.toDouble();
       parts.add('width ${b}');
     }
     hints.add(PlannerHint(field: 'backtest', message: 'Backtests favor: ${parts.join(', ')}.', severity: 'info'));
@@ -91,12 +105,15 @@ PlannerHintBundle generateHints(PlannerState state, StrategyContext ctx) {
       final w = weak['delta'];
       if (w is num && state.delta > w.toDouble()) {
         hints.add(PlannerHint(field: 'delta', message: 'Backtests show weakness at delta > ${w} — consider tightening.', severity: 'warning'));
+        // mark weak zone for delta (we'll render as a red marker/range)
+        weakRanges['delta'] = RangeValues(w.toDouble(), w.toDouble());
       }
     }
     if (weak.containsKey('dte')) {
       final w = weak['dte'];
       if (w is num && state.dte < w.toInt()) {
         hints.add(PlannerHint(field: 'dte', message: 'Backtests weak for DTE < ${w} in similar regimes.', severity: 'warning'));
+        weakRanges['dte'] = RangeValues(w.toDouble(), w.toDouble());
       }
     }
   }
@@ -165,7 +182,7 @@ PlannerHintBundle generateHints(PlannerState state, StrategyContext ctx) {
     return a.field.compareTo(b.field);
   });
 
-  return PlannerHintBundle(hints: hints, recommendedRanges: ranges);
+  return PlannerHintBundle(hints: hints, recommendedRanges: ranges, weakRanges: weakRanges, bestPoints: bestPoints);
 }
 
 double _mean(List<double> xs) => xs.isEmpty ? 0.0 : xs.reduce((a, b) => a + b) / xs.length;

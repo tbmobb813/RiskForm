@@ -8,6 +8,7 @@ import '../services/strategy_health_service.dart';
 import '../services/strategy_backtest_service.dart';
 import '../../regime/regime_service.dart';
 import '../analytics/strategy_recommendations_engine.dart';
+import '../analytics/strategy_narrative_engine.dart';
 
 class StrategyCockpitViewModel extends ChangeNotifier {
   final strategy_service.StrategyService _strategyService;
@@ -22,6 +23,7 @@ class StrategyCockpitViewModel extends ChangeNotifier {
   Map<String, dynamic>? latestBacktest;
   String? currentRegime;
   StrategyRecommendationsBundle? recommendations;
+  StrategyNarrative? narrative;
 
   bool isLoading = true;
   bool hasError = false;
@@ -178,6 +180,8 @@ class StrategyCockpitViewModel extends ChangeNotifier {
     );
 
     recommendations = generateRecommendations(ctx);
+    // Also generate and cache the human-friendly narrative alongside recommendations
+    narrative = generateNarrative(ctx, recsBundle: recommendations);
     notifyListeners();
   }
 

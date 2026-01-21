@@ -9,6 +9,10 @@ import 'planner_state.dart';
 import '../services/engines/risk_engine.dart';
 import '../execution/execution_service.dart';
 import '../planner/models/planner_strategy_context.dart';
+import 'package:riskform/engines/regime_providers.dart';
+import 'package:riskform/engines/regime_engine.dart';
+import 'package:riskform/services/regime_aware_planner_hints_providers.dart';
+import 'package:riskform/services/regime_aware_planner_hints_service.dart';
 
 final plannerNotifierProvider =
     StateNotifierProvider<PlannerNotifier, PlannerState>(
@@ -17,7 +21,9 @@ final plannerNotifierProvider =
     final payoffEngine = ref.read(payoffEngineProvider);
     final riskEngine = ref.read(riskEngineProvider);
     final executionService = ExecutionService();
-    return PlannerNotifier(repository, payoffEngine, riskEngine, executionService);
+    final regimeEngine = ref.read(regimeEngineProvider);
+    final hintsService = ref.read(regimeAwarePlannerHintsServiceProvider);
+    return PlannerNotifier(repository, payoffEngine, riskEngine, regimeEngine, hintsService, executionService);
   },
 );
 
@@ -25,16 +31,19 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
   final TradePlanRepository _repository;
   final PayoffEngine _payoffEngine;
   final RiskEngine _riskEngine;
+  final RegimeEngine? _regimeEngine;
+    final RegimeAwarePlannerHintsService? _hintsService;
     final ExecutionService? _executionService;
 
-    PlannerNotifier(this._repository, this._payoffEngine, this._riskEngine, [this._executionService])
+    PlannerNotifier(this._repository, this._payoffEngine, this._riskEngine, [this._regimeEngine, this._hintsService, this._executionService])
       : super(PlannerState.initial());
 
   // Strategy selection
-  void setStrategy(String id, String name, String description) {
+  void setStrategy(String id, String name, String description, {String? symbol}) {
     state = PlannerState.initial().copyWith(
       strategyId: id,
       strategyName: name,
+      strategySymbol: symbol,
       strategyDescription: description,
       clearError: true,
     );
@@ -68,19 +77,57 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
       );
 
       final constraints = recs.Constraints(maxRisk: 100, maxPositions: 5);
-      final ctx = recs.StrategyContext(
-        healthScore: 50,
-        pnlTrend: const [],
-        disciplineTrend: const [],
-        recentCycles: const [],
-        constraints: constraints,
-        currentRegime: 'sideways',
-        drawdown: 0.0,
-        backtestComparison: null,
-      );
+      // Attempt to fetch a live regime for the strategy's symbol if available.
+      final symbol = state.strategySymbol;
+      if (_hintsService != null) {
+        _hintsService!.generateHints(pstate, symbol: symbol).then((hints) {
+          state = state.copyWith(hintsBundle: hints);
+        }).catchError((_) {});
+      } else {
+        if (symbol != null) {
+          _regimeEngine?.getRegime(symbol).then((regSnap) {
+            final ctx = recs.StrategyContext(
+              healthScore: 50,
+              pnlTrend: const [],
+              disciplineTrend: const [],
+              recentCycles: const [],
+              constraints: constraints,
+              currentRegime: regSnap.trend,
+              drawdown: 0.0,
+              backtestComparison: null,
+            );
+            final hints = planner_hints.generateHints(pstate, ctx);
+            state = state.copyWith(hintsBundle: hints);
+          }).catchError((_) {
+            final ctx = recs.StrategyContext(
+              healthScore: 50,
+              pnlTrend: const [],
+              disciplineTrend: const [],
+              recentCycles: const [],
+              constraints: constraints,
+              currentRegime: 'sideways',
+              drawdown: 0.0,
+              backtestComparison: null,
+            );
+            final hints = planner_hints.generateHints(pstate, ctx);
+            state = state.copyWith(hintsBundle: hints);
+          });
+        } else {
+          final ctx = recs.StrategyContext(
+            healthScore: 50,
+            pnlTrend: const [],
+            disciplineTrend: const [],
+            recentCycles: const [],
+            constraints: constraints,
+            currentRegime: 'sideways',
+            drawdown: 0.0,
+            backtestComparison: null,
+          );
 
-      final hints = planner_hints.generateHints(pstate, ctx);
-      state = state.copyWith(hintsBundle: hints);
+          final hints = planner_hints.generateHints(pstate, ctx);
+          state = state.copyWith(hintsBundle: hints);
+        }
+      }
     } catch (_) {
       // non-fatal: do not block UI on hint generation errors
     }
@@ -253,5 +300,118 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
   // Reset
   void reset() {
     state = PlannerState.initial();
+  }
+
+  /// Recompute planner hints using lightweight slider-derived overrides.
+  /// This does not persist inputs; it computes a best-effort PlannerState
+  /// from the current planner state and the provided numeric overrides,
+  /// then updates `state.hintsBundle` so the UI can react in real time.
+  void computeHintsFromSliders({double? delta, double? width, int? dte}) {
+    try {
+      final inputs = state.inputs;
+
+      final computedDte = dte ?? (inputs?.expiration != null ? inputs!.expiration!.difference(DateTime.now()).inDays : 30);
+
+      final computedWidth = width ?? ((inputs?.shortStrike != null && inputs?.longStrike != null)
+          ? (inputs!.shortStrike! - inputs.longStrike!).abs()
+          : 20.0);
+
+      final computedDelta = delta ?? 0.20;
+
+      final pstate = planner_hints.PlannerState(
+        dte: computedDte,
+        delta: computedDelta,
+        width: computedWidth,
+        size: inputs?.sharesOwned ?? 1,
+        type: state.strategyId ?? 'unknown',
+      );
+
+      final constraints = recs.Constraints(maxRisk: 100, maxPositions: 5);
+      final symbol = state.strategySymbol;
+      if (_hintsService != null) {
+        _hintsService!.generateHints(pstate, symbol: symbol).then((hints) {
+          state = state.copyWith(hintsBundle: hints);
+        }).catchError((_) {});
+      } else {
+        if (symbol != null) {
+          _regimeEngine?.getRegime(symbol).then((regSnap) {
+            final ctx = recs.StrategyContext(
+              healthScore: 50,
+              pnlTrend: const [],
+              disciplineTrend: const [],
+              recentCycles: const [],
+              constraints: constraints,
+              currentRegime: regSnap.trend,
+              drawdown: 0.0,
+              backtestComparison: null,
+            );
+            final hints = planner_hints.generateHints(pstate, ctx);
+            state = state.copyWith(hintsBundle: hints);
+          }).catchError((_) {
+            final ctx = recs.StrategyContext(
+              healthScore: 50,
+              pnlTrend: const [],
+              disciplineTrend: const [],
+              recentCycles: const [],
+              constraints: constraints,
+              currentRegime: 'sideways',
+              drawdown: 0.0,
+              backtestComparison: null,
+            );
+            final hints = planner_hints.generateHints(pstate, ctx);
+            state = state.copyWith(hintsBundle: hints);
+          });
+        } else {
+          final ctx = recs.StrategyContext(
+            healthScore: 50,
+            pnlTrend: const [],
+            disciplineTrend: const [],
+            recentCycles: const [],
+            constraints: constraints,
+            currentRegime: 'sideways',
+            drawdown: 0.0,
+            backtestComparison: null,
+          );
+
+          final hints = planner_hints.generateHints(pstate, ctx);
+          state = state.copyWith(hintsBundle: hints);
+        }
+      }
+    } catch (_) {
+      // swallow errors to avoid breaking UI
+    }
+  }
+
+  /// Update the planner's `inputs` with numeric overrides derived from sliders
+  /// (delta, width, dte) and recompute hints. This persists the slider values
+  /// into `state.inputs` so subsequent save/execute actions include them.
+  void updateInputsFromSliders({double? delta, double? width, int? dte}) {
+    final existing = state.inputs;
+
+    DateTime? newExpiration = existing?.expiration;
+    if (dte != null) {
+      newExpiration = DateTime.now().add(Duration(days: dte));
+    }
+
+    final newInputs = TradeInputs(
+      strike: existing?.strike,
+      longStrike: existing?.longStrike,
+      shortStrike: existing?.shortStrike,
+      premiumPaid: existing?.premiumPaid,
+      premiumReceived: existing?.premiumReceived,
+      netDebit: existing?.netDebit,
+      netCredit: existing?.netCredit,
+      underlyingPrice: existing?.underlyingPrice,
+      costBasis: existing?.costBasis,
+      sharesOwned: existing?.sharesOwned,
+      expiration: newExpiration,
+      delta: delta ?? existing?.delta,
+      width: width ?? existing?.width,
+    );
+
+    state = state.copyWith(inputs: newInputs);
+
+    // Recompute hints using the updated numeric values
+    computeHintsFromSliders(delta: delta, width: width, dte: dte);
   }
 }

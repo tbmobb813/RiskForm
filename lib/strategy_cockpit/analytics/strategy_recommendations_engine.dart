@@ -1,5 +1,6 @@
 // Pure, deterministic Strategy Recommendations Engine
 // Minimal, production-oriented implementation based on Phase 5.7 spec
+import 'package:riskform/services/market_data_models.dart';
 
 class StrategyRecommendation {
   final String category; // "risk", "parameter", "regime", "discipline", "consistency"
@@ -176,3 +177,114 @@ int _countSignificantChanges(List<int> seq, {required int threshold}) {
   }
   return count;
 }
+
+// Live-aware Strategy Recommendations Engine (Phase 6.4)
+
+class StrategyRecommendationsEngine {
+  const StrategyRecommendationsEngine();
+
+  Future<StrategyRecommendationsBundle> generate({
+    required StrategyContext context,
+    required MarketRegimeSnapshot regime,
+    required MarketVolatilitySnapshot vol,
+    required MarketLiquiditySnapshot liq,
+  }) async {
+    // Start with the deterministic base recommendations
+    final base = generateRecommendations(context);
+
+    final List<StrategyRecommendation> out = [];
+
+    // Copy base recommendations so we can mutate priority/message
+    for (final r in base.recommendations) {
+      out.add(StrategyRecommendation(category: r.category, message: r.message, priority: r.priority));
+    }
+
+    // Trend-aware modifiers
+    final trend = regime.trend.toLowerCase();
+    if (trend == 'uptrend') {
+      // If backtest suggests very low delta, recommend slightly higher delta
+      final bestDelta = context.backtestComparison?.bestConfig?['delta'];
+      if (bestDelta is num && bestDelta.toDouble() < 0.10) {
+        out.add(StrategyRecommendation(
+            category: 'parameter',
+            message: 'Uptrend — consider raising target delta to 0.15–0.20 for premium selling.',
+            priority: 3));
+      } else {
+        out.add(StrategyRecommendation(category: 'regime', message: 'Uptrend — favor premium selling with tighter deltas.', priority: 3));
+      }
+    } else if (trend == 'downtrend') {
+      out.add(StrategyRecommendation(category: 'risk', message: 'Downtrend — reduce position size by 20–30%.', priority: 1));
+      final bestWidth = context.backtestComparison?.bestConfig?['width'];
+      if (bestWidth is num && bestWidth.toDouble() < 1.0) {
+        out.add(StrategyRecommendation(category: 'parameter', message: 'Downtrend — widen structure width to absorb moves.', priority: 2));
+      }
+    } else if (trend == 'sideways' || trend == 'flat') {
+      out.add(StrategyRecommendation(category: 'regime', message: 'Sideways — neutral income and delta‑neutral structures preferred.', priority: 4));
+    }
+
+    // Volatility-aware modifiers
+    if (vol.ivRank >= 70) {
+      out.add(StrategyRecommendation(category: 'risk', message: 'High volatility (IVR ≥70) — reduce size and widen width.', priority: 1));
+      // Bump priority on any existing risk recs
+      for (var i = 0; i < out.length; i++) {
+        if (out[i].category == 'risk') {
+          out[i] = StrategyRecommendation(category: out[i].category, message: out[i].message, priority: _clampPriority(out[i].priority - 1));
+        }
+      }
+    } else if (vol.ivRank <= 30) {
+      out.add(StrategyRecommendation(category: 'parameter', message: 'Low volatility (IVR ≤30) — consider tighter width and shorter DTE.', priority: 3));
+    }
+
+    // Liquidity-aware modifiers (regime contains liquidity label; snapshot contains spreads)
+    final liqStr = regime.liquidity.toLowerCase();
+    if (liqStr == 'thin') {
+      out.add(StrategyRecommendation(category: 'risk', message: 'Thin liquidity — reduce size and avoid complex structures.', priority: 1));
+      if (liq.bidAskSpread > 0.05) {
+        out.add(StrategyRecommendation(category: 'risk', message: 'Wide bid/ask spread — expect slippage; prefer smaller sizes.', priority: 1));
+      }
+    } else if (liqStr == 'deep') {
+      out.add(StrategyRecommendation(category: 'parameter', message: 'Deep liquidity — normal sizing acceptable.', priority: 4));
+    }
+
+    // Priority model: combination rules
+    final lastDisc = context.disciplineTrend.isNotEmpty ? context.disciplineTrend.last : null;
+    if (trend == 'downtrend' && vol.ivRank >= 70 && lastDisc != null && lastDisc < 60) {
+      // escalate all risk recommendations to highest priority
+      for (var i = 0; i < out.length; i++) {
+        if (out[i].category == 'risk') {
+          out[i] = StrategyRecommendation(category: out[i].category, message: out[i].message, priority: 1);
+        }
+      }
+    }
+
+    if (trend == 'uptrend' && vol.ivRank >= 70 && context.healthScore >= 70) {
+      // favor parameter recommendations
+      for (var i = 0; i < out.length; i++) {
+        if (out[i].category == 'parameter') {
+          out[i] = StrategyRecommendation(category: out[i].category, message: out[i].message, priority: _clampPriority(out[i].priority - 1));
+        }
+      }
+    }
+
+    // Deduplicate by message and choose lowest priority for duplicates
+    final Map<String, StrategyRecommendation> dedup = {};
+    for (final r in out) {
+      final key = '${r.category}:${r.message}';
+      if (!dedup.containsKey(key) || r.priority < dedup[key]!.priority) {
+        dedup[key] = r;
+      }
+    }
+
+    final finalList = dedup.values.toList();
+    finalList.sort((a, b) {
+      final pc = a.priority.compareTo(b.priority);
+      if (pc != 0) return pc;
+      return a.category.compareTo(b.category);
+    });
+
+    return StrategyRecommendationsBundle(recommendations: finalList, generatedAt: DateTime.now().toUtc());
+  }
+
+  int _clampPriority(int p) => p < 1 ? 1 : (p > 5 ? 5 : p);
+}
+
