@@ -2,11 +2,17 @@ import 'package:flutter/material.dart';
 
 import '../viewmodels/strategy_cockpit_viewmodel.dart';
 import '../widgets/strategy_section_container.dart';
+import 'strategy_performance_section.dart';
+import 'strategy_discipline_section.dart';
+import 'strategy_regime_section.dart';
+import 'strategy_backtest_section.dart';
+import 'strategy_actions_section.dart';
 
 class StrategyCockpitScreen extends StatefulWidget {
   final String strategyId;
+  final StrategyCockpitViewModel? viewModel;
 
-  const StrategyCockpitScreen({super.key, required this.strategyId});
+  const StrategyCockpitScreen({super.key, required this.strategyId, this.viewModel});
 
   @override
   State<StrategyCockpitScreen> createState() => _StrategyCockpitScreenState();
@@ -14,11 +20,13 @@ class StrategyCockpitScreen extends StatefulWidget {
 
 class _StrategyCockpitScreenState extends State<StrategyCockpitScreen> {
   late final StrategyCockpitViewModel _vm;
+  late final bool _ownsVm;
 
   @override
   void initState() {
     super.initState();
-    _vm = StrategyCockpitViewModel(strategyId: widget.strategyId);
+    _vm = widget.viewModel ?? StrategyCockpitViewModel(strategyId: widget.strategyId);
+    _ownsVm = widget.viewModel == null;
     _vm.addListener(_onVmChanged);
   }
 
@@ -27,7 +35,7 @@ class _StrategyCockpitScreenState extends State<StrategyCockpitScreen> {
   @override
   void dispose() {
     _vm.removeListener(_onVmChanged);
-    _vm.dispose();
+    if (_ownsVm) _vm.dispose();
     super.dispose();
   }
 
@@ -57,37 +65,19 @@ class _StrategyCockpitScreenState extends State<StrategyCockpitScreen> {
             ),
 
             // Performance
-            StrategySectionContainer(
-              title: 'Performance',
-              child: const SizedBox(height: 120, child: Center(child: Text('Performance Module Placeholder'))),
-            ),
+            StrategyPerformanceSection(strategyId: widget.strategyId, viewModel: null),
 
             // Discipline
-            StrategySectionContainer(
-              title: 'Discipline',
-              child: const SizedBox(height: 120, child: Center(child: Text('Discipline Module Placeholder'))),
-            ),
+            StrategyDisciplineSection(strategyId: widget.strategyId, viewModel: null),
 
             // Regime
-            StrategySectionContainer(
-              title: 'Regime',
-              child: const SizedBox(height: 120, child: Center(child: Text('Regime Module Placeholder'))),
-            ),
+            StrategyRegimeSection(strategyId: widget.strategyId, viewModel: null),
 
             // Backtests
-            StrategySectionContainer(
-              title: 'Backtests',
-              child: const SizedBox(height: 120, child: Center(child: Text('Backtest Module Placeholder'))),
-            ),
+            StrategyBacktestSection(strategyId: widget.strategyId, viewModel: null),
 
             // Actions
-            StrategySectionContainer(
-              title: 'Actions',
-              child: Wrap(spacing: 8.0, children: [
-                ElevatedButton(onPressed: () {}, child: const Text('Open Planner')),
-                OutlinedButton(onPressed: () {}, child: const Text('Run Backtest')),
-              ]),
-            ),
+            StrategyActionsSection(strategyId: widget.strategyId, viewModel: _vm),
           ],
         ),
       ),

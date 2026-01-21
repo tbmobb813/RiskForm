@@ -6,59 +6,70 @@ import '../widgets/strategy_section_container.dart';
 
 class StrategyDisciplineSection extends StatelessWidget {
   final String strategyId;
+  final StrategyDisciplineViewModel? viewModel;
 
   const StrategyDisciplineSection({
     super.key,
     required this.strategyId,
+    this.viewModel,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<StrategyDisciplineViewModel>(
-      create: (_) => StrategyDisciplineViewModel(strategyId: strategyId),
-      child: Consumer<StrategyDisciplineViewModel>(
-        builder: (context, vm, _) {
-          if (vm.isLoading) {
-            return const StrategySectionContainer(
-              title: 'Discipline',
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }
-
-          if (vm.hasError) {
-            return const StrategySectionContainer(
-              title: 'Discipline',
-              child: Center(child: Text('Unable to load discipline data')),
-            );
-          }
-
-          return StrategySectionContainer(
-            title: 'Discipline',
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Discipline Trend Sparkline
-                _DisciplineSparkline(values: vm.disciplineTrend),
-                const SizedBox(height: 16),
-
-                // Violations Breakdown
-                _ViolationsBreakdown(breakdown: vm.violationBreakdown),
-                const SizedBox(height: 16),
-
-                // Streak Indicators
-                _StreakRow(
-                  clean: vm.cleanCycleStreak,
-                  adherence: vm.adherenceStreak,
-                  risk: vm.riskStreak,
-                ),
-                const SizedBox(height: 16),
-
-                // Recent Discipline Events
-                _RecentEventsList(events: vm.recentEvents),
-              ],
+    return viewModel != null
+        ? ChangeNotifierProvider.value(
+            value: viewModel!,
+            child: Consumer<StrategyDisciplineViewModel>(
+              builder: (context, vm, _) => _buildForVm(vm),
+            ),
+          )
+        : ChangeNotifierProvider<StrategyDisciplineViewModel>(
+            create: (_) => StrategyDisciplineViewModel(strategyId: strategyId),
+            child: Consumer<StrategyDisciplineViewModel>(
+              builder: (context, vm, _) => _buildForVm(vm),
             ),
           );
-        },
+  }
+
+  Widget _buildForVm(StrategyDisciplineViewModel vm) {
+    if (vm.isLoading) {
+      return const StrategySectionContainer(
+        title: 'Discipline',
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (vm.hasError) {
+      return const StrategySectionContainer(
+        title: 'Discipline',
+        child: Center(child: Text('Unable to load discipline data')),
+      );
+    }
+
+    return StrategySectionContainer(
+      title: 'Discipline',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Discipline Trend Sparkline
+          _DisciplineSparkline(values: vm.disciplineTrend),
+          const SizedBox(height: 16),
+
+          // Violations Breakdown
+          _ViolationsBreakdown(breakdown: vm.violationBreakdown),
+          const SizedBox(height: 16),
+
+          // Streak Indicators
+          _StreakRow(
+            clean: vm.cleanCycleStreak,
+            adherence: vm.adherenceStreak,
+            risk: vm.riskStreak,
+          ),
+          const SizedBox(height: 16),
+
+          // Recent Discipline Events
+          _RecentEventsList(events: vm.recentEvents),
+        ],
       ),
     );
   }

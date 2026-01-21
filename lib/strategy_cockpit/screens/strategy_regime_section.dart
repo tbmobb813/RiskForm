@@ -7,63 +7,74 @@ import '../widgets/strategy_flag_chip.dart';
 
 class StrategyRegimeSection extends StatelessWidget {
   final String strategyId;
+  final StrategyRegimeViewModel? viewModel;
 
   const StrategyRegimeSection({
     super.key,
     required this.strategyId,
+    this.viewModel,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<StrategyRegimeViewModel>(
-      create: (_) => StrategyRegimeViewModel(strategyId: strategyId),
-      child: Consumer<StrategyRegimeViewModel>(
-        builder: (context, vm, _) {
-          if (vm.isLoading) {
-            return const StrategySectionContainer(
-              title: 'Regime Behavior',
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }
-
-          if (vm.hasError) {
-            return const StrategySectionContainer(
-              title: 'Regime Behavior',
-              child: Center(child: Text('Unable to load regime data')),
-            );
-          }
-
-          return StrategySectionContainer(
-            title: 'Regime Behavior',
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Current Regime Card
-                _CurrentRegimeCard(
-                  currentRegime: vm.currentRegime,
-                  hint: vm.currentRegimeHint,
-                ),
-                const SizedBox(height: 16),
-
-                // Regime Performance Table
-                _RegimePerformanceTable(
-                  data: vm.regimePerformance.cast<String, Map<String, dynamic>>(),
-                ),
-                const SizedBox(height: 16),
-
-                // Weakness Flags
-                if (vm.regimeWeaknesses.isNotEmpty)
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: vm.regimeWeaknesses
-                        .map((flag) => StrategyFlagChip(label: flag))
-                        .toList(),
-                  ),
-              ],
+    return viewModel != null
+        ? ChangeNotifierProvider.value(
+            value: viewModel!,
+            child: Consumer<StrategyRegimeViewModel>(
+              builder: (context, vm, _) => _buildForVm(vm),
+            ),
+          )
+        : ChangeNotifierProvider<StrategyRegimeViewModel>(
+            create: (_) => StrategyRegimeViewModel(strategyId: strategyId),
+            child: Consumer<StrategyRegimeViewModel>(
+              builder: (context, vm, _) => _buildForVm(vm),
             ),
           );
-        },
+  }
+
+  Widget _buildForVm(StrategyRegimeViewModel vm) {
+    if (vm.isLoading) {
+      return const StrategySectionContainer(
+        title: 'Regime Behavior',
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (vm.hasError) {
+      return const StrategySectionContainer(
+        title: 'Regime Behavior',
+        child: Center(child: Text('Unable to load regime data')),
+      );
+    }
+
+    return StrategySectionContainer(
+      title: 'Regime Behavior',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Current Regime Card
+          _CurrentRegimeCard(
+            currentRegime: vm.currentRegime,
+            hint: vm.currentRegimeHint,
+          ),
+          const SizedBox(height: 16),
+
+          // Regime Performance Table
+          _RegimePerformanceTable(
+            data: vm.regimePerformance.cast<String, Map<String, dynamic>>(),
+          ),
+          const SizedBox(height: 16),
+
+          // Weakness Flags
+          if (vm.regimeWeaknesses.isNotEmpty)
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: vm.regimeWeaknesses
+                  .map((flag) => StrategyFlagChip(label: flag))
+                  .toList(),
+            ),
+        ],
       ),
     );
   }

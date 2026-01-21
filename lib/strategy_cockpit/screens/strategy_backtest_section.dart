@@ -6,57 +6,62 @@ import '../widgets/strategy_section_container.dart';
 
 class StrategyBacktestSection extends StatelessWidget {
   final String strategyId;
+  final StrategyBacktestViewModel? viewModel;
 
   const StrategyBacktestSection({
     super.key,
     required this.strategyId,
+    this.viewModel,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<StrategyBacktestViewModel>(
-      create: (_) => StrategyBacktestViewModel(strategyId: strategyId),
-      child: Consumer<StrategyBacktestViewModel>(
-        builder: (context, vm, _) {
-          if (vm.isLoading) {
-            return const StrategySectionContainer(
-              title: 'Backtests',
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }
-
-          if (vm.hasError) {
-            return const StrategySectionContainer(
-              title: 'Backtests',
-              child: Center(child: Text('Unable to load backtest data')),
-            );
-          }
-
-          return StrategySectionContainer(
-            title: 'Backtests',
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ------------------------------------------------------------
-                // Latest Backtest Summary
-                // ------------------------------------------------------------
-                _LatestBacktestCard(latest: vm.latestBacktest),
-                const SizedBox(height: 16),
-
-                // ------------------------------------------------------------
-                // Backtest History
-                // ------------------------------------------------------------
-                _BacktestHistoryList(history: vm.backtestHistory),
-                const SizedBox(height: 16),
-
-                // ------------------------------------------------------------
-                // Actions
-                // ------------------------------------------------------------
-                _BacktestActions(strategyId: strategyId),
-              ],
+    return viewModel != null
+        ? ChangeNotifierProvider.value(
+            value: viewModel!,
+            child: Consumer<StrategyBacktestViewModel>(
+              builder: (context, vm, _) => _buildForVm(vm),
+            ),
+          )
+        : ChangeNotifierProvider<StrategyBacktestViewModel>(
+            create: (_) => StrategyBacktestViewModel(strategyId: strategyId),
+            child: Consumer<StrategyBacktestViewModel>(
+              builder: (context, vm, _) => _buildForVm(vm),
             ),
           );
-        },
+  }
+
+  Widget _buildForVm(StrategyBacktestViewModel vm) {
+    if (vm.isLoading) {
+      return const StrategySectionContainer(
+        title: 'Backtests',
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (vm.hasError) {
+      return const StrategySectionContainer(
+        title: 'Backtests',
+        child: Center(child: Text('Unable to load backtest data')),
+      );
+    }
+
+    return StrategySectionContainer(
+      title: 'Backtests',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Latest Backtest Summary
+          _LatestBacktestCard(latest: vm.latestBacktest),
+          const SizedBox(height: 16),
+
+          // Backtest History
+          _BacktestHistoryList(history: vm.backtestHistory),
+          const SizedBox(height: 16),
+
+          // Actions
+          _BacktestActions(strategyId: strategyId),
+        ],
       ),
     );
   }

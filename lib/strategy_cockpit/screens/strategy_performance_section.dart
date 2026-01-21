@@ -8,96 +8,105 @@ import '../widgets/strategy_sparkline.dart';
 
 class StrategyPerformanceSection extends StatelessWidget {
   final String strategyId;
+  final StrategyPerformanceViewModel? viewModel;
 
   const StrategyPerformanceSection({
     super.key,
     required this.strategyId,
+    this.viewModel,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<StrategyPerformanceViewModel>(
-      create: (_) => StrategyPerformanceViewModel(strategyId: strategyId),
-      child: Consumer<StrategyPerformanceViewModel>(
-        builder: (context, vm, _) {
-          if (vm.isLoading) {
-            return const StrategySectionContainer(
-              title: 'Performance',
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }
-
-          if (vm.hasError) {
-            return const StrategySectionContainer(
-              title: 'Performance',
-              child: Center(child: Text('Unable to load performance data')),
-            );
-          }
-
-          return StrategySectionContainer(
-            title: 'Performance',
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // PnL Sparkline
-                StrategySparkline(
-                  title: 'PnL Trend',
-                  values: vm.pnlTrend,
-                ),
-                const SizedBox(height: 16),
-
-                // Metrics row
-                Row(
-                  children: [
-                    Expanded(
-                      child: StrategyMetricCard(
-                        label: 'Win Rate',
-                        value: _formatPercent(vm.winRate),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: StrategyMetricCard(
-                        label: 'Max Drawdown',
-                        value: _formatNumber(vm.maxDrawdown),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: StrategyMetricCard(
-                        label: 'Profit Factor',
-                        value: vm.pnlTrend.isEmpty
-                            ? '—'
-                            : _formatNumber(0),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-
-                // Best / Worst cycle row
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: _CycleCard(
-                        title: 'Best Cycle',
-                        cycle: vm.bestCycle,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _CycleCard(
-                        title: 'Worst Cycle',
-                        cycle: vm.worstCycle,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+    return viewModel != null
+        ? ChangeNotifierProvider.value(
+            value: viewModel!,
+            child: Consumer<StrategyPerformanceViewModel>(
+              builder: (context, vm, _) => _buildForVm(vm, context),
+            ),
+          )
+        : ChangeNotifierProvider<StrategyPerformanceViewModel>(
+            create: (_) => StrategyPerformanceViewModel(strategyId: strategyId),
+            child: Consumer<StrategyPerformanceViewModel>(
+              builder: (context, vm, _) => _buildForVm(vm, context),
             ),
           );
-        },
+  }
+
+  Widget _buildForVm(StrategyPerformanceViewModel vm, BuildContext context) {
+    if (vm.isLoading) {
+      return const StrategySectionContainer(
+        title: 'Performance',
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (vm.hasError) {
+      return const StrategySectionContainer(
+        title: 'Performance',
+        child: Center(child: Text('Unable to load performance data')),
+      );
+    }
+
+    return StrategySectionContainer(
+      title: 'Performance',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // PnL Sparkline
+          StrategySparkline(
+            title: 'PnL Trend',
+            values: vm.pnlTrend,
+          ),
+          const SizedBox(height: 16),
+
+          // Metrics row
+          Row(
+            children: [
+              Expanded(
+                child: StrategyMetricCard(
+                  label: 'Win Rate',
+                  value: _formatPercent(vm.winRate),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: StrategyMetricCard(
+                  label: 'Max Drawdown',
+                  value: _formatNumber(vm.maxDrawdown),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: StrategyMetricCard(
+                  label: 'Profit Factor',
+                  value: vm.pnlTrend.isEmpty ? '—' : _formatNumber(0),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Best / Worst cycle row
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _CycleCard(
+                  title: 'Best Cycle',
+                  cycle: vm.bestCycle,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _CycleCard(
+                  title: 'Worst Cycle',
+                  cycle: vm.worstCycle,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

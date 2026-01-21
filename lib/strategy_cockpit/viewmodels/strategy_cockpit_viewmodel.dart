@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../models/strategy.dart';
 import '../../models/strategy_health_snapshot.dart';
@@ -40,7 +39,10 @@ class StrategyCockpitViewModel extends ChangeNotifier {
         _healthService = healthService ?? StrategyHealthService(),
         _backtestService = backtestService ?? StrategyBacktestService(),
         _regimeService = regimeService ?? RegimeService() {
-    _init();
+    // Initialize listeners asynchronously so `isLoading` remains true
+    // for the first build frame. This ensures widgets can show a
+    // loading indicator before synchronous stream emits occur.
+    Future.microtask(_init);
   }
 
   // -----------------------------
@@ -60,9 +62,7 @@ class StrategyCockpitViewModel extends ChangeNotifier {
     _strategySub = _strategyService.watchStrategy(strategyId).listen(
       (data) {
         if (data == null) return;
-        strategy = Strategy.fromFirestore(
-          _wrapDoc(strategyId, data),
-        );
+        strategy = Strategy.fromMap(strategyId, data);
         _setLoaded();
       },
       onError: (_) => _setError(),
@@ -126,11 +126,6 @@ class StrategyCockpitViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Firestore doc wrapper for model parsing
-  DocumentSnapshot _wrapDoc(String id, Map<String, dynamic> data) {
-    return _FakeDoc(id, data);
-  }
-
   // -----------------------------
   // Lifecycle Actions
   // -----------------------------
@@ -171,21 +166,4 @@ class StrategyCockpitViewModel extends ChangeNotifier {
   }
 }
 
-// --------------------------------------------------
-// Internal helper class to wrap Firestore data
-// --------------------------------------------------
-class _FakeDoc implements DocumentSnapshot {
-  @override
-  final String id;
-
-  final Map<String, dynamic> _data;
-
-  _FakeDoc(this.id, this._data);
-
-  @override
-  Map<String, dynamic>? data() => _data;
-
-  // Unused members required by interface
-  @override
-  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
+// Note: we use Strategy.fromMap to construct models from Map data
