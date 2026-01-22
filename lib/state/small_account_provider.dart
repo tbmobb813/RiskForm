@@ -133,10 +133,14 @@ class SmallAccountNotifier extends StateNotifier<SmallAccountState> {
       final box = await Hive.openBox(_boxName);
       await box.put(_key, state.settings);
       // Also persist to Firestore if user is signed in so server-side functions can enforce rules
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid != null) {
-        final doc = FirebaseFirestore.instance.doc('users/$uid/smallAccountSettings');
-        await doc.set(state.settings.toMap());
+      try {
+        final uid = FirebaseAuth.instance.currentUser?.uid;
+        if (uid != null) {
+          final doc = FirebaseFirestore.instance.doc('users/$uid/smallAccountSettings');
+          await doc.set(state.settings.toMap());
+        }
+      } catch (_) {
+        // Firebase not initialized in test environment — ignore
       }
     } catch (_) {
       state = state.copyWith(saving: false);

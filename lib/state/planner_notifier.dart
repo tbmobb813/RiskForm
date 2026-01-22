@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import '../models/trade_inputs.dart';
 import 'package:riskform/strategy_cockpit/analytics/regime_aware_planner_hints.dart' as planner_hints;
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'journal_providers.dart';
 import '../models/journal/journal_entry.dart';
 import '../services/journal/journal_repository.dart';
@@ -51,8 +52,23 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
     final LiveSyncManager? _liveSyncManager;
     final ExecutionService? _executionService;
     final JournalRepository? _journalRepo;
-    PlannerNotifier(this._repository, this._payoffEngine, this._riskEngine, [this._regimeEngine, this._hintsService, this._executionService, this._liveSyncManager, this._journalRepo])
+    final void Function(String, JournalEntry)? _lifecycleHook;
+    // Optional test hooks / overrides
+    final String? Function()? _getUid;
+    final Future<Map<String, dynamic>?> Function()? _smallAccountSettingsProvider;
+
+    PlannerNotifier(this._repository, this._payoffEngine, this._riskEngine, [this._regimeEngine, this._hintsService, this._executionService, this._liveSyncManager, this._journalRepo, this._getUid, this._smallAccountSettingsProvider, this._lifecycleHook])
       : super(PlannerState.initial());
+
+    // Safely obtain the current user id for environments where Firebase
+    // isn't initialized (tests). Prefer injected `_getUid` when available.
+    String? _safeUid() {
+      try {
+        return _getUid?.call() ?? FirebaseAuth.instance.currentUser?.uid;
+      } catch (_) {
+        return _getUid?.call();
+      }
+    }
 
   // Strategy selection
   void setStrategy(String id, String name, String description, {String? symbol}) {
@@ -69,11 +85,12 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
 
     // Auto-create a lightweight journal entry for the selected strategy
     try {
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      final repo = _journalRepo;
-      if (uid != null && repo != null) {
+      final uid = _safeUid();
+    final repo = _journalRepo;
+    if (uid != null && repo != null) {
+        final idNow = DateTime.now().millisecondsSinceEpoch.toString();
         final entry = JournalEntry(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          id: idNow,
           timestamp: DateTime.now(),
           type: 'selection',
           data: {
@@ -87,6 +104,27 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
           },
         );
         repo.addEntry(entry);
+        // lifecycle hook: notify other systems (analytics, sync) about selection
+        _lifecycleHook?.call('selection', entry);
+
+        // Fire-and-forget: if the user has Small Account Mode enabled, flag the entry and attach settings.
+        (() async {
+          try {
+            final sa = await _getSmallAccountSettings();
+              if (sa != null) {
+              final enriched = JournalEntry(
+                id: idNow,
+                timestamp: entry.timestamp,
+                type: entry.type,
+                data: Map<String, dynamic>.from(entry.data)
+                  ..['smallAccount'] = true
+                  ..['smallAccountSettings'] = sa,
+              );
+              await repo.updateEntry(enriched);
+              _lifecycleHook?.call('selection_enriched', enriched);
+            }
+          } catch (_) {}
+        })();
       }
     } catch (_) {
       // non-fatal: journaling should not block UX
@@ -298,6 +336,42 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
       // Persist plan and update wheel cycle in one atomic flow.
       await _repository.savePlanAndUpdateWheel(plan);
 
+      // Create a journal entry for the saved plan (include small-account metadata if enabled)
+      try {
+        final uid = _safeUid();
+        final repo = _journalRepo;
+        if (uid != null && repo != null) {
+          final entryId = DateTime.now().millisecondsSinceEpoch.toString();
+          final entry = JournalEntry(
+            id: entryId,
+            timestamp: DateTime.now(),
+            type: 'plan_saved',
+            data: {
+              'strategyId': plan.strategyId,
+              'strategyName': plan.strategyName,
+              'planId': plan.id,
+              'notes': plan.notes,
+              'tags': plan.tags,
+            },
+          );
+          repo.addEntry(entry);
+          final sa = await _getSmallAccountSettings();
+          _lifecycleHook?.call('plan_saved', entry);
+          if (sa != null) {
+            final enriched = JournalEntry(
+              id: entryId,
+              timestamp: entry.timestamp,
+              type: entry.type,
+              data: Map<String, dynamic>.from(entry.data)
+                ..['smallAccount'] = true
+                ..['smallAccountSettings'] = sa,
+            );
+            await repo.updateEntry(enriched);
+            _lifecycleHook?.call('plan_saved_enriched', enriched);
+          }
+        }
+      } catch (_) {}
+
       reset();
       return true;
     } catch (e) {
@@ -369,7 +443,7 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
 
       // Require authentication: include current user id so execution services
       // can scope per-user queries. Fail fast if not authenticated.
-      final uid = FirebaseAuth.instance.currentUser?.uid;
+      final uid = _safeUid();
       if (uid == null) {
         state = state.copyWith(isLoading: false, errorMessage: 'Authentication required to execute trades.');
         return false;
@@ -411,6 +485,40 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
         state = state.copyWith(isLoading: false, errorMessage: result.errorMessage);
         return false;
       }
+
+      // On success, create an execution journal entry (with small-account metadata if applicable)
+      try {
+        final uid = _safeUid();
+        final repo = _journalRepo;
+        if (uid != null && repo != null) {
+          final entryId = DateTime.now().millisecondsSinceEpoch.toString();
+          final entry = JournalEntry(
+            id: entryId,
+            timestamp: DateTime.now(),
+            type: 'execution',
+            data: {
+              'strategyId': ctx.strategyId,
+              'strategyName': ctx.strategyName,
+              'execution': executionPayload,
+            },
+          );
+          repo.addEntry(entry);
+          _lifecycleHook?.call('execution', entry);
+          final sa = await _getSmallAccountSettings();
+          if (sa != null) {
+            final enriched = JournalEntry(
+              id: entryId,
+              timestamp: entry.timestamp,
+              type: entry.type,
+              data: Map<String, dynamic>.from(entry.data)
+                ..['smallAccount'] = true
+                ..['smallAccountSettings'] = sa,
+            );
+            await repo.updateEntry(enriched);
+            _lifecycleHook?.call('execution_enriched', enriched);
+          }
+        }
+      } catch (_) {}
 
       // On success, clear planner inputs and keep a short success indicator
       reset();
@@ -531,6 +639,47 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
   // Reset
   void reset() {
     state = PlannerState.initial();
+  }
+
+  // ----- Journaling helpers (notes, tags, attachments) -----
+  Future<void> addJournalNote(String entryId, String note) async {
+    try {
+      final repo = _journalRepo;
+      if (repo == null) return;
+      final entry = await repo.getById(entryId);
+      if (entry == null) return;
+      final updated = entry.copyWith(data: Map<String, dynamic>.from(entry.data)..['notes'] = note);
+      await repo.updateEntry(updated);
+      _lifecycleHook?.call('note_added', updated);
+    } catch (_) {}
+  }
+
+  Future<void> addJournalTag(String entryId, String tag) async {
+    try {
+      final repo = _journalRepo;
+      if (repo == null) return;
+      final entry = await repo.getById(entryId);
+      if (entry == null) return;
+      final tags = (entry.data['tags'] as List?)?.map((e) => e.toString()).toList() ?? [];
+      if (!tags.contains(tag)) tags.insert(0, tag);
+      final updated = entry.copyWith(data: Map<String, dynamic>.from(entry.data)..['tags'] = tags);
+      await repo.updateEntry(updated);
+      _lifecycleHook?.call('tag_added', updated);
+    } catch (_) {}
+  }
+
+  Future<void> addJournalScreenshot(String entryId, String path, {String? caption}) async {
+    try {
+      final repo = _journalRepo;
+      if (repo == null) return;
+      final entry = await repo.getById(entryId);
+      if (entry == null) return;
+      final attachments = (entry.data['attachments'] as List?)?.cast<Map<String, dynamic>>()?.toList() ?? [];
+      attachments.insert(0, {'type': 'screenshot', 'path': path, 'caption': caption});
+      final updated = entry.copyWith(data: Map<String, dynamic>.from(entry.data)..['attachments'] = attachments);
+      await repo.updateEntry(updated);
+      _lifecycleHook?.call('screenshot_added', updated);
+    } catch (_) {}
   }
 
   /// Recompute planner hints using lightweight slider-derived overrides.
@@ -661,5 +810,24 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
 
     // Recompute hints using the updated numeric values
     computeHintsFromSliders(delta: delta, width: width, dte: dte);
+  }
+  
+  /// Helper: read the current user's small-account settings doc if present.
+  Future<Map<String, dynamic>?> _getSmallAccountSettings() async {
+    try {
+      // Allow tests to inject a provider for small-account settings.
+      if (_smallAccountSettingsProvider != null) {
+        return await _smallAccountSettingsProvider!();
+      }
+      final uid = _getUid?.call() ?? FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return null;
+      final doc = await FirebaseFirestore.instance.doc('users/$uid/smallAccountSettings/settings').get();
+      if (!doc.exists) return null;
+      final data = doc.data();
+      if (data is Map<String, dynamic>) return data;
+      return null;
+    } catch (_) {
+      return null;
+    }
   }
 }

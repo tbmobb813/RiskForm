@@ -108,6 +108,18 @@ final GoRouter appRouter = GoRouter(
       },
     ),
     GoRoute(
+      path: '/small_account/diagonal_builder/:ticker',
+      name: 'small_account_diagonal_builder',
+      builder: (context, state) {
+        final ticker = state.pathParameters['ticker']!;
+        final extra = state.extra;
+        final svc = extra is OptionsChainService
+            ? extra
+            : ProviderScope.containerOf(context).read(defaultOptionsChainServiceProvider);
+        return DiagonalBuilderScreen(chainService: svc, ticker: ticker);
+      },
+    ),
+    GoRoute(
       path: '/small_account/scanner/:ticker',
       name: 'small_account_scanner',
       builder: (context, state) {
@@ -166,6 +178,11 @@ final GoRouter appRouter = GoRouter(
       path: '/small_account/strategy_dashboard',
       name: 'small_account_strategy_dashboard',
       builder: (context, state) => const StrategyDashboardScreen(),
+    ),
+    GoRoute(
+      path: '/journal/attach_screenshot',
+      name: 'attach_screenshot',
+      builder: (context, state) => const AttachScreenshotScreen(),
     ),
   ],
 );
