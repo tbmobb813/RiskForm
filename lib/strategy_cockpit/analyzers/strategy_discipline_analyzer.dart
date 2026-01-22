@@ -62,7 +62,7 @@ class StrategyDisciplineAnalyzer {
     if (executions.length >= 3) {
       final timestamps = executions
           .map((e) => e['timestamp'])
-          .where((t) => t is DateTime)
+          .whereType<DateTime>()
           .cast<DateTime>()
           .toList()
         ..sort();

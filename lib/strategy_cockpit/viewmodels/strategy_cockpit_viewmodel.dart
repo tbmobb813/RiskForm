@@ -207,10 +207,10 @@ class StrategyCockpitViewModel extends ChangeNotifier {
     }
 
     if (_marketDataService != null && symbol != null) {
-      final mds = _marketDataService!;
+      final mds = _marketDataService;
       // Prefer LiveSyncManager if provided to orchestrate all live calls
       if (_liveSyncManager != null) {
-        final lsm = _liveSyncManager!;
+        final lsm = _liveSyncManager;
         lsm.refresh(symbol, ctx).then((res) {
           recommendations = res.recommendations;
           narrative = res.narrative;
@@ -222,7 +222,7 @@ class StrategyCockpitViewModel extends ChangeNotifier {
         });
       } else {
         // best-effort asynchronous fetch; update recommendations/narrative when ready
-        final sym = symbol!;
+        final sym = symbol;
         mds.getRegime(sym).then((regimeSnap) async {
           final volSnap = await mds.getVolatility(sym);
           final liqSnap = await mds.getLiquidity(sym);

@@ -2,7 +2,6 @@ import 'trading_strategy.dart';
 import 'leg.dart';
 import 'payoff_point.dart';
 import '../../models/option_contract.dart';
-import '../../models/trade_inputs.dart';
 import '../../models/wheel_cycle.dart';
 import '../../services/engines/payoff_engine.dart';
 import 'strategy_explanation.dart';
@@ -37,17 +36,32 @@ class WheelStrategy extends TradingStrategy {
         callPremiumReceived = callPremiumReceived ?? (callContract?.premium ?? 0.0);
 
   @override
+  String get typeId => 'wheel';
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'label': label,
+        'putContract': putContract.toJson(),
+        'callContract': callContract?.toJson(),
+        'shareQuantity': shareQuantity,
+        'putPremiumReceived': putPremiumReceived,
+        'callPremiumReceived': callPremiumReceived,
+        // Note: WheelCycle not persisted here to keep the active strategy lightweight.
+      };
+
+  @override
   List<Leg> get legs {
     final List<Leg> l = [];
     // short put
-    l.add(Leg(contract: putContract, quantity: -1));
+    l.add(Leg.option(putContract, quantity: -1));
 
-    // model assigned shares as long legs when present
-    l.add(Leg(contract: OptionContract(id: 'SHARES', strike: 0.0, premium: 0.0, expiry: DateTime.now(), type: 'share'), quantity: shareQuantity));
+    // model assigned shares as long legs when present (quantity = shares)
+    l.add(Leg.shares(id: 'SHARES', shares: shareQuantity, costBasisPerShare: putContract.strike));
 
     // short call if provided
     if (callContract != null) {
-      l.add(Leg(contract: callContract!, quantity: -1));
+      l.add(Leg.option(callContract!, quantity: -1));
     }
 
     return l;
@@ -77,42 +91,16 @@ class WheelStrategy extends TradingStrategy {
   List<PayoffPoint> payoffCurve({required double underlyingPrice, required double rangePercent, required int steps}) {
     final engine = PayoffEngine();
 
-    // If we have shares + call, model as covered call; otherwise model as CSP
-    if (callContract != null && shareQuantity >= 100) {
-      final inputs = TradeInputs(
-        strike: callContract!.strike,
-        premiumReceived: callPremiumReceived,
-        costBasis: putContract.strike,
-        underlyingPrice: underlyingPrice,
-        sharesOwned: shareQuantity,
-      );
-
-      final minPrice = underlyingPrice * (1 - rangePercent);
-      final maxPrice = underlyingPrice * (1 + rangePercent);
-
-      final offsets = engine.generatePayoffCurve(
-        strategyId: 'cc',
-        inputs: inputs,
-        minPrice: minPrice,
-        maxPrice: maxPrice,
-        points: steps,
-      );
-
-      return offsets.map((o) => PayoffPoint(underlyingPrice: o.dx, profitLoss: o.dy)).toList();
-    }
-
-    final inputs = TradeInputs(
-      strike: putContract.strike,
-      premiumReceived: putPremiumReceived,
-      underlyingPrice: underlyingPrice,
-    );
+    final legsList = legs;
+    final contracts = legsList.map((e) => e.contract).toList();
+    final quantities = legsList.map((e) => e.quantity).toList();
 
     final minPrice = underlyingPrice * (1 - rangePercent);
     final maxPrice = underlyingPrice * (1 + rangePercent);
 
-    final offsets = engine.generatePayoffCurve(
-      strategyId: 'csp',
-      inputs: inputs,
+    final offsets = engine.generatePayoffCurveForContracts(
+      contracts: contracts,
+      quantities: quantities,
       minPrice: minPrice,
       maxPrice: maxPrice,
       points: steps,

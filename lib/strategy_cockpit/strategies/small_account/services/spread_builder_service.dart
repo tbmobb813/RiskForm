@@ -1,4 +1,3 @@
-import 'package:riskform/models/option_contract.dart';
 import 'package:riskform/strategy_cockpit/strategies/debit_spread_strategy.dart';
 import '../models/spread_selection.dart';
 

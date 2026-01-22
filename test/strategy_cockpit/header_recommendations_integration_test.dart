@@ -1,6 +1,7 @@
+// ignore_for_file: unnecessary_overrides
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:provider/provider.dart';
 import 'package:riskform/strategy_cockpit/strategy_cockpit_bundle.dart';
 import 'package:riskform/strategy_cockpit/viewmodels/strategy_cockpit_viewmodel.dart';
 import 'package:riskform/strategy_cockpit/analytics/strategy_recommendations_engine.dart';
@@ -42,7 +43,7 @@ class FakeVm extends ChangeNotifier implements StrategyCockpitViewModel {
   @override
   Future<void> retireStrategy({String? reason}) async {}
   @override
-  void dispose() {}
+  void dispose() { super.dispose(); }
 }
 
 void main() {

@@ -82,19 +82,19 @@ PlannerHintBundle generateHints(PlannerState state, StrategyContext ctx) {
       final b = best['dte'];
       if (b is num) ranges['dte'] = RangeValues(b.toDouble(), b.toDouble());
         if (b is num) bestPoints['dte'] = b.toDouble();
-      parts.add('DTE ${b}');
+      parts.add('DTE $b');
     }
     if (best.containsKey('delta')) {
       final b = best['delta'];
       if (b is num) ranges['delta'] = RangeValues(b.toDouble(), b.toDouble());
         if (b is num) bestPoints['delta'] = b.toDouble();
-      parts.add('delta ${b}');
+      parts.add('delta $b');
     }
     if (best.containsKey('width')) {
       final b = best['width'];
       if (b is num) ranges['width'] = RangeValues(b.toDouble(), b.toDouble());
         if (b is num) bestPoints['width'] = b.toDouble();
-      parts.add('width ${b}');
+      parts.add('width $b');
     }
     hints.add(PlannerHint(field: 'backtest', message: 'Backtests favor: ${parts.join(', ')}.', severity: 'info'));
   }
@@ -104,7 +104,7 @@ PlannerHintBundle generateHints(PlannerState state, StrategyContext ctx) {
     if (weak.containsKey('delta')) {
       final w = weak['delta'];
       if (w is num && state.delta > w.toDouble()) {
-        hints.add(PlannerHint(field: 'delta', message: 'Backtests show weakness at delta > ${w} — consider tightening.', severity: 'warning'));
+        hints.add(PlannerHint(field: 'delta', message: 'Backtests show weakness at delta > $w — consider tightening.', severity: 'warning'));
         // mark weak zone for delta (we'll render as a red marker/range)
         weakRanges['delta'] = RangeValues(w.toDouble(), w.toDouble());
       }
@@ -112,7 +112,7 @@ PlannerHintBundle generateHints(PlannerState state, StrategyContext ctx) {
     if (weak.containsKey('dte')) {
       final w = weak['dte'];
       if (w is num && state.dte < w.toInt()) {
-        hints.add(PlannerHint(field: 'dte', message: 'Backtests weak for DTE < ${w} in similar regimes.', severity: 'warning'));
+        hints.add(PlannerHint(field: 'dte', message: 'Backtests weak for DTE < $w in similar regimes.', severity: 'warning'));
         weakRanges['dte'] = RangeValues(w.toDouble(), w.toDouble());
       }
     }
@@ -143,11 +143,11 @@ PlannerHintBundle generateHints(PlannerState state, StrategyContext ctx) {
 
   // --- Constraint Rules ---
   final c = ctx.constraints;
-  if (c.allowedDeltaRange != null && c.allowedDeltaRange!.length == 2) {
+    if (c.allowedDeltaRange != null && c.allowedDeltaRange!.length == 2) {
     final minD = c.allowedDeltaRange![0];
     final maxD = c.allowedDeltaRange![1];
     if (state.delta < minD || state.delta > maxD) {
-      hints.add(PlannerHint(field: 'delta', message: 'Delta ${state.delta} outside allowed range (${minD}–${maxD}).', severity: 'danger'));
+      hints.add(PlannerHint(field: 'delta', message: 'Delta ${state.delta} outside allowed range ($minD–$maxD).', severity: 'danger'));
     }
     ranges.putIfAbsent('delta', () => RangeValues(minD, maxD));
   }

@@ -3,7 +3,6 @@ import 'strategy_explanation.dart';
 import 'payoff_point.dart';
 import 'leg.dart';
 import '../../models/option_contract.dart';
-import '../../models/trade_inputs.dart';
 import '../../services/engines/payoff_engine.dart';
 
 class PMCCStrategy extends TradingStrategy {
@@ -14,13 +13,26 @@ class PMCCStrategy extends TradingStrategy {
   PMCCStrategy({required this.callContract, this.shareQuantity = 100, this.costBasis = 0.0});
 
   @override
+  String get typeId => 'pmcc';
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'callContract': callContract.toJson(),
+        'shareQuantity': shareQuantity,
+        'costBasis': costBasis,
+      };
+
+  @override
   String get id => 'pmcc_${callContract.id}';
 
   @override
   String get label => 'PMCC (adapter)';
 
   @override
-  List<Leg> get legs => [Leg(contract: OptionContract(id: 'SHARES', strike: 0.0, premium: 0.0, expiry: DateTime.now(), type: 'share'), quantity: shareQuantity), Leg(contract: callContract, quantity: -1)];
+  List<Leg> get legs => [
+        Leg.shares(id: 'SHARES', shares: shareQuantity, costBasisPerShare: costBasis),
+        Leg.option(callContract, quantity: -1),
+      ];
 
   @override
   double get maxRisk {
@@ -40,21 +52,16 @@ class PMCCStrategy extends TradingStrategy {
   List<PayoffPoint> payoffCurve({required double underlyingPrice, required double rangePercent, required int steps}) {
     final engine = PayoffEngine();
 
-    // Map to covered call inputs
-    final inputs = TradeInputs(
-      strike: callContract.strike,
-      premiumReceived: callContract.premium,
-      costBasis: costBasis,
-      underlyingPrice: underlyingPrice,
-      sharesOwned: shareQuantity,
-    );
+    final legsList = legs;
+    final contracts = legsList.map((e) => e.contract).toList();
+    final quantities = legsList.map((e) => e.quantity).toList();
 
     final minPrice = underlyingPrice * (1 - rangePercent);
     final maxPrice = underlyingPrice * (1 + rangePercent);
 
-    final offsets = engine.generatePayoffCurve(
-      strategyId: 'cc',
-      inputs: inputs,
+    final offsets = engine.generatePayoffCurveForContracts(
+      contracts: contracts,
+      quantities: quantities,
       minPrice: minPrice,
       maxPrice: maxPrice,
       points: steps,

@@ -5,7 +5,7 @@ import '../analytics/strategy_recommendations_engine.dart';
 class RecommendationsPanel extends StatelessWidget {
   final StrategyRecommendationsBundle? bundle;
 
-  const RecommendationsPanel({Key? key, this.bundle}) : super(key: key);
+  const RecommendationsPanel({super.key, this.bundle});
 
   @override
   Widget build(BuildContext context) {

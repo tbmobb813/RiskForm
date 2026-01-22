@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class BatchBacktestSummary extends StatelessWidget {
   final Map<String, dynamic> summary;
 
-  const BatchBacktestSummary({required this.summary, Key? key}) : super(key: key);
+  const BatchBacktestSummary({required this.summary, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +48,7 @@ class _CockpitCard extends StatelessWidget {
   final String title;
   final Widget child;
 
-  const _CockpitCard({required this.title, required this.child, Key? key}) : super(key: key);
+  const _CockpitCard({required this.title, required this.child});
 
   @override
   Widget build(BuildContext context) {

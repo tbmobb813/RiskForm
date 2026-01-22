@@ -7,8 +7,7 @@ import 'batch_backtest_status.dart';
 class BatchBacktestLauncher extends StatefulWidget {
   final String strategyId;
 
-  const BatchBacktestLauncher({required this.strategyId, Key? key})
-      : super(key: key);
+  const BatchBacktestLauncher({required this.strategyId, super.key});
 
   @override
   State<BatchBacktestLauncher> createState() => _BatchBacktestLauncherState();
@@ -49,8 +48,9 @@ class _BatchBacktestLauncherState extends State<BatchBacktestLauncher> {
                 onPressed: vm.loading
                     ? null
                     : () async {
+                        final messenger = ScaffoldMessenger.of(context);
                         await vm.createBatch(grid);
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        messenger.showSnackBar(
                           const SnackBar(content: Text("Batch created")),
                         );
                       },
@@ -80,7 +80,7 @@ class _ParameterBuilder extends StatelessWidget {
   final Map<String, dynamic> currentParams;
   final VoidCallback onAdd;
 
-  const _ParameterBuilder({required this.currentParams, required this.onAdd, Key? key}) : super(key: key);
+  const _ParameterBuilder({required this.currentParams, required this.onAdd});
 
   @override
   Widget build(BuildContext context) {
@@ -115,7 +115,7 @@ class _ParamField extends StatelessWidget {
   final String label;
   final Function(String) onChanged;
 
-  const _ParamField({required this.label, required this.onChanged, Key? key}) : super(key: key);
+  const _ParamField({required this.label, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +129,7 @@ class _ParamField extends StatelessWidget {
 class _GridPreview extends StatelessWidget {
   final List<Map<String, dynamic>> grid;
 
-  const _GridPreview({required this.grid, Key? key}) : super(key: key);
+  const _GridPreview({required this.grid});
 
   @override
   Widget build(BuildContext context) {
@@ -151,7 +151,7 @@ class _CockpitCard extends StatelessWidget {
   final String title;
   final Widget child;
 
-  const _CockpitCard({required this.title, required this.child, Key? key}) : super(key: key);
+  const _CockpitCard({required this.title, required this.child});
 
   @override
   Widget build(BuildContext context) {

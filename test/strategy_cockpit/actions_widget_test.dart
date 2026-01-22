@@ -1,3 +1,5 @@
+// ignore_for_file: override_on_non_overriding_member
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -13,7 +15,6 @@ import 'package:riskform/strategy_cockpit/services/strategy_backtest_service.dar
 import 'package:riskform/regime/regime_service.dart';
 
 class FakeStrategyService implements StrategyService {
-  Map<String, dynamic>? _strategy;
 
   @override
   Future<String> createStrategy({required String name, String? description, List<String> tags = const [], Map<String, dynamic>? constraints, bool experimental = false}) async => 's1';

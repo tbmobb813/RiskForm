@@ -18,7 +18,7 @@ void main() {
       backtestComparison: BacktestSummary(bestConfig: {'dte': 30, 'delta': 0.18}, weakConfig: null),
     );
 
-    final narrative = generateNarrative(ctx);
+    generateNarrative(ctx);
       // add a sample recommendation bundle and re-generate with recommendations
       final recBundle = StrategyRecommendationsBundle(
         generatedAt: DateTime.now(),

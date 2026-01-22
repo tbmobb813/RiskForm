@@ -34,7 +34,6 @@ class StrategyRegimeAnalyzer {
 
     for (final e in executions) {
       final type = (e['type'] ?? '').toString().toUpperCase();
-      final symbol = (e['symbol'] ?? '').toString().toUpperCase();
 
       // You can plug in real regime logic later; for now:
       // - In uptrend: selling puts / covered calls = aligned

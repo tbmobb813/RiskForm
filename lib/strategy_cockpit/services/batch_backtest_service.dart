@@ -153,7 +153,9 @@ class BatchBacktestService {
     }
     if (regimeWeaknesses.isNotEmpty) {
       comparison.writeln('Regime notes:');
-      regimeWeaknesses.values.forEach((v) => comparison.writeln('- $v'));
+      for (var v in regimeWeaknesses.values) {
+        comparison.writeln('- $v');
+      }
     }
 
     // Write summary

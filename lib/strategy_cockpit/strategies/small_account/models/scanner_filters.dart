@@ -16,4 +16,24 @@ class ScannerFilters {
     this.minDelta,
     this.maxDelta,
   });
+
+  ScannerFilters copyWith({
+    double? maxPremium,
+    int? minDte,
+    int? maxDte,
+    double? maxBidAskSpread,
+    int? minOpenInterest,
+    double? minDelta,
+    double? maxDelta,
+  }) {
+    return ScannerFilters(
+      maxPremium: maxPremium ?? this.maxPremium,
+      minDte: minDte ?? this.minDte,
+      maxDte: maxDte ?? this.maxDte,
+      maxBidAskSpread: maxBidAskSpread ?? this.maxBidAskSpread,
+      minOpenInterest: minOpenInterest ?? this.minOpenInterest,
+      minDelta: minDelta ?? this.minDelta,
+      maxDelta: maxDelta ?? this.maxDelta,
+    );
+  }
 }

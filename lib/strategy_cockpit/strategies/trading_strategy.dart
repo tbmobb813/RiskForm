@@ -7,6 +7,13 @@ abstract class TradingStrategy {
   String get label;
   List<Leg> get legs;
 
+  /// A stable type identifier for persistence (e.g. "long_call", "debit_spread", "wheel").
+  String get typeId;
+
+  /// JSON representation used for persistence. Implementation should produce
+  /// only basic Dart types (maps, lists, strings, numbers, bools).
+  Map<String, dynamic> toJson();
+
   double get maxRisk;
   double get maxProfit;
   double get breakeven;

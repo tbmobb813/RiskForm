@@ -7,7 +7,7 @@ class BatchBacktestStatus extends StatelessWidget {
   final String strategyId;
   final String batchId;
 
-  const BatchBacktestStatus({required this.strategyId, required this.batchId, Key? key}) : super(key: key);
+  const BatchBacktestStatus({required this.strategyId, required this.batchId, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +47,7 @@ class _CockpitCard extends StatelessWidget {
   final String title;
   final Widget child;
 
-  const _CockpitCard({required this.title, required this.child, Key? key}) : super(key: key);
+  const _CockpitCard({required this.title, required this.child});
 
   @override
   Widget build(BuildContext context) {

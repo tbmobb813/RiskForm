@@ -1,10 +1,6 @@
-import 'package:flutter/foundation.dart';
-
 import 'package:riskform/strategy_cockpit/strategies/trading_strategy.dart';
 import 'package:riskform/strategy_cockpit/strategies/long_call_strategy.dart';
 import 'package:riskform/strategy_cockpit/strategies/long_put_strategy.dart';
-import 'package:riskform/strategy_cockpit/strategies/leg.dart';
-import 'package:riskform/strategy_cockpit/strategies/payoff_point.dart';
 import 'package:riskform/models/option_contract.dart';
 import 'package:riskform/strategy_cockpit/strategies/small_account/models/scanner_filters.dart';
 

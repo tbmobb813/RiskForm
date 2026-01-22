@@ -257,10 +257,10 @@ StrategyNarrative generateNarrative(StrategyContext ctx, {StrategyRecommendation
   final bullets = <String>[];
 
   // discipline trend
-  if (ctx.disciplineTrend.isNotEmpty) {
+    if (ctx.disciplineTrend.isNotEmpty) {
     final last = ctx.disciplineTrend.last;
     final prev = ctx.disciplineTrend.length >= 2 ? ctx.disciplineTrend[ctx.disciplineTrend.length - 2] : last;
-    bullets.add('Discipline: ${prev} → ${last}.');
+    bullets.add('Discipline: $prev → $last.');
   }
 
   // health change implied by healthScore only

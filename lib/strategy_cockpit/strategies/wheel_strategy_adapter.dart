@@ -36,12 +36,26 @@ class WheelStrategyAdapter extends TradingStrategy {
         callPremiumReceived = callPremiumReceived ?? (callContract?.premium ?? 0.0);
 
   @override
+  String get typeId => 'wheel';
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'label': label,
+        'putContract': putContract.toJson(),
+        'callContract': callContract?.toJson(),
+        'shareQuantity': shareQuantity,
+        'putPremiumReceived': putPremiumReceived,
+        'callPremiumReceived': callPremiumReceived,
+      };
+
+  @override
   List<Leg> get legs {
     final List<Leg> l = [];
     // short put
     l.add(Leg(contract: putContract, quantity: -1));
     // model assigned shares as long legs when present (adapter may include these)
-    l.add(Leg(contract: OptionContract(id: 'SHARES', strike: 0.0, premium: 0.0, expiry: DateTime.now(), type: 'share'), quantity: shareQuantity));
+    l.add(Leg.shares(id: 'SHARES', shares: shareQuantity, costBasisPerShare: putContract.strike));
     // short call if provided
     if (callContract != null) {
       l.add(Leg(contract: callContract!, quantity: -1));

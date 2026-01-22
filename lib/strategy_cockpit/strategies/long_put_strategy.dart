@@ -12,6 +12,14 @@ class LongPutStrategy extends TradingStrategy {
   LongPutStrategy(this.contract);
 
   @override
+  String get typeId => 'long_put';
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'contract': contract.toJson(),
+      };
+
+  @override
   String get id => 'long_put_${contract.id}';
 
   @override

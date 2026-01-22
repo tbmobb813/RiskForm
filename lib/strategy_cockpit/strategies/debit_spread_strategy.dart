@@ -13,6 +13,15 @@ class DebitSpreadStrategy extends TradingStrategy {
   DebitSpreadStrategy({required this.longLeg, required this.shortLeg});
 
   @override
+  String get typeId => 'debit_spread';
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'longLeg': longLeg.toJson(),
+        'shortLeg': shortLeg.toJson(),
+      };
+
+  @override
   String get id => 'debit_spread_${longLeg.id}_${shortLeg.id}';
 
   @override

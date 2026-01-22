@@ -1,5 +1,7 @@
 import 'dart:math';
 
+final double _sqrt2pi = sqrt(2 * pi);
+
 /// LRU cache for option pricing calculations.
 class _PricingCache {
   final int maxSize;
@@ -177,5 +179,64 @@ class OptionPricingEngine {
     }
 
     return 0.5 * (1.0 + erfApprox(x / sqrt2));
+  }
+
+  double _normPdf(double x) {
+    return (1.0 / _sqrt2pi) * exp(-0.5 * x * x);
+  }
+
+  /// Black-Scholes Delta (call positive, put negative). Returns delta per
+  /// single underlying (0..1 for calls, -1..0 for puts).
+  double delta({
+    required bool isCall,
+    required double spot,
+    required double strike,
+    required double volatility,
+    required double timeToExpiryYears,
+  }) {
+    if (timeToExpiryYears <= 0 || volatility <= 0) {
+      if (isCall) return spot > strike ? 1.0 : 0.0;
+      return spot < strike ? -1.0 : 0.0;
+    }
+
+    final d1 = (log(spot / strike) + (riskFreeRate + 0.5 * pow(volatility, 2)) * timeToExpiryYears) / (volatility * sqrt(timeToExpiryYears));
+    if (isCall) return _normCdf(d1);
+    return _normCdf(d1) - 1.0;
+  }
+
+  /// Black-Scholes Vega (per 1.0 volatility, e.g. 0.01 = 1%). Returns vega
+  /// in price units (dollars) per underlying per 1.0 vol.
+  double vega({
+    required double spot,
+    required double strike,
+    required double volatility,
+    required double timeToExpiryYears,
+  }) {
+    if (timeToExpiryYears <= 0 || volatility <= 0) return 0.0;
+    final d1 = (log(spot / strike) + (riskFreeRate + 0.5 * pow(volatility, 2)) * timeToExpiryYears) / (volatility * sqrt(timeToExpiryYears));
+    return spot * _normPdf(d1) * sqrt(timeToExpiryYears);
+  }
+
+  /// Black-Scholes Theta (per day) for call/put. Returns theta in price
+  /// units (dollars) per underlying *per day*.
+  double theta({
+    required bool isCall,
+    required double spot,
+    required double strike,
+    required double volatility,
+    required double timeToExpiryYears,
+  }) {
+    if (timeToExpiryYears <= 0 || volatility <= 0) return 0.0;
+
+    final d1 = (log(spot / strike) + (riskFreeRate + 0.5 * pow(volatility, 2)) * timeToExpiryYears) / (volatility * sqrt(timeToExpiryYears));
+    final d2 = d1 - volatility * sqrt(timeToExpiryYears);
+
+    final firstTerm = - (spot * _normPdf(d1) * volatility) / (2 * sqrt(timeToExpiryYears));
+    final secondTermCall = riskFreeRate * strike * exp(-riskFreeRate * timeToExpiryYears) * _normCdf(d2);
+    final secondTermPut = riskFreeRate * strike * exp(-riskFreeRate * timeToExpiryYears) * _normCdf(-d2);
+
+    // Theta is usually annualized; convert to per-day by dividing by 365.
+    final thetaAnnual = isCall ? (firstTerm - secondTermCall) : (firstTerm + secondTermPut);
+    return thetaAnnual / 365.0;
   }
 }

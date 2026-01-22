@@ -12,6 +12,14 @@ class LongCallStrategy extends TradingStrategy {
   LongCallStrategy(this.contract);
 
   @override
+  String get typeId => 'long_call';
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'contract': contract.toJson(),
+      };
+
+  @override
   String get id => 'long_call_${contract.id}';
 
   @override

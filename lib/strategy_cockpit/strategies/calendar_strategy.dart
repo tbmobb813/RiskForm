@@ -13,6 +13,15 @@ class CalendarStrategy extends TradingStrategy {
   CalendarStrategy({required this.longLeg, required this.shortLeg});
 
   @override
+  String get typeId => 'calendar';
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'longLeg': longLeg.toJson(),
+        'shortLeg': shortLeg.toJson(),
+      };
+
+  @override
   String get id => 'calendar_${longLeg.id}_${shortLeg.id}';
 
   @override

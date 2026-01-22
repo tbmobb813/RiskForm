@@ -9,7 +9,7 @@ import '../../services/batch_backtest_service.dart';
 class ParameterGridBuilder extends StatelessWidget {
   final String strategyId;
 
-  const ParameterGridBuilder({required this.strategyId, Key? key}) : super(key: key);
+  const ParameterGridBuilder({required this.strategyId, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +23,7 @@ class ParameterGridBuilder extends StatelessWidget {
 class _ParameterGridBuilderView extends StatelessWidget {
   final String strategyId;
 
-  const _ParameterGridBuilderView({required this.strategyId, Key? key}) : super(key: key);
+  const _ParameterGridBuilderView({required this.strategyId});
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +49,7 @@ class _ParameterGridBuilderView extends StatelessWidget {
 class _PresetsRow extends StatelessWidget {
   final Function(Map<String, ParameterRange>) onSelect;
 
-  const _PresetsRow({required this.onSelect, Key? key}) : super(key: key);
+  const _PresetsRow({required this.onSelect});
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +71,7 @@ class _PresetsRow extends StatelessWidget {
 class _RangeSliders extends StatelessWidget {
   final ParameterGridViewModel vm;
 
-  const _RangeSliders({required this.vm, Key? key}) : super(key: key);
+  const _RangeSliders({required this.vm});
 
   @override
   Widget build(BuildContext context) {
@@ -124,8 +124,7 @@ class _RangeSliderRow extends StatefulWidget {
     required this.max,
     required this.step,
     required this.onChanged,
-    Key? key,
-  }) : super(key: key);
+  }) ;
 
   @override
   State<_RangeSliderRow> createState() => _RangeSliderRowState();
@@ -165,7 +164,7 @@ class _RangeSliderRowState extends State<_RangeSliderRow> {
 class _GridPreview extends StatelessWidget {
   final List<Map<String, dynamic>> grid;
 
-  const _GridPreview({required this.grid, Key? key}) : super(key: key);
+  const _GridPreview({required this.grid});
 
   @override
   Widget build(BuildContext context) {
@@ -186,7 +185,7 @@ class _RunBatchButton extends StatelessWidget {
   final String strategyId;
   final List<Map<String, dynamic>> grid;
 
-  const _RunBatchButton({required this.strategyId, required this.grid, Key? key}) : super(key: key);
+  const _RunBatchButton({required this.strategyId, required this.grid});
 
   @override
   Widget build(BuildContext context) {
@@ -194,10 +193,11 @@ class _RunBatchButton extends StatelessWidget {
       onPressed: grid.isEmpty
           ? null
           : () async {
-              final batchService = BatchBacktestService();
-              await batchService.createBatchJob(strategyId: strategyId, parameterGrid: grid);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Batch Backtest Started')));
-            },
+                  final batchService = BatchBacktestService();
+                  final messenger = ScaffoldMessenger.of(context);
+                  await batchService.createBatchJob(strategyId: strategyId, parameterGrid: grid);
+                  messenger.showSnackBar(const SnackBar(content: Text('Batch Backtest Started')));
+                },
       child: const Text('Run Batch Backtest'),
     );
   }
@@ -207,7 +207,7 @@ class _CockpitCard extends StatelessWidget {
   final String title;
   final Widget child;
 
-  const _CockpitCard({required this.title, required this.child, Key? key}) : super(key: key);
+  const _CockpitCard({required this.title, required this.child});
 
   @override
   Widget build(BuildContext context) {

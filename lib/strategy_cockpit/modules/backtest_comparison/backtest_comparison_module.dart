@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'backtest_comparison_viewmodel.dart';
-import '../../models/backtest_comparison_result.dart';
 
 class BacktestComparisonModule extends StatelessWidget {
   final String strategyId;
 
-  const BacktestComparisonModule({required this.strategyId, Key? key})
-      : super(key: key);
+  const BacktestComparisonModule({required this.strategyId, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +18,7 @@ class BacktestComparisonModule extends StatelessWidget {
 }
 
 class _BacktestComparisonView extends StatelessWidget {
-  const _BacktestComparisonView({Key? key}) : super(key: key);
+  const _BacktestComparisonView();
 
   @override
   Widget build(BuildContext context) {
@@ -42,11 +40,11 @@ class _BacktestComparisonView extends StatelessWidget {
               const SizedBox(height: 12),
               _WeakConfigCard(result.worstConfig),
               const SizedBox(height: 12),
-              _RegimeWeaknessCard(result.regimeWeaknesses ?? {}),
+              _RegimeWeaknessCard(result.regimeWeaknesses),
               const SizedBox(height: 12),
-              _SummaryNoteCard(result.summaryNote ?? ''),
+              _SummaryNoteCard(result.summaryNote),
               const SizedBox(height: 24),
-              _ComparisonTable(result.runs ?? []),
+              _ComparisonTable(result.runs),
             ],
           ),
         );
@@ -58,7 +56,7 @@ class _BacktestComparisonView extends StatelessWidget {
 class _BestConfigCard extends StatelessWidget {
   final Map<String, dynamic>? config;
 
-  const _BestConfigCard(this.config, {Key? key}) : super(key: key);
+  const _BestConfigCard(this.config);
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +75,7 @@ class _BestConfigCard extends StatelessWidget {
 class _WeakConfigCard extends StatelessWidget {
   final Map<String, dynamic>? config;
 
-  const _WeakConfigCard(this.config, {Key? key}) : super(key: key);
+  const _WeakConfigCard(this.config);
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +94,7 @@ class _WeakConfigCard extends StatelessWidget {
 class _RegimeWeaknessCard extends StatelessWidget {
   final Map<String, dynamic> weaknesses;
 
-  const _RegimeWeaknessCard(this.weaknesses, {Key? key}) : super(key: key);
+  const _RegimeWeaknessCard(this.weaknesses);
 
   @override
   Widget build(BuildContext context) {
@@ -125,7 +123,7 @@ class _RegimeWeaknessCard extends StatelessWidget {
 class _SummaryNoteCard extends StatelessWidget {
   final String note;
 
-  const _SummaryNoteCard(this.note, {Key? key}) : super(key: key);
+  const _SummaryNoteCard(this.note);
 
   @override
   Widget build(BuildContext context) {
@@ -142,7 +140,7 @@ class _SummaryNoteCard extends StatelessWidget {
 class _ComparisonTable extends StatelessWidget {
   final List<Map<String, dynamic>> runs;
 
-  const _ComparisonTable(this.runs, {Key? key}) : super(key: key);
+  const _ComparisonTable(this.runs);
 
   @override
   Widget build(BuildContext context) {
@@ -180,8 +178,7 @@ class _CockpitCard extends StatelessWidget {
   final String title;
   final Widget child;
 
-  const _CockpitCard({required this.title, required this.child, Key? key})
-      : super(key: key);
+  const _CockpitCard({required this.title, required this.child});
 
   @override
   Widget build(BuildContext context) {
