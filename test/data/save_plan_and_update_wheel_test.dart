@@ -38,12 +38,17 @@ class FakeAuth implements AuthService {
   Stream<User?> get authStateChanges => Stream.value(null);
 
   @override
-  Future<UserCredential> signInWithEmail({required String email, required String password}) async =>
-      throw UnimplementedError();
+  @override
+  Future<UserCredential> signInWithEmail({required String email, required String password}) async {
+    // Tests in this file don't rely on the returned credential; return
+    // a lightweight fake credential so callers can await safely.
+    return FakeUserCredential();
+  }
 
   @override
-  Future<UserCredential> signUpWithEmail({required String email, required String password}) async =>
-      throw UnimplementedError();
+  Future<UserCredential> signUpWithEmail({required String email, required String password}) async {
+    return FakeUserCredential();
+  }
 
   @override
   Future<void> signOut() async {}
@@ -72,6 +77,23 @@ class FakeWheel implements WheelCycleService {
 
   @override
   Future<void> saveCycle(String uid, WheelCycle cycle) async {}
+}
+
+// Minimal fake UserCredential so tests can await auth operations without
+// pulling in heavy Firebase behavior. Only implements the tiny surface
+// used by tests (may be expanded if tests require more fields later).
+class FakeUserCredential implements UserCredential {
+  @override
+  final User? user = null;
+
+  @override
+  final AdditionalUserInfo? additionalUserInfo = null;
+
+  @override
+  final OAuthCredential? credential = null;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 void main() {

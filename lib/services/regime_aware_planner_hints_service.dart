@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 import '../services/market_data_service.dart';
 import '../engines/regime_engine.dart';
 import '../strategy_cockpit/analytics/regime_aware_planner_hints.dart' as planner_hints;
@@ -22,15 +20,10 @@ class RegimeAwarePlannerHintsService {
   Future<planner_hints.PlannerHintBundle> generateHints(planner_hints.PlannerState state, {String? symbol, recs.StrategyContext? contextOverrides}) async {
     try {
       // Fetch live snapshots when symbol provided
-      MarketPriceSnapshot? price;
-      MarketVolatilitySnapshot? vol;
-      MarketLiquiditySnapshot? liq;
       MarketRegimeSnapshot? regime;
 
       if (symbol != null) {
-        price = await marketData.getPrice(symbol);
-        vol = await marketData.getVolatility(symbol);
-        liq = await marketData.getLiquidity(symbol);
+        // Only fetch regime for planner hints (other snapshots not used currently)
         try {
           regime = await regimeEngine.getRegime(symbol);
         } catch (_) {

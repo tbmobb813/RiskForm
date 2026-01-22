@@ -11,10 +11,8 @@ import 'viewmodels/strategy_discipline_viewmodel.dart';
 import 'viewmodels/strategy_regime_viewmodel.dart';
 import 'viewmodels/strategy_backtest_viewmodel.dart';
 import 'viewmodels/strategy_cockpit_viewmodel.dart';
-import 'package:riskform/strategy_cockpit/default_services.dart';
 import 'widgets/recommendations_panel.dart';
 import 'widgets/strategy_narrative_panel.dart';
-import 'package:riskform/models/strategy.dart';
 
 /// =============================================================
 /// ROOT SCREEN

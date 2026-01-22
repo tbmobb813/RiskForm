@@ -10,7 +10,6 @@ import '../../regime/regime_service.dart';
 import '../analytics/strategy_recommendations_engine.dart';
 import '../analytics/strategy_narrative_engine.dart';
 import 'package:riskform/services/market_data_service.dart';
-import 'package:riskform/services/market_data_models.dart';
 import '../live_sync_manager.dart';
 
 
@@ -136,22 +135,25 @@ class StrategyCockpitViewModel extends ChangeNotifier {
   void _maybeGenerateRecommendations() {
     // Require health + strategy + regime to generate meaningful recommendations.
     if (health == null || strategy == null || currentRegime == null) return;
+    final healthLocal = health!;
+    final strategyLocal = strategy!;
+    final currentRegimeLocal = currentRegime!;
 
-    final healthScore = (health!.healthScore ?? 50).toInt();
+    final healthScore = (healthLocal.healthScore ?? 50).toInt();
 
-    final pnlTrend = List<double>.from(health!.pnlTrend);
+    final pnlTrend = List<double>.from(healthLocal.pnlTrend);
 
     // Convert discipline trend to ints [0..100]
-    final disciplineTrend = health!.disciplineTrend.map((d) => d.round()).toList();
+    final disciplineTrend = healthLocal.disciplineTrend.map((d) => d.round()).toList();
 
     // Recent cycles: map last up to 5 summaries to CycleSummary
-    final cycleMaps = health!.cycleSummaries;
+    final cycleMaps = healthLocal.cycleSummaries;
     final recent = <CycleSummary>[];
     for (var i = cycleMaps.length - 1; i >= 0 && recent.length < 5; i--) {
       final m = cycleMaps[i];
       final ds = (m['disciplineScore'] is num) ? (m['disciplineScore'] as num).toInt() : 50;
       final pnl = (m['pnl'] is num) ? (m['pnl'] as num).toDouble() : 0.0;
-      final r = (m['regime'] is String) ? m['regime'] as String : currentRegime!;
+      final r = (m['regime'] is String) ? m['regime'] as String : currentRegimeLocal;
       recent.add(CycleSummary(disciplineScore: ds, pnl: pnl, regime: r));
     }
 
@@ -161,7 +163,7 @@ class StrategyCockpitViewModel extends ChangeNotifier {
         : BacktestSummary(bestConfig: latestBacktest, weakConfig: null, summaryNote: null);
 
     // Constraints -> map to engine Constraints
-    final c = strategy!.constraints;
+    final c = strategyLocal.constraints;
     final constraints = Constraints(
       maxRisk: (c['maxRisk'] is int) ? c['maxRisk'] as int : 100,
       maxPositions: (c['maxPositions'] is int) ? c['maxPositions'] as int : 10,
@@ -197,16 +199,19 @@ class StrategyCockpitViewModel extends ChangeNotifier {
 
     // Try live-aware generation when MarketDataService is available and a symbol can be determined
     String? symbol;
-    if (latestBacktest != null && latestBacktest!['symbol'] is String) {
-      symbol = latestBacktest!['symbol'] as String;
-    } else if (strategy!.constraints.containsKey('symbol') && strategy!.constraints['symbol'] is String) {
-      symbol = strategy!.constraints['symbol'] as String;
+    final lb = latestBacktest;
+    if (lb != null && lb['symbol'] is String) {
+      symbol = lb['symbol'] as String;
+    } else if (strategyLocal.constraints.containsKey('symbol') && strategyLocal.constraints['symbol'] is String) {
+      symbol = strategyLocal.constraints['symbol'] as String;
     }
 
     if (_marketDataService != null && symbol != null) {
+      final mds = _marketDataService!;
       // Prefer LiveSyncManager if provided to orchestrate all live calls
       if (_liveSyncManager != null) {
-        _liveSyncManager!.refresh(symbol!, ctx).then((res) {
+        final lsm = _liveSyncManager!;
+        lsm.refresh(symbol, ctx).then((res) {
           recommendations = res.recommendations;
           narrative = res.narrative;
           notifyListeners();
@@ -218,9 +223,9 @@ class StrategyCockpitViewModel extends ChangeNotifier {
       } else {
         // best-effort asynchronous fetch; update recommendations/narrative when ready
         final sym = symbol!;
-        _marketDataService!.getRegime(sym).then((regimeSnap) async {
-          final volSnap = await _marketDataService!.getVolatility(sym);
-          final liqSnap = await _marketDataService!.getLiquidity(sym);
+        mds.getRegime(sym).then((regimeSnap) async {
+          final volSnap = await mds.getVolatility(sym);
+          final liqSnap = await mds.getLiquidity(sym);
 
           final recs = await (_recsEngine?.generate(context: ctx, regime: regimeSnap, vol: volSnap, liq: liqSnap)
               ?? StrategyRecommendationsEngine().generate(context: ctx, regime: regimeSnap, vol: volSnap, liq: liqSnap));

@@ -33,12 +33,10 @@ class _RecommendedRangeSliderState extends ConsumerState<RecommendedRangeSlider>
   void initState() {
     super.initState();
     _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 350));
-    // Listen to planner state changes so this widget stays reactive even when
-    // its parent doesn't watch the provider. We don't fire immediately here
-    // because didChangeDependencies will initialize the UI on first build.
-    ref.listen<PlannerState>(plannerNotifierProvider, (previous, next) {
-      if (next != null) _applyBundle(next);
-    });
+    // Controller initialized. Widget observes provider via `ref.watch` in
+    // `build` and triggers transitions there; avoid `ref.listen` here because
+    // Riverpod requires `ref.listen` to be used during a widget build context
+    // in tests (it asserts otherwise).
   }
 
   @override
@@ -144,7 +142,7 @@ class _RecommendedRangeSliderState extends ConsumerState<RecommendedRangeSlider>
                         final newWeakEnd = weak?.end ?? widget.max;
 
                         // Prepare a smooth transition if values changed
-                        void _startTransitionIfNeeded() {
+                        void startTransitionIfNeeded() {
                           if (_targetRecStart != newRecStart || _targetRecEnd != newRecEnd || _targetBest != newBest || _targetWeakStart != newWeakStart || _targetWeakEnd != newWeakEnd) {
                             final t = _controller.value;
                             double interp(double a, double b, double tt) => a + (b - a) * tt;
@@ -171,7 +169,7 @@ class _RecommendedRangeSliderState extends ConsumerState<RecommendedRangeSlider>
                           }
                         }
 
-                        _startTransitionIfNeeded();
+                        startTransitionIfNeeded();
 
                         return AnimatedBuilder(
                           animation: _controller,
@@ -239,13 +237,13 @@ class _RecommendedRangeSliderState extends ConsumerState<RecommendedRangeSlider>
               child: Row(
                 children: [
                   if (weak != null) ...[
-                    Container(width: 12, height: 12, decoration: BoxDecoration(color: Colors.red.withOpacity(0.24), borderRadius: BorderRadius.circular(3), border: Border.all(color: Colors.red)),),
+                    Container(width: 12, height: 12, decoration: BoxDecoration(color: Colors.red.withAlpha((0.24 * 255).round()), borderRadius: BorderRadius.circular(3), border: Border.all(color: Colors.red)),),
                     const SizedBox(width: 6),
                     const Text('Weak config', style: TextStyle(fontSize: 12)),
                     const SizedBox(width: 12),
                   ],
                   if (recommended != null) ...[
-                    Container(width: 12, height: 12, decoration: BoxDecoration(color: Colors.blue.withOpacity(0.18), borderRadius: BorderRadius.circular(3), border: Border.all(color: Colors.blue)),),
+                    Container(width: 12, height: 12, decoration: BoxDecoration(color: Colors.blue.withAlpha((0.18 * 255).round()), borderRadius: BorderRadius.circular(3), border: Border.all(color: Colors.blue)),),
                     const SizedBox(width: 6),
                     const Text('Recommended', style: TextStyle(fontSize: 12)),
                     const SizedBox(width: 12),
@@ -303,9 +301,7 @@ class _SliderOverlayPainter extends CustomPainter {
   final double? bestPoint;
   final double? weakStart;
   final double? weakEnd;
-  // Backwards compat: optional RangeValues
-  final RangeValues? recommended;
-  final RangeValues? weakRange;
+  // Backwards compat: (legacy RangeValues fields removed — animation uses numeric anchors)
 
   _SliderOverlayPainter({
     required this.min,
@@ -315,8 +311,7 @@ class _SliderOverlayPainter extends CustomPainter {
     this.bestPoint,
     this.weakStart,
     this.weakEnd,
-    this.recommended,
-    this.weakRange,
+    // legacy optional fields removed
   });
 
   @override
@@ -335,17 +330,7 @@ class _SliderOverlayPainter extends CustomPainter {
       final efrac = ((weakEnd! - min) / (max - min)).clamp(0.0, 1.0);
       final l = trackLeft + (trackWidth * sfrac);
       final r = trackLeft + (trackWidth * efrac);
-      paint.color = Colors.red.withOpacity(0.12);
-      final rectW = Rect.fromLTRB(l, size.height * 0.2, r, size.height * 0.8);
-      canvas.drawRRect(RRect.fromRectAndRadius(rectW, const Radius.circular(4)), paint);
-      _drawDottedLine(canvas, Offset(l, size.height * 0.2), Offset(l, size.height * 0.8), color: Colors.red);
-      _drawDottedLine(canvas, Offset(r, size.height * 0.2), Offset(r, size.height * 0.8), color: Colors.red);
-    } else if (weakRange != null) {
-      final sfrac = ((weakRange!.start - min) / (max - min)).clamp(0.0, 1.0);
-      final efrac = ((weakRange!.end - min) / (max - min)).clamp(0.0, 1.0);
-      final l = trackLeft + (trackWidth * sfrac);
-      final r = trackLeft + (trackWidth * efrac);
-      paint.color = Colors.red.withOpacity(0.12);
+      paint.color = Colors.red.withAlpha((0.12 * 255).round());
       final rectW = Rect.fromLTRB(l, size.height * 0.2, r, size.height * 0.8);
       canvas.drawRRect(RRect.fromRectAndRadius(rectW, const Radius.circular(4)), paint);
       _drawDottedLine(canvas, Offset(l, size.height * 0.2), Offset(l, size.height * 0.8), color: Colors.red);
@@ -359,25 +344,11 @@ class _SliderOverlayPainter extends CustomPainter {
       final left = trackLeft + (trackWidth * startFrac);
       final right = trackLeft + (trackWidth * endFrac);
 
-      paint.color = Colors.blue.withOpacity(0.12);
+      paint.color = Colors.blue.withAlpha((0.12 * 255).round());
       final rect = Rect.fromLTRB(left, size.height * 0.25, right, size.height * 0.75);
       canvas.drawRRect(RRect.fromRectAndRadius(rect, const Radius.circular(4)), paint);
 
       if ((recommendedEnd! - recommendedStart!).abs() < 1e-6) {
-        final markerX = left;
-        _drawDottedLine(canvas, Offset(markerX, size.height * 0.15), Offset(markerX, size.height * 0.85), color: Colors.blue);
-      }
-    } else if (recommended != null) {
-      final startFrac = ((recommended!.start - min) / (max - min)).clamp(0.0, 1.0);
-      final endFrac = ((recommended!.end - min) / (max - min)).clamp(0.0, 1.0);
-      final left = trackLeft + (trackWidth * startFrac);
-      final right = trackLeft + (trackWidth * endFrac);
-
-      paint.color = Colors.blue.withOpacity(0.12);
-      final rect = Rect.fromLTRB(left, size.height * 0.25, right, size.height * 0.75);
-      canvas.drawRRect(RRect.fromRectAndRadius(rect, const Radius.circular(4)), paint);
-
-      if ((recommended!.end - recommended!.start).abs() < 1e-6) {
         final markerX = left;
         _drawDottedLine(canvas, Offset(markerX, size.height * 0.15), Offset(markerX, size.height * 0.85), color: Colors.blue);
       }
@@ -388,8 +359,6 @@ class _SliderOverlayPainter extends CustomPainter {
       final bfrac = ((bestPoint! - min) / (max - min)).clamp(0.0, 1.0);
       final bx = trackLeft + (trackWidth * bfrac);
       _drawDottedLine(canvas, Offset(bx, size.height * 0.15), Offset(bx, size.height * 0.85), color: Colors.blue);
-    } else if (bestPoint == null && recommended != null) {
-      // no-op
     }
   }
 
@@ -399,7 +368,6 @@ class _SliderOverlayPainter extends CustomPainter {
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
 
-    final path = Path()..moveTo(p1.dx, p1.dy)..lineTo(p2.dx, p2.dy);
     const dashWidth = 4.0;
     const dashSpace = 4.0;
     double distance = (p2.dy - p1.dy).abs();
@@ -414,20 +382,12 @@ class _SliderOverlayPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _SliderOverlayPainter oldDelegate) {
-    bool rangeChanged(RangeValues? a, RangeValues? b) {
-      if (a == null && b == null) return false;
-      if (a == null || b == null) return true;
-      return a.start != b.start || a.end != b.end;
-    }
-
     return oldDelegate.min != min ||
         oldDelegate.max != max ||
         oldDelegate.recommendedStart != recommendedStart ||
         oldDelegate.recommendedEnd != recommendedEnd ||
         oldDelegate.bestPoint != bestPoint ||
         oldDelegate.weakStart != weakStart ||
-        oldDelegate.weakEnd != weakEnd ||
-        rangeChanged(oldDelegate.recommended, recommended) ||
-        rangeChanged(oldDelegate.weakRange, weakRange);
+        oldDelegate.weakEnd != weakEnd;
   }
 }

@@ -6,8 +6,6 @@ import 'package:riskform/strategy_cockpit/sync_providers.dart';
 import 'package:riskform/services/market_data_providers.dart';
 
 import '../viewmodels/strategy_cockpit_viewmodel.dart';
-import 'package:riskform/strategy_cockpit/default_services.dart';
-import 'package:riskform/models/strategy.dart';
 
 class StrategyHeader extends StatelessWidget {
   final String strategyId;

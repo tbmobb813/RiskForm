@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../models/journal/journal_entry.dart';
 import '../../services/journal/journal_repository.dart';
-import '../../services/strategy/strategy_service.dart';
 import 'strategy_cycle_service.dart';
 import 'strategy_health_service.dart';
 import '../../planner/models/planner_strategy_context.dart';
@@ -13,19 +12,16 @@ import '../../planner/models/planner_strategy_context.dart';
 class ExecutionService {
   final FirebaseFirestore _firestore;
   final JournalRepository _journalRepo;
-  final StrategyService _strategyService;
   final StrategyCycleService _cycleService;
   final StrategyHealthService _healthService;
 
   ExecutionService({
     FirebaseFirestore? firestore,
     required JournalRepository journalRepo,
-    StrategyService? strategyService,
     StrategyCycleService? cycleService,
     StrategyHealthService? healthService,
   })  : _firestore = firestore ?? FirebaseFirestore.instance,
         _journalRepo = journalRepo,
-        _strategyService = strategyService ?? StrategyService(firestore: firestore),
         _cycleService = cycleService ?? StrategyCycleService(firestore: firestore),
         _healthService = healthService ?? StrategyHealthService(firestore: firestore);
 

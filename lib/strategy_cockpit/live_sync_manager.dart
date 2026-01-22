@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../services/market_data_service.dart';
 import '../../services/market_data_models.dart';
@@ -7,7 +6,7 @@ import 'analytics/strategy_recommendations_engine.dart';
 import '../../services/regime_aware_planner_hints_service.dart';
 import 'analytics/regime_aware_planner_hints.dart' as planner_hints;
 import 'analytics/strategy_narrative_engine.dart';
-import 'analytics/strategy_recommendations_engine.dart' show StrategyContext;
+// cleaned imports: no Riverpod usage here and avoid duplicate imports
 
 /// Result model returned by LiveSyncManager.refresh
 class LiveSyncResult {
@@ -41,7 +40,6 @@ class LiveSyncManager {
   });
 
   Future<LiveSyncResult> refresh(String symbol, StrategyContext ctx, {planner_hints.PlannerState? plannerState}) async {
-    final price = await market.getPrice(symbol);
     final vol = await market.getVolatility(symbol);
     final liq = await market.getLiquidity(symbol);
 

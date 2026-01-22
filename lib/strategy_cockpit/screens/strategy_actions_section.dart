@@ -7,8 +7,7 @@ import 'package:riskform/services/market_data_providers.dart';
 
 import '../viewmodels/strategy_cockpit_viewmodel.dart';
 import '../widgets/strategy_section_container.dart';
-import 'package:riskform/models/strategy.dart';
-import 'package:riskform/strategy_cockpit/default_services.dart';
+// removed unused imports: strategy model & default_services not required here
 
 class StrategyActionsSection extends StatefulWidget {
   final String strategyId;

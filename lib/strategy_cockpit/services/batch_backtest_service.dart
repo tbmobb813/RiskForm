@@ -1,16 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'backtest_comparison_service.dart';
-
 class BatchBacktestService {
   final FirebaseFirestore _firestore;
-  final BacktestComparisonService _comparisonService;
 
   BatchBacktestService({
     FirebaseFirestore? firestore,
-    BacktestComparisonService? comparisonService,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _comparisonService = comparisonService ?? BacktestComparisonService();
+  }) : _firestore = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> _batches(String strategyId) =>
       _firestore

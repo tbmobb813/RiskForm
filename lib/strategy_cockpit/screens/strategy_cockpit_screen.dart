@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope;
 
 import '../viewmodels/strategy_cockpit_viewmodel.dart';
-import 'package:riskform/strategy_cockpit/default_services.dart';
 import 'package:riskform/strategy_cockpit/analytics_providers.dart';
 import 'package:riskform/strategy_cockpit/sync_providers.dart';
 import 'package:riskform/services/market_data_providers.dart';

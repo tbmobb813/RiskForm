@@ -62,12 +62,11 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
     );
     // Compute planner hints with best-effort context derived from current planner state.
     try {
-      final dte = inputs.expiration != null
-          ? inputs.expiration!.difference(DateTime.now()).inDays
-          : 30;
-      final width = (inputs.shortStrike != null && inputs.longStrike != null)
-          ? (inputs.shortStrike! - inputs.longStrike!).abs()
-          : 20.0;
+        final exp = inputs.expiration;
+        final dte = exp != null ? exp.difference(DateTime.now()).inDays : 30;
+        final short = inputs.shortStrike;
+        final long = inputs.longStrike;
+        final width = (short != null && long != null) ? (short - long).abs() : 20.0;
       final delta = 0.20; // placeholder: delta not captured by TradeInputs yet
       final size = inputs.sharesOwned ?? 1;
 
@@ -85,7 +84,7 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
       if (_liveSyncManager != null && symbol != null) {
         // Use LiveSyncManager to orchestrate regime + hints and return a coherent result.
         // We only care about hintsBundle here.
-        _liveSyncManager!.refresh(symbol, recs.StrategyContext(
+        _liveSyncManager.refresh(symbol, recs.StrategyContext(
           healthScore: 50,
           pnlTrend: const [],
           disciplineTrend: const [],
@@ -99,7 +98,7 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
         }).catchError((_) {});
       } else if (_hintsService != null) {
         final symbol = state.strategySymbol;
-        _hintsService!.generateHints(pstate, symbol: symbol).then((hints) {
+        _hintsService.generateHints(pstate, symbol: symbol).then((hints) {
           state = state.copyWith(hintsBundle: hints);
         }).catchError((_) {});
       } else {
@@ -172,9 +171,11 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
     state = state.copyWith(isLoading: true, clearError: true);
 
     try {
+      final strategyId = state.strategyId!;
+      final inputsLocal = state.inputs!;
       final payoff = await _payoffEngine.compute(
-        strategyId: state.strategyId!,
-        inputs: state.inputs!,
+        strategyId: strategyId,
+        inputs: inputsLocal,
       );
 
       state = state.copyWith(
@@ -202,10 +203,13 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
     state = state.copyWith(isLoading: true, clearError: true);
 
     try {
+      final strategyId = state.strategyId!;
+      final inputsLocal = state.inputs!;
+      final payoffLocal = state.payoff!;
       final risk = await _riskEngine.compute(
-        strategyId: state.strategyId!,
-        inputs: state.inputs!,
-        payoff: state.payoff!,
+        strategyId: strategyId,
+        inputs: inputsLocal,
+        payoff: payoffLocal,
       );
 
       state = state.copyWith(
@@ -316,7 +320,8 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
         return false;
       }
 
-      final result = await _executionService!.executeStrategyTrade(request);
+      final exec = _executionService!;
+      final result = await exec.executeStrategyTrade(request);
 
       if (!result.success) {
         state = state.copyWith(isLoading: false, errorMessage: result.errorMessage);
@@ -345,11 +350,12 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
     try {
       final inputs = state.inputs;
 
-      final computedDte = dte ?? (inputs?.expiration != null ? inputs!.expiration!.difference(DateTime.now()).inDays : 30);
+        final exp = inputs?.expiration;
+        final computedDte = dte ?? (exp != null ? exp.difference(DateTime.now()).inDays : 30);
 
-      final computedWidth = width ?? ((inputs?.shortStrike != null && inputs?.longStrike != null)
-          ? (inputs!.shortStrike! - inputs.longStrike!).abs()
-          : 20.0);
+        final short = inputs?.shortStrike;
+        final long = inputs?.longStrike;
+        final computedWidth = width ?? ((short != null && long != null) ? (short - long).abs() : 20.0);
 
       final computedDelta = delta ?? 0.20;
 
@@ -363,8 +369,9 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
 
       final constraints = recs.Constraints(maxRisk: 100, maxPositions: 5);
       final symbol = state.strategySymbol;
-      if (_liveSyncManager != null && symbol != null) {
-        _liveSyncManager!.refresh(symbol, recs.StrategyContext(
+      final lsm = _liveSyncManager;
+      if (lsm != null && symbol != null) {
+        lsm.refresh(symbol, recs.StrategyContext(
           healthScore: 50,
           pnlTrend: const [],
           disciplineTrend: const [],
@@ -378,7 +385,8 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
         }).catchError((_) {});
       } else if (_hintsService != null) {
         final symbol = state.strategySymbol;
-        _hintsService!.generateHints(pstate, symbol: symbol).then((hints) {
+        final hs = _hintsService;
+        hs.generateHints(pstate, symbol: symbol).then((hints) {
           state = state.copyWith(hintsBundle: hints);
         }).catchError((_) {});
       } else {

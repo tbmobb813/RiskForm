@@ -33,5 +33,8 @@ class FakeBox implements Box {
   // Other Box methods not needed for these tests
   @override
   dynamic noSuchMethod(Invocation invocation) => 
-      throw UnimplementedError('Method not implemented in FakeBox');
+      // Delegate to the default implementation so tests that call methods
+      // not explicitly implemented receive normal noSuchMethod behavior
+      // instead of an UnimplementedError.
+      super.noSuchMethod(invocation);
 }
