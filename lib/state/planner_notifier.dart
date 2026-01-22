@@ -674,7 +674,7 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
       if (repo == null) return;
       final entry = await repo.getById(entryId);
       if (entry == null) return;
-      final attachments = (entry.data['attachments'] as List?)?.cast<Map<String, dynamic>>()?.toList() ?? [];
+      final attachments = ((entry.data['attachments'] as List?)?.cast<Map<String, dynamic>>().toList()) ?? [];
       attachments.insert(0, {'type': 'screenshot', 'path': path, 'caption': caption});
       final updated = entry.copyWith(data: Map<String, dynamic>.from(entry.data)..['attachments'] = attachments);
       await repo.updateEntry(updated);
@@ -816,9 +816,8 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
   Future<Map<String, dynamic>?> _getSmallAccountSettings() async {
     try {
       // Allow tests to inject a provider for small-account settings.
-      if (_smallAccountSettingsProvider != null) {
-        return await _smallAccountSettingsProvider!();
-      }
+      final provider = _smallAccountSettingsProvider;
+      if (provider != null) return await provider();
       final uid = _getUid?.call() ?? FirebaseAuth.instance.currentUser?.uid;
       if (uid == null) return null;
       final doc = await FirebaseFirestore.instance.doc('users/$uid/smallAccountSettings/settings').get();

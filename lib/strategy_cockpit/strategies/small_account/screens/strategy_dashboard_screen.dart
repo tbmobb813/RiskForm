@@ -8,10 +8,8 @@ import 'package:riskform/state/journal_providers.dart';
 import 'package:riskform/services/engines/backtest_engine.dart';
 import 'package:riskform_core/models/backtest/backtest_config.dart';
 import 'package:riskform/services/engines/option_pricing_engine.dart';
-import 'package:riskform/services/engines/payoff_engine.dart';
-import 'package:riskform/services/engines/risk_engine.dart';
-import '../../models/trade_inputs.dart';
-import '../../models/journal/journal_entry.dart';
+// removed unused imports: payoff_engine, risk_engine, trade_inputs
+import 'package:riskform/models/journal/journal_entry.dart';
 
 class StrategyDashboardScreen extends ConsumerWidget {
   final double currentPrice;
@@ -88,9 +86,6 @@ class StrategyHeaderCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final strategy = ref.watch(strategyControllerProvider).strategy;
     final journal = ref.read(journalRepositoryProvider);
-    final payoffEngine = ref.read(payoffEngineProvider);
-    final optionPricing = ref.read(optionPricingEngineProvider);
-    final riskEngine = ref.read(riskEngineProvider);
 
     return Card(
       child: Padding(
@@ -140,16 +135,16 @@ class StrategyHeaderCard extends ConsumerWidget {
                     endDate: DateTime.now(),
                   );
                   final result = bengine.run(config);
-                  // Attach summary to journal entry (best-effort)
+                  // Attach summary to journal entry (best-effort) using available fields
                   final enriched = JournalEntry(
                     id: entry.id,
                     timestamp: entry.timestamp,
                     type: entry.type,
                     data: Map<String, dynamic>.from(entry.data)
                       ..['backtestSummary'] = {
-                        'netProfit': result.netProfit ?? 0.0,
-                        'winRate': result.winRate ?? 0.0,
-                        'trades': result.trades?.length ?? 0,
+                        'totalReturn': result.totalReturn,
+                        'cyclesCompleted': result.cyclesCompleted,
+                        'cycles': result.cycles.length,
                       },
                   );
                   await journal.updateEntry(enriched);

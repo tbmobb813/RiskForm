@@ -24,13 +24,15 @@ class CloudBacktestService {
         _noop = true;
 
   CollectionReference get _jobs {
-    if (_fs == null) throw StateError('Firestore not available');
-    return _fs!.collection('backtestJobs');
+    final fs = _fs;
+    if (fs == null) throw StateError('Firestore not available');
+    return fs.collection('backtestJobs');
   }
 
   CollectionReference get _results {
-    if (_fs == null) throw StateError('Firestore not available');
-    return _fs!.collection('backtestResults');
+    final fs = _fs;
+    if (fs == null) throw StateError('Firestore not available');
+    return fs.collection('backtestResults');
   }
 
   Future<String> submitJob({

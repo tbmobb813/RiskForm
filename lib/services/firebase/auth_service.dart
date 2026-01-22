@@ -19,7 +19,6 @@ final currentUserIdProvider = Provider<String?>((ref) {
 
 class AuthService {
   final FirebaseAuth? _auth;
-  final bool _noop;
 
   static FirebaseAuth? _tryResolve(FirebaseAuth? auth) {
     try {
@@ -33,12 +32,10 @@ class AuthService {
   /// `FirebaseAuth.instance`. If the Firebase native platform isn't
   /// available (desktop dev), the constructor will fall back to a noop
   /// mode so the app can run without a native Firebase implementation.
-  AuthService([FirebaseAuth? auth]) : _auth = _tryResolve(auth), _noop = _tryResolve(auth) == null;
+  AuthService([FirebaseAuth? auth]) : _auth = _tryResolve(auth);
   /// Explicit noop constructor for development where Firebase is not
   /// available. Methods will return empty/default values.
-  AuthService.noop()
-      : _auth = null,
-        _noop = true;
+  AuthService.noop() : _auth = null;
 
   /// Current user ID or null if not authenticated.
   String? get currentUserId => _auth?.currentUser?.uid;
@@ -59,7 +56,7 @@ class AuthService {
   }) async {
     try {
       if (_auth == null) throw FirebaseAuthException(code: 'no-app', message: 'No Firebase');
-      return await _auth!.signInWithEmailAndPassword(
+      return await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -75,7 +72,7 @@ class AuthService {
   }) async {
     try {
       if (_auth == null) throw FirebaseAuthException(code: 'no-app', message: 'No Firebase');
-      return await _auth!.createUserWithEmailAndPassword(
+      return await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -87,14 +84,14 @@ class AuthService {
   /// Signs out the current user.
   Future<void> signOut() async {
     if (_auth == null) return;
-    await _auth!.signOut();
+    await _auth.signOut();
   }
 
   /// Sends a password reset email.
   Future<void> sendPasswordResetEmail(String email) async {
     try {
       if (_auth == null) throw FirebaseAuthException(code: 'no-app', message: 'No Firebase');
-      await _auth!.sendPasswordResetEmail(email: email);
+      await _auth.sendPasswordResetEmail(email: email);
     } on FirebaseAuthException catch (e) {
       throw _mapFirebaseAuthException(e);
     }
