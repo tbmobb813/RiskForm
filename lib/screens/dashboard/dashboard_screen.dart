@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'components/next_strategy_card.dart';
+import 'components/mode_selector_card.dart';
 import 'components/active_wheel_cycle_card.dart';
 import 'components/risk_exposure_card.dart';
 import 'components/backtest_results_card.dart';
@@ -24,6 +25,8 @@ class DashboardScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: const [
+              ModeSelectorCard(),
+              SizedBox(height: 16),
               NextStrategyCard(),
               SizedBox(height: 16),
               ActiveWheelCycleCard(),
