@@ -8,6 +8,13 @@ import '../services/engines/payoff_engine.dart';
 import 'planner_state.dart';
 import '../services/engines/risk_engine.dart';
 import '../execution/execution_service.dart';
+import 'package:riskform/strategy_cockpit/strategies/trading_strategy.dart';
+import 'package:riskform/strategy_cockpit/strategies/wheel_strategy.dart';
+import 'package:riskform/strategy_cockpit/strategies/long_call_strategy.dart';
+import 'package:riskform/strategy_cockpit/strategies/debit_spread_strategy.dart';
+import 'package:riskform/strategy_cockpit/strategies/calendar_strategy.dart';
+import 'package:riskform/strategy_cockpit/strategies/pmcc_strategy.dart';
+import '../models/option_contract.dart';
 import '../planner/models/planner_strategy_context.dart';
 import 'package:riskform/engines/regime_providers.dart';
 import 'package:riskform/engines/regime_engine.dart';
@@ -309,6 +316,23 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
         ..['premium'] = premium
         ..['expiry'] = expiry;
 
+      // Attach strategy metadata (explanation) when available
+      final strategy = _strategyFromState();
+      if (strategy != null) {
+        final expl = strategy.explain();
+        executionPayload['strategyMeta'] = {
+          'id': strategy.id,
+          'label': strategy.label,
+          'explanation': {
+            'summary': expl.summary,
+            'pros': expl.pros,
+            'cons': expl.cons,
+            'idealConditions': expl.idealConditions,
+            'risks': expl.risks,
+          }
+        };
+      }
+
       final request = StrategyExecutionRequest(
         strategyContext: ctx,
         execution: executionPayload,
@@ -320,7 +344,7 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
         return false;
       }
 
-      final exec = _executionService!;
+      final exec = _executionService;
       final result = await exec.executeStrategyTrade(request);
 
       if (!result.success) {
@@ -334,6 +358,113 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: 'Execution failed: $e');
       return false;
+    }
+  }
+
+  // Map current planner state -> TradingStrategy (lightweight, deterministic)
+  TradingStrategy? _strategyFromState() {
+    try {
+      final id = state.strategyId;
+      final inputsLocal = state.inputs;
+      if (id == null || inputsLocal == null) return null;
+
+      final expiry = inputsLocal.expiration ?? DateTime.now().add(const Duration(days: 30));
+
+      switch (id) {
+        case 'wheel-cycle':
+          final put = OptionContract(
+            id: 'PUT1',
+            strike: inputsLocal.strike ?? inputsLocal.shortStrike ?? (inputsLocal.underlyingPrice ?? 0.0),
+            premium: inputsLocal.premiumReceived ?? inputsLocal.netCredit ?? 0.0,
+            expiry: expiry,
+            type: 'put',
+          );
+
+          OptionContract? call;
+          if ((inputsLocal.sharesOwned ?? 0) >= 100 && (inputsLocal.shortStrike != null)) {
+            call = OptionContract(
+              id: 'CALL1',
+              strike: inputsLocal.shortStrike ?? (inputsLocal.underlyingPrice ?? 0.0),
+              premium: inputsLocal.premiumReceived ?? inputsLocal.netCredit ?? 0.0,
+              expiry: expiry,
+              type: 'call',
+            );
+          }
+
+          return WheelStrategy(
+            id: 'wheel-cycle',
+            label: 'Wheel',
+            putContract: put,
+            callContract: call,
+            shareQuantity: inputsLocal.sharesOwned ?? 100,
+            cycle: null,
+          );
+
+        case 'long_call':
+          final contract = OptionContract(
+            id: 'LC',
+            strike: inputsLocal.strike ?? 0.0,
+            premium: inputsLocal.premiumPaid ?? inputsLocal.netDebit ?? 0.0,
+            expiry: expiry,
+            type: 'call',
+          );
+          return LongCallStrategy(contract);
+
+        case 'debit_spread':
+          final long = OptionContract(
+            id: 'L',
+            strike: inputsLocal.longStrike ?? 0.0,
+            premium: 0.0,
+            expiry: expiry,
+            type: 'call',
+          );
+          final short = OptionContract(
+            id: 'S',
+            strike: inputsLocal.shortStrike ?? 0.0,
+            premium: 0.0,
+            expiry: expiry,
+            type: 'call',
+          );
+          return DebitSpreadStrategy(longLeg: long, shortLeg: short);
+
+        case 'calendar':
+          if (inputsLocal.longStrike != null && inputsLocal.shortStrike != null) {
+            final long = OptionContract(
+              id: 'CAL_LONG',
+              strike: inputsLocal.longStrike!,
+              premium: 0.0,
+              expiry: expiry,
+              type: 'call',
+            );
+            final short = OptionContract(
+              id: 'CAL_SHORT',
+              strike: inputsLocal.shortStrike!,
+              premium: 0.0,
+              expiry: expiry,
+              type: 'call',
+            );
+            return CalendarStrategy(longLeg: long, shortLeg: short);
+          }
+          return null;
+
+        case 'pmcc':
+          if (inputsLocal.shortStrike != null) {
+            final call = OptionContract(
+              id: 'PMCC_CALL',
+              strike: inputsLocal.shortStrike!,
+              premium: inputsLocal.premiumReceived ?? 0.0,
+              expiry: expiry,
+              type: 'call',
+            );
+            return PMCCStrategy(callContract: call, shareQuantity: inputsLocal.sharesOwned ?? 100, costBasis: inputsLocal.costBasis ?? 0.0);
+          }
+          return null;
+
+        default:
+          return null;
+      }
+    } catch (_) {
+      return null;
     }
   }
 
