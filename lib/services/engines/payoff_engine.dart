@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/trade_inputs.dart';
 import '../../models/payoff_result.dart';
+import '../../models/option_contract.dart';
 
 final payoffEngineProvider = Provider<PayoffEngine>((ref) {
   return PayoffEngine();
@@ -350,5 +351,66 @@ class PayoffEngine {
     final costBasis = i.costBasis ?? 0;
     final perShare = (S - costBasis) + (callPremium - max(0, S - kCall)) + (-putPremium + max(0, kPut - S));
     return perShare * contractSize;
+  }
+
+  /// Compute payoff (in dollars per contract) for an explicit set of option/share
+  /// contracts with matching quantities. `contracts` and `quantities` must have
+  /// the same length. Quantity follows convention: +1 long, -1 short.
+  double payoffForContractsWithQuantities({
+    required List<OptionContract> contracts,
+    required List<int> quantities,
+    required double underlyingPrice,
+  }) {
+    if (contracts.length != quantities.length) {
+      throw ArgumentError('contracts and quantities length mismatch');
+    }
+
+    double total = 0.0;
+
+    for (int i = 0; i < contracts.length; i++) {
+      final c = contracts[i];
+      final q = quantities[i];
+
+      if (c.type == 'call') {
+        final intrinsic = max(0, underlyingPrice - c.strike);
+        // Options are quoted per-contract; multiply by contractSize for dollar amount.
+        total += q * (-c.premium + intrinsic) * contractSize;
+      } else if (c.type == 'put') {
+        final intrinsic = max(0, c.strike - underlyingPrice);
+        total += q * (-c.premium + intrinsic) * contractSize;
+      } else if (c.type == 'share') {
+        // For share legs, `quantity` represents number of shares and `premium`
+        // is used as cost-basis per share.
+        total += q * (underlyingPrice - c.premium);
+      } else {
+        // Unknown contract type: ignore
+      }
+    }
+
+    return total;
+  }
+
+  /// Generate payoff curve for explicit contract lists.
+  List<Offset> generatePayoffCurveForContracts({
+    required List<OptionContract> contracts,
+    required List<int> quantities,
+    required double minPrice,
+    required double maxPrice,
+    int points = 80,
+  }) {
+    final List<Offset> curve = [];
+    final step = (maxPrice - minPrice) / (points - 1);
+
+    for (int i = 0; i < points; i++) {
+      final price = minPrice + (i * step);
+      final payoff = payoffForContractsWithQuantities(
+        contracts: contracts,
+        quantities: quantities,
+        underlyingPrice: price,
+      );
+      curve.add(Offset(price, payoff));
+    }
+
+    return curve;
   }
 }

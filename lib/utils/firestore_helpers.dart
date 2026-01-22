@@ -3,11 +3,19 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// Firestore helpers: convert client-side values into Firestore-friendly
 /// representations and perform shallow sanitization.
 
-/// Convert a single value to a Firestore-friendly value:
-/// - `DateTime` -> `Timestamp`
-/// - `Map` -> recursively convert keys
-/// - `List` -> map values
-/// - others -> returned as-is
+Timestamp? toTimestamp(DateTime? dt) => dt == null ? null : Timestamp.fromDate(dt);
+
+Map<String, dynamic> normalizeDateFields(Map<String, dynamic> m, Iterable<String> keys) {
+  final out = Map<String, dynamic>.from(m);
+  for (final k in keys) {
+    final v = out[k];
+    if (v is DateTime) {
+      out[k] = Timestamp.fromDate(v);
+    }
+  }
+  return out;
+}
+
 dynamic toFirestoreValue(dynamic v) {
   if (v == null) return null;
   if (v is DateTime) return Timestamp.fromDate(v);
@@ -17,7 +25,6 @@ dynamic toFirestoreValue(dynamic v) {
   return v;
 }
 
-/// Convert a Map's values to Firestore-friendly values (shallow keys preserved).
 Map<String, dynamic> toFirestoreMap(Map m) {
   final out = <String, dynamic>{};
   for (final e in m.entries) {
@@ -26,8 +33,6 @@ Map<String, dynamic> toFirestoreMap(Map m) {
   return out;
 }
 
-/// Remove null values from a Map (shallow). Useful before writes when
-/// you want to avoid storing explicit nulls.
 Map<String, dynamic> stripNulls(Map m) {
   final out = <String, dynamic>{};
   for (final e in m.entries) {

@@ -66,12 +66,12 @@ class FakeAuth implements AuthService {
 
   @override
   Future<UserCredential> signInWithEmail({required String email, required String password}) async {
-    throw UnimplementedError();
+    return FakeUserCredential();
   }
 
   @override
   Future<UserCredential> signUpWithEmail({required String email, required String password}) async {
-    throw UnimplementedError();
+    return FakeUserCredential();
   }
 
   @override
@@ -80,6 +80,21 @@ class FakeAuth implements AuthService {
     if (uid == null) throw Exception('Not logged in');
     return uid;
   }
+}
+
+// Minimal fake UserCredential used by fake auth implementations in tests.
+class FakeUserCredential implements UserCredential {
+  @override
+  final User? user = null;
+
+  @override
+  final AdditionalUserInfo? additionalUserInfo = null;
+
+  @override
+  final OAuthCredential? credential = null;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 void main() {

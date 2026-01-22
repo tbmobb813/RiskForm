@@ -62,33 +62,50 @@ class CycleStats {
 
   factory CycleStats.fromMap(Map<String, dynamic> m) {
     MarketRegime? regime;
-    final dr = m['dominantRegime'];
-      if (dr is String && dr.isNotEmpty) {
-        final s = dr.split('.').last;
-        regime = MarketRegime.values.firstWhere(
-          (e) => e.toString().split('.').last == s,
-          orElse: () => MarketRegime.sideways,
-        );
+    final dynRegime = m['dominantRegime'];
+    if (dynRegime != null) {
+      String s;
+      if (dynRegime is String) {
+        s = dynRegime.split('.').last;
+      } else if (dynRegime is MarketRegime) {
+        s = dynRegime.toString().split('.').last;
+      } else if (dynRegime is Map && dynRegime['regime'] is String) {
+        s = (dynRegime['regime'] as String).split('.').last;
+      } else {
+        s = dynRegime.toString();
+      }
+      try {
+        regime = MarketRegime.values.firstWhere((e) => e.toString().split('.').last == s);
+      } catch (_) {
+        regime = null;
+      }
     }
 
     CycleOutcome? outcome;
-    final o = m['outcome'];
-      if (o is String && o.isNotEmpty) {
-        final s = o.split('.').last;
-        try {
-          outcome = CycleOutcome.values.firstWhere((e) => e.toString().split('.').last == s);
-        } catch (_) {
-          outcome = null;
-        }
+    final dynOutcome = m['outcome'];
+    if (dynOutcome != null) {
+      String s;
+      if (dynOutcome is String) {
+        s = dynOutcome.split('.').last;
+      } else if (dynOutcome is CycleOutcome) {
+        s = dynOutcome.toString().split('.').last;
+      } else {
+        s = dynOutcome.toString();
+      }
+      try {
+        outcome = CycleOutcome.values.firstWhere((e) => e.toString().split('.').last == s);
+      } catch (_) {
+        outcome = null;
+      }
     }
 
     return CycleStats(
-      cycleId: m['cycleId'] as String? ?? '',
-      index: (m['index'] as num).toInt(),
-      startEquity: (m['startEquity'] as num).toDouble(),
-      endEquity: (m['endEquity'] as num).toDouble(),
-      durationDays: (m['durationDays'] as num).toInt(),
-      hadAssignment: m['hadAssignment'] as bool,
+      cycleId: m['cycleId']?.toString() ?? '',
+      index: (m['index'] as num?)?.toInt() ?? 0,
+      startEquity: (m['startEquity'] as num?)?.toDouble() ?? 0.0,
+      endEquity: (m['endEquity'] as num?)?.toDouble() ?? 0.0,
+      durationDays: (m['durationDays'] as num?)?.toInt() ?? 0,
+      hadAssignment: m['hadAssignment'] as bool? ?? false,
       outcome: outcome,
       dominantRegime: regime,
       startIndex: (m['startIndex'] as num?)?.toInt(),

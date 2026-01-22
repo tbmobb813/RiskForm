@@ -95,7 +95,7 @@ class WheelCycleService {
         .collection("wheel")
         .doc("cycle")
         .set({
-      "state": cycle.state.name,
+      "state": cycle.state.toString().split('.').last,
       "lastTransition": cycle.lastTransition,
       "cycleCount": cycle.cycleCount,
     });

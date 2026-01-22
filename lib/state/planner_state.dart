@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:riskform/strategy_cockpit/analytics/regime_aware_planner_hints.dart' as planner_hints;
 import '../models/trade_inputs.dart';
 import '../models/payoff_result.dart';
 import '../models/risk_result.dart';
@@ -6,6 +7,7 @@ import '../models/risk_result.dart';
 class PlannerState extends Equatable {
   final String? strategyId;
   final String? strategyName;
+  final String? strategySymbol;
   final String? strategyDescription;
 
   final TradeInputs? inputs;
@@ -17,10 +19,12 @@ class PlannerState extends Equatable {
 
   final bool isLoading;
   final String? errorMessage;
+  final planner_hints.PlannerHintBundle? hintsBundle;
 
   const PlannerState({
     this.strategyId,
     this.strategyName,
+    this.strategySymbol,
     this.strategyDescription,
     this.inputs,
     this.payoff,
@@ -29,6 +33,7 @@ class PlannerState extends Equatable {
     this.tags = const [],
     this.isLoading = false,
     this.errorMessage,
+    this.hintsBundle,
   });
 
   factory PlannerState.initial() => const PlannerState();
@@ -36,6 +41,7 @@ class PlannerState extends Equatable {
   PlannerState copyWith({
     String? strategyId,
     String? strategyName,
+    String? strategySymbol,
     String? strategyDescription,
     TradeInputs? inputs,
     PayoffResult? payoff,
@@ -44,11 +50,13 @@ class PlannerState extends Equatable {
     List<String>? tags,
     bool? isLoading,
     String? errorMessage,
+    planner_hints.PlannerHintBundle? hintsBundle,
     bool clearError = false,
   }) {
     return PlannerState(
       strategyId: strategyId ?? this.strategyId,
       strategyName: strategyName ?? this.strategyName,
+      strategySymbol: strategySymbol ?? this.strategySymbol,
       strategyDescription: strategyDescription ?? this.strategyDescription,
       inputs: inputs ?? this.inputs,
       payoff: payoff ?? this.payoff,
@@ -57,6 +65,7 @@ class PlannerState extends Equatable {
       tags: tags ?? this.tags,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      hintsBundle: hintsBundle ?? this.hintsBundle,
     );
   }
 
@@ -64,6 +73,7 @@ class PlannerState extends Equatable {
   List<Object?> get props => [
         strategyId,
         strategyName,
+      strategySymbol,
         strategyDescription,
         inputs,
         payoff,
@@ -72,5 +82,6 @@ class PlannerState extends Equatable {
         tags,
         isLoading,
         errorMessage,
+        hintsBundle,
       ];
 }

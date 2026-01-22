@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../models/payoff_result.dart';
 import '../../../../services/engines/payoff_engine.dart';
+import '../../../../state/trading_strategy_provider.dart';
 import '../../../../widgets/charts/payoff_chart.dart';
 import '../../../../state/planner_notifier.dart';
 
@@ -44,14 +45,27 @@ class PayoffChartCard extends StatelessWidget {
         return _placeholderCard();
       }
 
-      final engine = container.read(payoffEngineProvider);
+      final strategy = container.read(tradingStrategyProvider);
+      List<Offset> curve;
 
-      final curve = engine.generatePayoffCurve(
-        strategyId: strategyId,
-        inputs: inputs,
-        minPrice: (inputs.underlyingPrice ?? 0) * 0.5,
-        maxPrice: (inputs.underlyingPrice ?? 0) * 1.5,
-      );
+      if (strategy != null) {
+        // Convert adapter payoff points into Offsets (price, profit)
+        final pts = strategy.payoffCurve(
+          underlyingPrice: inputs.underlyingPrice ?? 0.0,
+          rangePercent: 0.5,
+          steps: 80,
+        );
+        curve = pts.map((p) => Offset(p.underlyingPrice, p.profitLoss)).toList();
+      } else {
+        final engine = container.read(payoffEngineProvider);
+
+        curve = engine.generatePayoffCurve(
+          strategyId: strategyId,
+          inputs: inputs,
+          minPrice: (inputs.underlyingPrice ?? 0) * 0.5,
+          maxPrice: (inputs.underlyingPrice ?? 0) * 1.5,
+        );
+      }
 
       return Card(
         child: Padding(
