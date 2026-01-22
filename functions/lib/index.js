@@ -41,7 +41,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.scoreTrade = exports.onBacktestJobCreated = void 0;
+exports.onPositionCreated = exports.scoreTrade = exports.onBacktestJobCreated = void 0;
 const v2_1 = require("firebase-functions/v2");
 const admin = __importStar(require("firebase-admin"));
 // Initialize Firebase Admin SDK
@@ -64,4 +64,6 @@ var backtestWorker_1 = require("./backtestWorker");
 Object.defineProperty(exports, "onBacktestJobCreated", { enumerable: true, get: function () { return backtestWorker_1.onBacktestJobCreated; } });
 var scoreTrade_1 = require("./scoreTrade");
 Object.defineProperty(exports, "scoreTrade", { enumerable: true, get: function () { return scoreTrade_1.scoreTrade; } });
+var positionEnforcer_1 = require("./positionEnforcer");
+Object.defineProperty(exports, "onPositionCreated", { enumerable: true, get: function () { return positionEnforcer_1.onPositionCreated; } });
 //# sourceMappingURL=index.js.map

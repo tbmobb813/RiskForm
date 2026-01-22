@@ -56,7 +56,27 @@ class _JournalEntryDetailState extends ConsumerState<JournalEntryDetail> {
               if (confirm == true) {
                 if (!mounted) return;
                 final repo = ref.read(journalRepositoryProvider);
+
+                // Capture deleted entry so we can restore on undo.
+                final deleted = _entry;
+
+                // Capture a messenger scoped to the previous screen so SnackBar survives pop.
+                final messenger = ScaffoldMessenger.of(navigator.context);
+
                 await repo.deleteEntry(_entry.id);
+
+                // Show undo SnackBar on parent scaffold. Restore if user taps Undo.
+                messenger.showSnackBar(SnackBar(
+                  content: const Text('Journal entry deleted'),
+                  action: SnackBarAction(
+                    label: 'Undo',
+                    onPressed: () async {
+                      await repo.addEntry(deleted);
+                    },
+                  ),
+                  duration: const Duration(seconds: 6),
+                ));
+
                 if (!mounted) return;
                 navigator.pop(true);
               }

@@ -9,19 +9,23 @@ class BacktestLogList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Simulation Log',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            if (steps.isEmpty) const Text('No events recorded.'),
-            ...steps.map((s) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Text('- $s'),
+            const Text('Backtest Log', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            if (steps.isEmpty) const Text('No log entries'),
+            ...steps.asMap().entries.map((e) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('${e.key + 1}.', style: const TextStyle(color: Colors.black54)),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(e.value)),
+                    ],
+                  ),
                 )),
           ],
         ),

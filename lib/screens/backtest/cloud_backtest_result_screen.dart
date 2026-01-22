@@ -86,7 +86,7 @@ class _ResultContent extends StatelessWidget {
             const SizedBox(height: 16),
             BacktestMetricsCard(result: backtest),
             const SizedBox(height: 16),
-            BacktestEquityChart(equityCurve: backtest.equityCurve),
+            BacktestEquityChart(result: backtest),
             const SizedBox(height: 16),
             if (backtest.cycles.isNotEmpty) ...[
               CycleBreakdownCard(cycles: backtest.cycles),

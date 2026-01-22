@@ -4,6 +4,8 @@ import '../utils/payload_builders.dart' as pb;
 import 'package:flutter/material.dart';
 
 import '../discipline/discipline_engine.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../state/small_account_provider.dart';
 import '../journal/journal_detail_screen.dart';
 
 class ExecuteTradeModal extends StatefulWidget {
@@ -55,7 +57,47 @@ class _ExecuteTradeModalState extends State<ExecuteTradeModal> {
 
     final firestore = widget.firestore ?? FirebaseFirestore.instance;
 
-    try {
+      try {
+        // Small-account enforcement (optional): read settings from provider if available
+        SmallAccountSettings? sa;
+        try {
+          final container = ProviderScope.containerOf(context, listen: false);
+          final st = container.read(smallAccountProvider);
+          sa = st.settings;
+        } catch (_) {
+          sa = null;
+        }
+
+        if (sa != null && sa.enabled) {
+          final entryCost = entryPrice * contracts;
+          if (entryCost < sa.minTradeSize) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Trade below minimum size for small accounts')));
+            setState(() => _loading = false);
+            return;
+          }
+          if (entryCost > sa.startingCapital * sa.maxAllocationPct) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Trade exceeds max allocation for small accounts')));
+            setState(() => _loading = false);
+            return;
+          }
+
+          // enforce max open positions by counting existing opened positions for this strategy
+          try {
+            final q = await firestore.collection('positions').where('strategyId', isEqualTo: widget.strategyId).where('cycleState', isEqualTo: 'opened').get();
+            final openCount = q.docs.length;
+            if (openCount >= sa.maxOpenPositions) {
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Max open positions reached for small accounts')));
+              setState(() => _loading = false);
+              return;
+            }
+          } catch (_) {
+            // ignore firestore errors and allow execution to continue
+          }
+        }
+
       // 1. Read existing journal (planned) params so we can score the execution
       final journalRef = firestore.collection('journalEntries').doc(widget.planId);
       final journalSnap = await journalRef.get();
