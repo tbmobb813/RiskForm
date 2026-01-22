@@ -7,30 +7,32 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'constants.dart';
 import 'app.dart';
 import 'firebase_options.dart';
+import 'services/firebase/firebase_dev.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  var firebaseInitialized = true;
   try {
-    // On web we must provide FirebaseOptions when creating the default app.
-    if (kIsWeb) {
-      // `DefaultFirebaseOptions.currentPlatform` is generated and non-null for supported
-      // platforms; the previous null-check is unnecessary and caused analyzer warnings.
-      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-    } else {
-      await Firebase.initializeApp();
-    }
+    // Use generated platform options for all platforms where available. Some
+    // desktop platforms may not have a native Firebase plugin registered;
+    // initialize safely and continue if initialization fails in development.
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
     // Initialize Hive
     await Hive.initFlutter();
     
     // Open the historical_cache box
     await Hive.openBox(kHistoricalCacheBox);
-  } catch (e) {
-    // Log initialization error and rethrow to prevent app from starting in invalid state
-    debugPrint('Initialization error: $e');
-    rethrow;
+  } catch (e, st) {
+    // Log initialization error but do not crash the app on desktop when the
+    // native Firebase implementation isn't available (common in local builds).
+    debugPrint('Firebase initialization error (continuing without Firebase): $e');
+    debugPrintStack(stackTrace: st);
+    firebaseInitialized = false;
   }
   
-  runApp(const ProviderScope(child: App()));
+  runApp(ProviderScope(overrides: [
+    firebaseAvailableProvider.overrideWithValue(firebaseInitialized),
+  ], child: const App()));
 }

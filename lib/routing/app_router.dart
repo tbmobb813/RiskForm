@@ -19,6 +19,8 @@ import '../screens/backtest/cloud_backtest_result_screen.dart';
 import '../screens/backtest/cloud_backtest_history_screen.dart';
 import '../behavior/behavior_dashboard_screen.dart';
 import 'package:riskform/strategy_cockpit/strategies/small_account/screens/spread_builder_screen.dart';
+import 'package:riskform/strategy_cockpit/strategies/small_account/screens/diagonal_builder_screen.dart';
+import '../screens/journal/attach_screenshot_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',

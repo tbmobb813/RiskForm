@@ -23,8 +23,9 @@ class StrategyHealthService {
     final dte = inputs?.expiration != null ? inputs!.expiration!.difference(DateTime.now()).inDays.toDouble() : 30.0;
     final thetaScore = (1.0 - ((dte - 21.0).abs() / 60.0)).clamp(0.0, 1.0);
 
-    // IV score: if impliedVol present, prefer moderate IV (0.15 - 0.6)
-    final iv = inputs?.impliedVolatility ?? 0.3;
+    // IV score: use a conservative default since implied volatility is not
+    // currently present on TradeInputs. Prefer moderate IV (0.15 - 0.6).
+    final iv = 0.3;
     final ivScore = (1.0 - ((iv - 0.3).abs() / 0.5)).clamp(0.0, 1.0);
 
     // Liquidity score: approximate with sharesOwned or size; more shares -> better

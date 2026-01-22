@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riskform/strategy_cockpit/strategies/small_account/services/cheap_options_scanner.dart';
 import 'package:riskform/state/strategy_controller.dart';
 import 'package:riskform/strategy_cockpit/strategies/diagonal_strategy.dart';
-import '../../models/spread_selection.dart';
+// spread_selection model not needed in this simplified builder
 
 class DiagonalBuilderScreen extends ConsumerStatefulWidget {
   final OptionsChainService chainService;

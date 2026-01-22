@@ -8,7 +8,7 @@ import '../components/account_context_card.dart';
 import '../components/hints_section.dart';
 import '../components/recommended_range_slider.dart';
 import '../components/input_summary_card.dart';
-import '../../../..//services/strategy/strategy_health_service.dart';
+import '../../../services/strategy/strategy_health_service.dart';
 
 class TradePlannerScreen extends ConsumerWidget {
   const TradePlannerScreen({super.key});
