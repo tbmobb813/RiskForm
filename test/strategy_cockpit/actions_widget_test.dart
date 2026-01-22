@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:riskform/strategy_cockpit/screens/strategy_actions_section.dart';
 import 'package:riskform/strategy_cockpit/viewmodels/strategy_cockpit_viewmodel.dart';
 import 'package:riskform/services/strategy/strategy_service.dart';
+import 'package:riskform/models/strategy.dart';
 import 'package:riskform/strategy_cockpit/services/strategy_health_service.dart';
 import 'package:riskform/models/strategy_health_snapshot.dart';
 import 'package:riskform/strategy_cockpit/services/strategy_backtest_service.dart';

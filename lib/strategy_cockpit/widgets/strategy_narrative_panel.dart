@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../viewmodels/strategy_cockpit_viewmodel.dart';
 import '../analytics/strategy_narrative_engine.dart';
+import '../analytics/strategy_recommendations_engine.dart';
 
 class StrategyNarrativePanel extends StatelessWidget {
   final StrategyCockpitViewModel vm;
@@ -63,7 +64,7 @@ class StrategyNarrativePanel extends StatelessWidget {
             ...narrative.bullets.map((b) => Padding(
                   padding: const EdgeInsets.only(bottom: 6),
                   child: Row(children: [
-                    const Icon(Icons.bullet_point, size: 8),
+                    const Icon(Icons.fiber_manual_record, size: 8),
                     const SizedBox(width: 8),
                     Expanded(child: Text(b, style: Theme.of(context).textTheme.bodySmall)),
                   ]),

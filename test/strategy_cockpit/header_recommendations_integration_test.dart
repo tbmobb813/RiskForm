@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:riskform/strategy_cockpit/strategy_cockpit_bundle.dart';
 import 'package:riskform/strategy_cockpit/viewmodels/strategy_cockpit_viewmodel.dart';
 import 'package:riskform/strategy_cockpit/analytics/strategy_recommendations_engine.dart';
+import 'package:riskform/strategy_cockpit/analytics/strategy_narrative_engine.dart';
 import 'package:riskform/models/strategy.dart';
 import 'package:riskform/models/strategy_health_snapshot.dart';
 
@@ -24,11 +25,14 @@ class FakeVm extends ChangeNotifier implements StrategyCockpitViewModel {
   String? currentRegime;
   @override
   StrategyRecommendationsBundle? recommendations;
+  @override
+  StrategyNarrative? narrative;
 
   FakeVm({required this.strategyId, required this.strategy, this.recommendations}) {
     health = null;
     latestBacktest = null;
     currentRegime = null;
+    narrative = null;
   }
 
   @override

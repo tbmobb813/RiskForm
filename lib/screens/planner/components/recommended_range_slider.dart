@@ -33,20 +33,35 @@ class _RecommendedRangeSliderState extends ConsumerState<RecommendedRangeSlider>
   void initState() {
     super.initState();
     _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 350));
+    // Listen to planner state changes so this widget stays reactive even when
+    // its parent doesn't watch the provider. We don't fire immediately here
+    // because didChangeDependencies will initialize the UI on first build.
+    ref.listen<PlannerState>(plannerNotifierProvider, (previous, next) {
+      if (next != null) _applyBundle(next);
+    });
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    // initialize from either the injected initialState or the current provider
     final PlannerState state = widget.initialState ?? ref.read(plannerNotifierProvider);
+    _applyBundle(state);
+  }
+
+  void _applyBundle(PlannerState state) {
     final bundle = state.hintsBundle;
+
+    // initialize slider values when a recommended range exists
     if (bundle != null && bundle.recommendedRanges.containsKey(widget.field)) {
       final r = bundle.recommendedRanges[widget.field]!;
       setState(() {
         _values = RangeValues(r.start.clamp(widget.min, widget.max), r.end.clamp(widget.min, widget.max));
       });
     } else {
-      _values ??= RangeValues(widget.min, widget.max);
+      setState(() {
+        _values ??= RangeValues(widget.min, widget.max);
+      });
     }
 
     // Initialize animation anchors from current bundle (or defaults)
@@ -54,11 +69,31 @@ class _RecommendedRangeSliderState extends ConsumerState<RecommendedRangeSlider>
     final best = bundle?.bestPoints[widget.field];
     final weak = bundle?.weakRanges[widget.field];
 
-    _prevRecStart = _targetRecStart = recommended?.start ?? widget.min;
-    _prevRecEnd = _targetRecEnd = recommended?.end ?? widget.max;
-    _prevBest = _targetBest = best ?? widget.min;
-    _prevWeakStart = _targetWeakStart = weak?.start ?? widget.min;
-    _prevWeakEnd = _targetWeakEnd = weak?.end ?? widget.max;
+    // When reacting to provider updates we preserve current animated
+    // progress by interpolating from previous anchors using controller.value
+    final t = _controller.value;
+    double interp(double a, double b, double tt) => a + (b - a) * tt;
+
+    final curRecStart = interp(_prevRecStart, _targetRecStart, t);
+    final curRecEnd = interp(_prevRecEnd, _targetRecEnd, t);
+    final curBest = interp(_prevBest, _targetBest, t);
+    final curWeakStart = interp(_prevWeakStart, _targetWeakStart, t);
+    final curWeakEnd = interp(_prevWeakEnd, _targetWeakEnd, t);
+
+    _prevRecStart = curRecStart;
+    _prevRecEnd = curRecEnd;
+    _prevBest = curBest;
+    _prevWeakStart = curWeakStart;
+    _prevWeakEnd = curWeakEnd;
+
+    _targetRecStart = recommended?.start ?? widget.min;
+    _targetRecEnd = recommended?.end ?? widget.max;
+    _targetBest = best ?? widget.min;
+    _targetWeakStart = weak?.start ?? widget.min;
+    _targetWeakEnd = weak?.end ?? widget.max;
+
+    // kick off transition
+    _controller.forward(from: 0.0);
   }
 
   @override
@@ -70,7 +105,8 @@ class _RecommendedRangeSliderState extends ConsumerState<RecommendedRangeSlider>
   @override
   Widget build(BuildContext context) {
     final values = _values ?? RangeValues(widget.min, widget.max);
-    final bundle = widget.initialState?.hintsBundle ?? ref.read(plannerNotifierProvider).hintsBundle;
+    final PlannerState state = widget.initialState ?? ref.watch(plannerNotifierProvider);
+    final bundle = state.hintsBundle;
     final recommended = bundle?.recommendedRanges[widget.field];
     final best = bundle?.bestPoints[widget.field];
     final weak = bundle?.weakRanges[widget.field];
@@ -88,10 +124,8 @@ class _RecommendedRangeSliderState extends ConsumerState<RecommendedRangeSlider>
             // Stack the custom overlay painter under the slider so we can draw
             // recommended shaded ranges and dotted best-config markers.
             LayoutBuilder(builder: (context, constraints) {
-              final bundle = widget.initialState?.hintsBundle ?? ref.read(plannerNotifierProvider).hintsBundle;
-              final recommended = bundle?.recommendedRanges[widget.field];
-              final best = bundle?.bestPoints[widget.field];
-              final weak = bundle?.weakRanges[widget.field];
+              // Use the already-watched `bundle` from above so the widget
+              // rebuilds when the provider changes.
 
               return SizedBox(
                 height: 56,

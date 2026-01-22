@@ -36,7 +36,7 @@ class BatchBacktestService {
 
     // 1. Create batch doc
     await batchRef.set({
-      'createdAt': now,
+      'createdAt': Timestamp.fromDate(now),
       'parameterGrid': parameterGrid,
       'runIds': [],
       'status': 'queued',
@@ -51,7 +51,7 @@ class BatchBacktestService {
       runIds.add(runRef.id);
 
       await runRef.set({
-        'createdAt': now,
+        'createdAt': Timestamp.fromDate(now),
         'parameters': params,
         'status': 'queued',
         'metrics': null,

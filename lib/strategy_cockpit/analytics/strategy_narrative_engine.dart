@@ -12,44 +12,191 @@ class StrategyNarrativeEngine {
     required MarketVolatilitySnapshot vol,
     required MarketLiquiditySnapshot liq,
   }) {
-    // Base narrative from existing pure generator
-    final base = generateNarrative(context, recsBundle: recs);
+    final healthTone = _healthTone(context.healthScore);
+    final regimePhrase = _regimePhrase(regime, vol, liq);
+    final summary = _buildSummary(healthTone, regimePhrase, context.recentCycles);
 
-    // Build live regime phrase
-    final trend = regime.trend.toLowerCase();
-    final volLabel = regime.volatility.toLowerCase();
-    final liqLabel = regime.liquidity.toLowerCase();
-    final regimePhrase = '$volLabel-volatility $trend with $liqLabel liquidity';
+    final historyInsights = _historyBullets(context, context.recentCycles, context.backtestComparison);
+    final liveInsights = _liveBullets(regime, vol, liq);
+    final recSummary = _summarizeTopRecommendations(recs);
 
-    // Enrich summary: prepend a sentence about live regime
-    final liveSummary = 'Current conditions: $regimePhrase. ${base.summary}';
-
-    // Live bullets
-    final liveBullets = <String>[];
-    liveBullets.add('IV Rank: ${vol.ivRank.toStringAsFixed(0)} (IV Percentile: ${ (vol.ivPercentile * 100).toStringAsFixed(0)}%).');
-    liveBullets.add('Bid/ask spread: ${liq.bidAskSpread.toStringAsFixed(4)}; volume ${liq.volume}; open interest ${liq.openInterest}.');
-
-    // Fold top live-aware recommendations into bullets (top 2)
-    final topRecs = List.of(recs.recommendations)..sort((a, b) => a.priority.compareTo(b.priority));
-    for (final r in topRecs.take(2)) {
-      liveBullets.add('Recommendation (${r.category}): ${r.message}');
-    }
-
-    // Outlook: synthesize live guidance combining base outlook and top rec
-    final outlookParts = <String>[];
-    outlookParts.add(base.outlook);
-    if (topRecs.isNotEmpty) {
-      outlookParts.add('Actionable: ${topRecs.first.message}');
-    }
-    final liveOutlook = outlookParts.join(' ');
+    final outlookBase = _buildOutlook(healthTone, regimePhrase, recSummary);
+    final finalOutlook = '$outlookBase Actionable: $recSummary';
 
     return StrategyNarrative(
-      title: base.title,
-      summary: liveSummary,
-      bullets: [...liveBullets, ...base.bullets],
-      outlook: liveOutlook,
+      title: 'Current Strategy Story',
+      summary: summary,
+      bullets: [
+        ...historyInsights,
+        ...liveInsights,
+      ],
+      outlook: finalOutlook,
       generatedAt: DateTime.now().toUtc(),
     );
+  }
+
+  String _healthTone(int healthScore) {
+    if (healthScore >= 80) return 'stable';
+    if (healthScore >= 60) return 'fragile';
+    return 'at risk';
+  }
+
+  String _regimePhrase(
+    MarketRegimeSnapshot regime,
+    MarketVolatilitySnapshot vol,
+    MarketLiquiditySnapshot liq,
+  ) {
+    final trendWord = (regime.trend == 'uptrend')
+        ? 'an uptrend'
+        : (regime.trend == 'downtrend' ? 'a downtrend' : 'a sideways regime');
+
+    final volWord = (regime.volatility == 'high')
+        ? 'high volatility'
+        : (regime.volatility == 'low' ? 'low volatility' : 'normal volatility');
+
+    final liqWord = (regime.liquidity == 'thin')
+        ? 'thin liquidity'
+        : (regime.liquidity == 'deep' ? 'deep liquidity' : 'normal liquidity');
+
+    return '$volWord $trendWord with $liqWord';
+  }
+
+  String _buildSummary(
+    String healthTone,
+    String regimePhrase,
+    List<CycleSummary> cycles,
+  ) {
+    final recent = cycles.take(3).toList();
+    final pnlDesc = _recentPnlPhrase(recent);
+    final discDesc = _recentDisciplinePhrase(recent);
+
+    return 'Over the last few cycles, the strategy has shown $pnlDesc with $discDesc. Current market conditions are $regimePhrase.';
+  }
+
+  String _recentPnlPhrase(List<CycleSummary> cycles) {
+    if (cycles.isEmpty) return 'limited observable performance';
+
+    final pnls = cycles.map((c) => c.pnl).toList();
+    final avg = pnls.reduce((a, b) => a + b) / pnls.length;
+
+    if (avg > 0) return 'generally positive performance';
+    if (avg < 0) return 'recent pressure on performance';
+    return 'mixed performance';
+  }
+
+  String _recentDisciplinePhrase(List<CycleSummary> cycles) {
+    if (cycles.length < 2) return 'limited discipline data';
+
+    final first = cycles.first.disciplineScore;
+    final last = cycles.last.disciplineScore;
+    final delta = last - first;
+
+    if (delta > 5) return 'improving discipline';
+    if (delta < -5) return 'slipping discipline';
+    return 'relatively stable discipline';
+  }
+
+  List<String> _historyBullets(
+    StrategyContext context,
+    List<CycleSummary> cycles,
+    BacktestSummary? backtests,
+  ) {
+    final bullets = <String>[];
+
+    // Health trend (using disciplineTrend as a proxy for trend)
+    if (context.disciplineTrend.isNotEmpty && context.disciplineTrend.length >= 2) {
+      final first = context.disciplineTrend.first;
+      final last = context.disciplineTrend.last;
+      final delta = (last - first).round();
+      final dir = delta > 0 ? 'improved' : delta < 0 ? 'declined' : 'remained stable';
+      bullets.add('Health score has $dir from $first to $last.');
+    }
+
+    // Recent cycles
+    if (cycles.isNotEmpty) {
+      final last = cycles.last;
+      final pnl = last.pnl;
+      bullets.add('Most recent cycle closed with PnL of ${pnl.toStringAsFixed(2)} and discipline score ${last.disciplineScore}.');
+    }
+
+    // Backtest insights
+    if (backtests != null) {
+      final best = backtests.bestConfig;
+      final worst = backtests.weakConfig;
+      if (best != null && best.isNotEmpty) {
+        bullets.add('Backtests highlight strong performance around ${_configPhrase(best)}.');
+      }
+      if (worst != null && worst.isNotEmpty) {
+        bullets.add('Weak configurations appear around ${_configPhrase(worst)}.');
+      }
+    }
+
+    return bullets;
+  }
+
+  String _configPhrase(Map<String, dynamic> cfg) {
+    final dte = cfg['dte'];
+    final delta = cfg['delta'];
+    final width = cfg['width'];
+    final parts = <String>[];
+    if (dte != null) parts.add('DTE $dte');
+    if (delta != null) parts.add('delta ${_formatNum(delta)}');
+    if (width != null) parts.add('width $width');
+    return parts.join(', ');
+  }
+
+  String _formatNum(dynamic v) {
+    if (v is num) return v.toStringAsFixed(2);
+    return v.toString();
+  }
+
+  List<String> _liveBullets(
+    MarketRegimeSnapshot regime,
+    MarketVolatilitySnapshot vol,
+    MarketLiquiditySnapshot liq,
+  ) {
+    final bullets = <String>[];
+
+    bullets.add('Current regime is ${regime.trend} with ${regime.volatility} volatility and ${regime.liquidity} liquidity.');
+    bullets.add('Current IV Rank is ${vol.ivRank.toStringAsFixed(0)}, indicating ${_ivRankPhrase(vol.ivRank)}.');
+    bullets.add('Bid/ask spread is ${liq.bidAskSpread.toStringAsFixed(2)}, with volume ${liq.volume} and open interest ${liq.openInterest}.');
+
+    return bullets;
+  }
+
+  String _ivRankPhrase(double ivRank) {
+    if (ivRank >= 70) return 'elevated volatility conditions';
+    if (ivRank <= 30) return 'muted volatility conditions';
+    return 'normal volatility conditions';
+  }
+
+  String _summarizeTopRecommendations(StrategyRecommendationsBundle recs) {
+    if (recs.recommendations.isEmpty) {
+      return 'No specific parameter or risk changes are currently suggested.';
+    }
+
+    final sorted = [...recs.recommendations]..sort((a, b) => a.priority.compareTo(b.priority));
+
+    final top = sorted.take(3).toList();
+    final messages = top.map((r) => r.message).toList();
+
+    if (messages.length == 1) return messages.first;
+    if (messages.length == 2) return "${messages[0]} Additionally, ${messages[1]}";
+    return "${messages[0]} Additionally, ${messages[1]} Finally, ${messages[2]}";
+  }
+
+  String _buildOutlook(
+    String healthTone,
+    String regimePhrase,
+    String recSummary,
+  ) {
+    final tonePrefix = (healthTone == 'stable')
+        ? 'Given the current stable condition of the strategy and'
+        : (healthTone == 'fragile')
+            ? 'Given the fragile condition of the strategy and'
+            : 'Given the at‑risk condition of the strategy and';
+
+    return '$tonePrefix $regimePhrase, $recSummary';
   }
 }
 

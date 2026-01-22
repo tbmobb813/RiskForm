@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope;
+import 'package:riskform/strategy_cockpit/analytics_providers.dart';
+import 'package:riskform/strategy_cockpit/sync_providers.dart';
+import 'package:riskform/services/market_data_providers.dart';
 
 import '../viewmodels/strategy_cockpit_viewmodel.dart';
 import '../widgets/strategy_section_container.dart';
 import 'package:riskform/models/strategy.dart';
+import 'package:riskform/strategy_cockpit/default_services.dart';
 
 class StrategyActionsSection extends StatefulWidget {
   final String strategyId;
@@ -43,7 +48,20 @@ class _StrategyActionsSectionState extends State<StrategyActionsSection> {
             ),
           )
         : ChangeNotifierProvider<StrategyCockpitViewModel>(
-            create: (_) => StrategyCockpitViewModel(strategyId: widget.strategyId),
+            create: (context) {
+              final container = ProviderScope.containerOf(context, listen: false);
+              final md = container.read(marketDataServiceProvider);
+              final recs = container.read(strategyRecommendationsEngineProvider);
+              final narr = container.read(strategyNarrativeEngineProvider);
+              final live = container.read(liveSyncManagerProvider);
+              return StrategyCockpitViewModel(
+                strategyId: widget.strategyId,
+                marketDataService: md,
+                recsEngine: recs,
+                narrativeEngine: narr,
+                liveSyncManager: live,
+              );
+            },
             child: Consumer<StrategyCockpitViewModel>(
               builder: (context, vm, _) => _buildForVm(context, vm),
             ),

@@ -60,8 +60,8 @@ class StrategyCycle {
     return {
       'strategyId': strategyId,
       'state': state,
-      'startedAt': startedAt,
-      'closedAt': closedAt,
+      'startedAt': Timestamp.fromDate(startedAt),
+      'closedAt': closedAt != null ? Timestamp.fromDate(closedAt!) : null,
       'realizedPnl': realizedPnl,
       'unrealizedPnl': unrealizedPnl,
       'disciplineScore': disciplineScore,

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope;
+import 'package:riskform/strategy_cockpit/analytics_providers.dart';
+import 'package:riskform/services/market_data_providers.dart';
+import 'package:riskform/strategy_cockpit/sync_providers.dart';
 
 // Viewmodels (assumed to exist in your project)
 import 'viewmodels/strategy_performance_viewmodel.dart';
@@ -7,6 +11,7 @@ import 'viewmodels/strategy_discipline_viewmodel.dart';
 import 'viewmodels/strategy_regime_viewmodel.dart';
 import 'viewmodels/strategy_backtest_viewmodel.dart';
 import 'viewmodels/strategy_cockpit_viewmodel.dart';
+import 'package:riskform/strategy_cockpit/default_services.dart';
 import 'widgets/recommendations_panel.dart';
 import 'widgets/strategy_narrative_panel.dart';
 import 'package:riskform/models/strategy.dart';
@@ -82,7 +87,20 @@ class StrategyHeader extends StatelessWidget {
     }
 
     return ChangeNotifierProvider<StrategyCockpitViewModel>(
-      create: (_) => StrategyCockpitViewModel(strategyId: strategyId),
+      create: (context) {
+        final container = ProviderScope.containerOf(context, listen: false);
+        final md = container.read(marketDataServiceProvider);
+        final recs = container.read(strategyRecommendationsEngineProvider);
+        final narr = container.read(strategyNarrativeEngineProvider);
+        final live = container.read(liveSyncManagerProvider);
+        return StrategyCockpitViewModel(
+          strategyId: strategyId,
+          marketDataService: md,
+          recsEngine: recs,
+          narrativeEngine: narr,
+          liveSyncManager: live,
+        );
+      },
       child: Consumer<StrategyCockpitViewModel>(
         builder: (context, vm, _) {
           if (vm.isLoading) {
@@ -1128,7 +1146,20 @@ class StrategyActionsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<StrategyCockpitViewModel>(
-      create: (_) => StrategyCockpitViewModel(strategyId: strategyId),
+      create: (context) {
+        final container = ProviderScope.containerOf(context, listen: false);
+        final md = container.read(marketDataServiceProvider);
+        final recs = container.read(strategyRecommendationsEngineProvider);
+        final narr = container.read(strategyNarrativeEngineProvider);
+        final live = container.read(liveSyncManagerProvider);
+        return StrategyCockpitViewModel(
+          strategyId: strategyId,
+          marketDataService: md,
+          recsEngine: recs,
+          narrativeEngine: narr,
+          liveSyncManager: live,
+        );
+      },
       child: Consumer<StrategyCockpitViewModel>(
         builder: (context, vm, _) {
           if (vm.isLoading) {

@@ -23,7 +23,7 @@ class BatchBacktestViewModel extends ChangeNotifier {
         .doc();
 
     await batchRef.set({
-      'createdAt': now,
+      'createdAt': Timestamp.fromDate(now),
       'parameterGrid': grid,
       'runIds': [],
       'status': 'queued',

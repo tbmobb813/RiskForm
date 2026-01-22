@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../planner/models/planner_strategy_context.dart';
+import '../utils/firestore_helpers.dart' as fh;
 import '../strategy_cockpit/services/strategy_cycle_service.dart';
 import '../strategy_cockpit/services/strategy_health_service.dart';
 
@@ -175,8 +176,8 @@ class ExecutionService {
       'currentRegime': ctx.currentRegime,
       'disciplineFlags': ctx.disciplineFlags,
       'execution': execution,
-      'createdAt': now,
-      'updatedAt': now,
+      'createdAt': fh.toTimestamp(now),
+      'updatedAt': fh.toTimestamp(now),
     };
   }
 }

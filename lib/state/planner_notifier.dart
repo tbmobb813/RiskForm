@@ -13,6 +13,8 @@ import 'package:riskform/engines/regime_providers.dart';
 import 'package:riskform/engines/regime_engine.dart';
 import 'package:riskform/services/regime_aware_planner_hints_providers.dart';
 import 'package:riskform/services/regime_aware_planner_hints_service.dart';
+import 'package:riskform/strategy_cockpit/sync_providers.dart';
+import 'package:riskform/strategy_cockpit/live_sync_manager.dart';
 
 final plannerNotifierProvider =
     StateNotifierProvider<PlannerNotifier, PlannerState>(
@@ -23,7 +25,8 @@ final plannerNotifierProvider =
     final executionService = ExecutionService();
     final regimeEngine = ref.read(regimeEngineProvider);
     final hintsService = ref.read(regimeAwarePlannerHintsServiceProvider);
-    return PlannerNotifier(repository, payoffEngine, riskEngine, regimeEngine, hintsService, executionService);
+    final liveSync = ref.read(liveSyncManagerProvider);
+    return PlannerNotifier(repository, payoffEngine, riskEngine, regimeEngine, hintsService, executionService, liveSync);
   },
 );
 
@@ -33,9 +36,9 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
   final RiskEngine _riskEngine;
   final RegimeEngine? _regimeEngine;
     final RegimeAwarePlannerHintsService? _hintsService;
+    final LiveSyncManager? _liveSyncManager;
     final ExecutionService? _executionService;
-
-    PlannerNotifier(this._repository, this._payoffEngine, this._riskEngine, [this._regimeEngine, this._hintsService, this._executionService])
+    PlannerNotifier(this._repository, this._payoffEngine, this._riskEngine, [this._regimeEngine, this._hintsService, this._executionService, this._liveSyncManager])
       : super(PlannerState.initial());
 
   // Strategy selection
@@ -77,9 +80,25 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
       );
 
       final constraints = recs.Constraints(maxRisk: 100, maxPositions: 5);
-      // Attempt to fetch a live regime for the strategy's symbol if available.
+      // Attempt to fetch a live regime / hints for the strategy's symbol if available.
       final symbol = state.strategySymbol;
-      if (_hintsService != null) {
+      if (_liveSyncManager != null && symbol != null) {
+        // Use LiveSyncManager to orchestrate regime + hints and return a coherent result.
+        // We only care about hintsBundle here.
+        _liveSyncManager!.refresh(symbol, recs.StrategyContext(
+          healthScore: 50,
+          pnlTrend: const [],
+          disciplineTrend: const [],
+          recentCycles: const [],
+          constraints: constraints,
+          currentRegime: 'sideways',
+          drawdown: 0.0,
+          backtestComparison: null,
+        )).then((res) {
+          state = state.copyWith(hintsBundle: res.hints);
+        }).catchError((_) {});
+      } else if (_hintsService != null) {
+        final symbol = state.strategySymbol;
         _hintsService!.generateHints(pstate, symbol: symbol).then((hints) {
           state = state.copyWith(hintsBundle: hints);
         }).catchError((_) {});
@@ -268,7 +287,23 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
         updatedAt: DateTime.now(),
       );
 
-      final executionPayload = state.inputs!.toJson();
+      final raw = state.inputs!.toJson();
+
+      // Enrich execution payload with fields expected by analytics
+      final now = DateTime.now();
+      final premium = (raw['premiumReceived'] as num?)?.toDouble() ?? (raw['premiumPaid'] as num?)?.toDouble() ?? (raw['netCredit'] as num?)?.toDouble() ?? (raw['netDebit'] as num?)?.toDouble() ?? 0.0;
+      final qty = (raw['sharesOwned'] as num?)?.toInt() ?? 1;
+      final expiry = raw['expiration'] ?? raw['expiry'];
+      final symbol = state.strategySymbol ?? ctx.strategyName;
+      final type = (premium > 0) ? 'SELL' : 'BUY';
+
+      final executionPayload = Map<String, dynamic>.from(raw)
+        ..['timestamp'] = now.toIso8601String()
+        ..['symbol'] = symbol
+        ..['type'] = type
+        ..['qty'] = qty
+        ..['premium'] = premium
+        ..['expiry'] = expiry;
 
       final request = StrategyExecutionRequest(
         strategyContext: ctx,
@@ -328,7 +363,21 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
 
       final constraints = recs.Constraints(maxRisk: 100, maxPositions: 5);
       final symbol = state.strategySymbol;
-      if (_hintsService != null) {
+      if (_liveSyncManager != null && symbol != null) {
+        _liveSyncManager!.refresh(symbol, recs.StrategyContext(
+          healthScore: 50,
+          pnlTrend: const [],
+          disciplineTrend: const [],
+          recentCycles: const [],
+          constraints: constraints,
+          currentRegime: 'sideways',
+          drawdown: 0.0,
+          backtestComparison: null,
+        )).then((res) {
+          state = state.copyWith(hintsBundle: res.hints);
+        }).catchError((_) {});
+      } else if (_hintsService != null) {
+        final symbol = state.strategySymbol;
         _hintsService!.generateHints(pstate, symbol: symbol).then((hints) {
           state = state.copyWith(hintsBundle: hints);
         }).catchError((_) {});

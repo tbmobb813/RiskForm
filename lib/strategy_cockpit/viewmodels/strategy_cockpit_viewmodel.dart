@@ -9,12 +9,20 @@ import '../services/strategy_backtest_service.dart';
 import '../../regime/regime_service.dart';
 import '../analytics/strategy_recommendations_engine.dart';
 import '../analytics/strategy_narrative_engine.dart';
+import 'package:riskform/services/market_data_service.dart';
+import 'package:riskform/services/market_data_models.dart';
+import '../live_sync_manager.dart';
+
 
 class StrategyCockpitViewModel extends ChangeNotifier {
   final strategy_service.StrategyService _strategyService;
   final StrategyHealthService _healthService;
   final StrategyBacktestService _backtestService;
   final RegimeService _regimeService;
+  final MarketDataService? _marketDataService;
+  final StrategyRecommendationsEngine? _recsEngine;
+  final StrategyNarrativeEngine? _narrativeEngine;
+  final LiveSyncManager? _liveSyncManager;
 
   final String strategyId;
 
@@ -39,10 +47,18 @@ class StrategyCockpitViewModel extends ChangeNotifier {
     StrategyHealthService? healthService,
     StrategyBacktestService? backtestService,
     RegimeService? regimeService,
+    MarketDataService? marketDataService,
+    StrategyRecommendationsEngine? recsEngine,
+    StrategyNarrativeEngine? narrativeEngine,
+    LiveSyncManager? liveSyncManager,
   })  : _strategyService = strategyService ?? strategy_service.StrategyService(),
         _healthService = healthService ?? StrategyHealthService(),
         _backtestService = backtestService ?? StrategyBacktestService(),
-        _regimeService = regimeService ?? RegimeService() {
+        _regimeService = regimeService ?? RegimeService(),
+        _marketDataService = marketDataService,
+        _recsEngine = recsEngine,
+      _narrativeEngine = narrativeEngine ?? const StrategyNarrativeEngine(),
+      _liveSyncManager = liveSyncManager {
     // Initialize listeners asynchronously so `isLoading` remains true
     // for the first build frame. This ensures widgets can show a
     // loading indicator before synchronous stream emits occur.
@@ -179,10 +195,55 @@ class StrategyCockpitViewModel extends ChangeNotifier {
       backtestComparison: backtest,
     );
 
-    recommendations = generateRecommendations(ctx);
-    // Also generate and cache the human-friendly narrative alongside recommendations
-    narrative = generateNarrative(ctx, recsBundle: recommendations);
-    notifyListeners();
+    // Try live-aware generation when MarketDataService is available and a symbol can be determined
+    String? symbol;
+    if (latestBacktest != null && latestBacktest!['symbol'] is String) {
+      symbol = latestBacktest!['symbol'] as String;
+    } else if (strategy!.constraints.containsKey('symbol') && strategy!.constraints['symbol'] is String) {
+      symbol = strategy!.constraints['symbol'] as String;
+    }
+
+    if (_marketDataService != null && symbol != null) {
+      // Prefer LiveSyncManager if provided to orchestrate all live calls
+      if (_liveSyncManager != null) {
+        _liveSyncManager!.refresh(symbol!, ctx).then((res) {
+          recommendations = res.recommendations;
+          narrative = res.narrative;
+          notifyListeners();
+        }).catchError((_) {
+          recommendations = generateRecommendations(ctx);
+          narrative = generateNarrative(ctx, recsBundle: recommendations);
+          notifyListeners();
+        });
+      } else {
+        // best-effort asynchronous fetch; update recommendations/narrative when ready
+        final sym = symbol!;
+        _marketDataService!.getRegime(sym).then((regimeSnap) async {
+          final volSnap = await _marketDataService!.getVolatility(sym);
+          final liqSnap = await _marketDataService!.getLiquidity(sym);
+
+          final recs = await (_recsEngine?.generate(context: ctx, regime: regimeSnap, vol: volSnap, liq: liqSnap)
+              ?? StrategyRecommendationsEngine().generate(context: ctx, regime: regimeSnap, vol: volSnap, liq: liqSnap));
+
+          final narr = _narrativeEngine?.generate(context: ctx, recs: recs, regime: regimeSnap, vol: volSnap, liq: liqSnap)
+              ?? const StrategyNarrativeEngine().generate(context: ctx, recs: recs, regime: regimeSnap, vol: volSnap, liq: liqSnap);
+
+          recommendations = recs;
+          narrative = narr;
+          notifyListeners();
+        }).catchError((_) {
+          // fallback to pure deterministic generator on any failure
+          recommendations = generateRecommendations(ctx);
+          narrative = generateNarrative(ctx, recsBundle: recommendations);
+          notifyListeners();
+        });
+      }
+    } else {
+      recommendations = generateRecommendations(ctx);
+      // Also generate and cache the human-friendly narrative alongside recommendations
+      narrative = generateNarrative(ctx, recsBundle: recommendations);
+      notifyListeners();
+    }
   }
 
   // -----------------------------

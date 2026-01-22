@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope;
 
 import '../viewmodels/strategy_cockpit_viewmodel.dart';
+import 'package:riskform/strategy_cockpit/default_services.dart';
+import 'package:riskform/strategy_cockpit/analytics_providers.dart';
+import 'package:riskform/strategy_cockpit/sync_providers.dart';
+import 'package:riskform/services/market_data_providers.dart';
 import '../widgets/strategy_section_container.dart';
 import 'strategy_performance_section.dart';
 import 'strategy_discipline_section.dart';
@@ -25,7 +30,13 @@ class _StrategyCockpitScreenState extends State<StrategyCockpitScreen> {
   @override
   void initState() {
     super.initState();
-    _vm = widget.viewModel ?? StrategyCockpitViewModel(strategyId: widget.strategyId);
+    _vm = widget.viewModel ?? StrategyCockpitViewModel(
+      strategyId: widget.strategyId,
+      marketDataService: ProviderScope.containerOf(context, listen: false).read(marketDataServiceProvider),
+      recsEngine: ProviderScope.containerOf(context, listen: false).read(strategyRecommendationsEngineProvider),
+      narrativeEngine: ProviderScope.containerOf(context, listen: false).read(strategyNarrativeEngineProvider),
+      liveSyncManager: ProviderScope.containerOf(context, listen: false).read(liveSyncManagerProvider),
+    );
     _ownsVm = widget.viewModel == null;
     _vm.addListener(_onVmChanged);
   }
