@@ -1,6 +1,10 @@
 import 'package:flutter_riverpod/legacy.dart';
 import '../models/trade_inputs.dart';
 import 'package:riskform/strategy_cockpit/analytics/regime_aware_planner_hints.dart' as planner_hints;
+import 'package:firebase_auth/firebase_auth.dart';
+import 'journal_providers.dart';
+import '../models/journal/journal_entry.dart';
+import '../services/journal/journal_repository.dart';
 import 'package:riskform/strategy_cockpit/analytics/strategy_recommendations_engine.dart' as recs;
 import '../models/trade_plan.dart';
 import '../services/data/trade_plan_repository.dart';
@@ -33,7 +37,8 @@ final plannerNotifierProvider =
     final regimeEngine = ref.read(regimeEngineProvider);
     final hintsService = ref.read(regimeAwarePlannerHintsServiceProvider);
     final liveSync = ref.read(liveSyncManagerProvider);
-    return PlannerNotifier(repository, payoffEngine, riskEngine, regimeEngine, hintsService, executionService, liveSync);
+    final journalRepo = ref.read(journalRepositoryProvider);
+    return PlannerNotifier(repository, payoffEngine, riskEngine, regimeEngine, hintsService, executionService, liveSync, journalRepo);
   },
 );
 
@@ -45,11 +50,15 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
     final RegimeAwarePlannerHintsService? _hintsService;
     final LiveSyncManager? _liveSyncManager;
     final ExecutionService? _executionService;
-    PlannerNotifier(this._repository, this._payoffEngine, this._riskEngine, [this._regimeEngine, this._hintsService, this._executionService, this._liveSyncManager])
+    final JournalRepository? _journalRepo;
+    PlannerNotifier(this._repository, this._payoffEngine, this._riskEngine, [this._regimeEngine, this._hintsService, this._executionService, this._liveSyncManager, this._journalRepo])
       : super(PlannerState.initial());
 
   // Strategy selection
   void setStrategy(String id, String name, String description, {String? symbol}) {
+    final prevNotes = state.notes;
+    final prevTags = state.tags;
+
     state = PlannerState.initial().copyWith(
       strategyId: id,
       strategyName: name,
@@ -57,6 +66,31 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
       strategyDescription: description,
       clearError: true,
     );
+
+    // Auto-create a lightweight journal entry for the selected strategy
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      final repo = _journalRepo;
+      if (uid != null && repo != null) {
+        final entry = JournalEntry(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          timestamp: DateTime.now(),
+          type: 'selection',
+          data: {
+            'strategyId': id,
+            'strategyName': name,
+            'description': description,
+            'symbol': symbol,
+            'notes': prevNotes,
+            'tags': prevTags,
+            'live': true,
+          },
+        );
+        repo.addEntry(entry);
+      }
+    } catch (_) {
+      // non-fatal: journaling should not block UX
+    }
   }
 
   // Inputs
@@ -302,11 +336,28 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
 
       // Enrich execution payload with fields expected by analytics
       final now = DateTime.now();
-      final premium = (raw['premiumReceived'] as num?)?.toDouble() ?? (raw['premiumPaid'] as num?)?.toDouble() ?? (raw['netCredit'] as num?)?.toDouble() ?? (raw['netDebit'] as num?)?.toDouble() ?? 0.0;
+      final premiumReceived = (raw['premiumReceived'] as num?)?.toDouble();
+      final premiumPaid = (raw['premiumPaid'] as num?)?.toDouble();
+      final netCredit = (raw['netCredit'] as num?)?.toDouble();
+      final netDebit = (raw['netDebit'] as num?)?.toDouble();
+
+      // Determine canonical premium magnitude and explicit side. Prefer
+      // explicit fields rather than inferring from sign to avoid
+      // misclassifying buy-side orders where `premiumPaid` is positive.
+      final premium = premiumReceived ?? premiumPaid ?? netCredit ?? netDebit ?? 0.0;
       final qty = (raw['sharesOwned'] as num?)?.toInt() ?? 1;
       final expiry = raw['expiration'] ?? raw['expiry'];
       final symbol = state.strategySymbol ?? ctx.strategyName;
-      final type = (premium > 0) ? 'SELL' : 'BUY';
+
+      String type;
+      if (premiumReceived != null || netCredit != null) {
+        type = 'SELL';
+      } else if (premiumPaid != null || netDebit != null) {
+        type = 'BUY';
+      } else {
+        // Fallback for legacy payloads: infer from premium sign.
+        type = (premium > 0) ? 'SELL' : 'BUY';
+      }
 
       final executionPayload = Map<String, dynamic>.from(raw)
         ..['timestamp'] = now.toIso8601String()
@@ -315,6 +366,15 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
         ..['qty'] = qty
         ..['premium'] = premium
         ..['expiry'] = expiry;
+
+      // Require authentication: include current user id so execution services
+      // can scope per-user queries. Fail fast if not authenticated.
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) {
+        state = state.copyWith(isLoading: false, errorMessage: 'Authentication required to execute trades.');
+        return false;
+      }
+      executionPayload['userId'] = uid;
 
       // Attach strategy metadata (explanation) when available
       final strategy = _strategyFromState();

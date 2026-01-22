@@ -8,13 +8,13 @@ import '../analytics/strategy_discipline_analyzer.dart';
 import '../analytics/strategy_regime_analyzer.dart';
 
 class StrategyCycleService {
-  final FirebaseFirestore _firestore;
+  final FirebaseFirestore? _firestore;
 
-  StrategyCycleService({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+  StrategyCycleService({FirebaseFirestore? firestore}) : _firestore = firestore;
 
-  CollectionReference get _cycles =>
-      _firestore.collection('strategyCycles');
+  FirebaseFirestore get _db => _firestore ?? FirebaseFirestore.instance;
+
+  CollectionReference get _cycles => _db.collection('strategyCycles');
 
   // ------------------------------------------------------------
   // Transaction-aware append: used by ExecutionService
@@ -33,6 +33,8 @@ class StrategyCycleService {
       existingCycleId: existingCycleId,
     );
 
+    var createdNewCycle = false;
+
     final snapshot = await tx.get(cycleRef);
     StrategyCycle cycle;
 
@@ -44,6 +46,7 @@ class StrategyCycleService {
         execution: execution,
         strategyContext: strategyContext,
       );
+      createdNewCycle = true;
     } else {
       cycle = StrategyCycle.fromFirestore(snapshot);
       cycle = _appendExecutionAndRecompute(
@@ -54,6 +57,19 @@ class StrategyCycleService {
     }
 
     tx.set(cycleRef, cycle.toFirestore(), SetOptions(merge: false));
+
+    // If we created a new cycle, write a lightweight meta document keyed by
+    // the strategy id that stores the activeCycleId. This allows subsequent
+    // executions to locate and append to the active cycle instead of creating
+    // a new one each time.
+    if (createdNewCycle) {
+      final metaRef = _cycles.doc(strategyId);
+      tx.set(metaRef, {
+        'activeCycleId': cycleRef.id,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    }
+
     return cycleRef.id;
   }
 

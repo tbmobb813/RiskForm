@@ -54,7 +54,7 @@ class StrategyExecutionResult {
 }
 
 class ExecutionService {
-  final FirebaseFirestore _firestore;
+  final FirebaseFirestore? _firestore;
   final StrategyCycleService _cycleService;
   final StrategyHealthService _healthService;
 
@@ -62,7 +62,7 @@ class ExecutionService {
     FirebaseFirestore? firestore,
     StrategyCycleService? cycleService,
     StrategyHealthService? healthService,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
+  })  : _firestore = firestore,
         _cycleService = cycleService ?? StrategyCycleService(firestore: firestore),
         _healthService = healthService ?? StrategyHealthService(firestore: firestore);
 
@@ -72,6 +72,11 @@ class ExecutionService {
   Future<StrategyExecutionResult> executeStrategyTrade(
     StrategyExecutionRequest request,
   ) async {
+    // Require per-user context for enforcement and auditing.
+    final userId = request.execution['userId'] as String?;
+    if (userId == null) {
+      return StrategyExecutionResult.fail('Authentication required: missing userId in execution payload.');
+    }
     final ctx = request.strategyContext;
 
     // 1) Validate strategy state
@@ -94,10 +99,11 @@ class ExecutionService {
 
     // 3) Write journal entry + update cycle + health in a transaction
     try {
-      return await _firestore.runTransaction<StrategyExecutionResult>(
+      final db = _firestore ?? FirebaseFirestore.instance;
+      return await db.runTransaction<StrategyExecutionResult>(
         (tx) async {
           // 3a) Create journal entry
-          final journalRef = _firestore.collection('journal').doc();
+          final journalRef = db.collection('journal').doc();
           final journalData = _buildJournalEntryData(ctx, request.execution);
           tx.set(journalRef, journalData);
 

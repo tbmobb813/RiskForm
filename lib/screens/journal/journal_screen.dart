@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/journal/journal_entry.dart';
 import '../../state/journal_providers.dart';
+import 'journal_entry_editor.dart';
 import '../../state/discipline_providers.dart';
+import '../../services/journal/journal_repository.dart';
 import 'components/discipline_score_card.dart';
 import '../../services/journal/discipline_history_service.dart';
 import 'components/discipline_history_card.dart';
@@ -22,6 +24,32 @@ class JournalScreen extends ConsumerStatefulWidget {
 
 class _JournalScreenState extends ConsumerState<JournalScreen> {
   String filter = 'all';
+  JournalRepository? _repo;
+
+  @override
+  void initState() {
+    super.initState();
+    // Attach listener to repository so UI updates when entries change
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final r = ref.read(journalRepositoryProvider);
+      _repo = r;
+      try {
+        _repo?.addListener(_onRepoChanged);
+      } catch (_) {}
+    });
+  }
+
+  void _onRepoChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    try {
+      _repo?.removeListener(_onRepoChanged);
+    } catch (_) {}
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +84,15 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Journal')),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const JournalEntryEditor()),
+          );
+        },
+        child: const Icon(Icons.add),
+      ),
       body: ListView(
         padding: EdgeInsets.zero,
         children: [
