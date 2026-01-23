@@ -8,3 +8,13 @@ typings/
 # Node.js dependency directory
 node_modules/
 *.local
+
+# Firebase / secrets
+serviceAccountKey*.json
+.runtimeconfig.json
+.firebase/
+firebase-debug.log
+secrets.json
+*.pem
+*.key
+*.p12

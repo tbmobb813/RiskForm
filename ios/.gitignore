@@ -32,3 +32,8 @@ Runner/GeneratedPluginRegistrant.*
 !default.mode2v3
 !default.pbxuser
 !default.perspectivev3
+#! Firebase / Google config - keep out of repo unless explicitly intended
+GoogleService-Info.plist
+*.xcconfig
+*.env
+*.key

@@ -78,7 +78,21 @@ desktop.ini
 
 # Firebase service account / secrets (ignore by pattern; keep if intentionally tracked)
 # Uncomment and adjust if you add any service account files to repo intentionally
-#service-account*.json
+ # Common secret files
+service-account*.json
+serviceAccountKey*.json
+.runtimeconfig.json
+.firebase/
+firebase-debug.log
+*.pem
+*.key
+*.p12
+.env
+.env.*
+
+# Google / Firebase config files
+GoogleService-Info.plist
+google-services.json
 
 
 # Symbolication related

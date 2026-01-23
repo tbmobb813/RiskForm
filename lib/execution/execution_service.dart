@@ -102,8 +102,8 @@ class ExecutionService {
       final db = _firestore ?? FirebaseFirestore.instance;
       return await db.runTransaction<StrategyExecutionResult>(
         (tx) async {
-          // 3a) Create journal entry
-          final journalRef = db.collection('journal').doc();
+          // 3a) Create journal entry (use canonical 'journalEntries' collection)
+          final journalRef = db.collection('journalEntries').doc();
           final journalData = _buildJournalEntryData(ctx, request.execution);
           tx.set(journalRef, journalData);
 

@@ -8,12 +8,15 @@ import '../models/watchlist_item.dart';
 /// - Current price (or N/A if no live data)
 /// - IV percentile (or N/A if no live data)
 /// - Price change % (or — if no live data)
+/// - Data freshness indicator
+/// - Refresh button
 /// - [Scan] button to open options scanner
 class WatchlistCard extends StatelessWidget {
   final List<WatchlistItem> watchlist;
   final VoidCallback onAddTicker;
   final void Function(String ticker) onRemoveTicker;
   final void Function(String ticker) onScanTap;
+  final VoidCallback? onRefresh;
 
   const WatchlistCard({
     super.key,
@@ -21,6 +24,7 @@ class WatchlistCard extends StatelessWidget {
     required this.onAddTicker,
     required this.onRemoveTicker,
     required this.onScanTap,
+    this.onRefresh,
   });
 
   @override
@@ -34,13 +38,33 @@ class WatchlistCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Watchlist',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Row(
+                  children: [
+                    const Text(
+                      'Watchlist',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(width: 8),
+                    _buildDataFreshnessIndicator(),
+                  ],
                 ),
-                Text(
-                  '${watchlist.length}/5',
-                  style: const TextStyle(fontSize: 14, color: Colors.black54),
+                Row(
+                  children: [
+                    Text(
+                      '${watchlist.length}/5',
+                      style: const TextStyle(fontSize: 14, color: Colors.black54),
+                    ),
+                    if (onRefresh != null) ...[
+                      const SizedBox(width: 8),
+                      IconButton(
+                        onPressed: onRefresh,
+                        icon: const Icon(Icons.refresh, size: 18),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                        tooltip: 'Refresh market data',
+                      ),
+                    ],
+                  ],
                 ),
               ],
             ),
@@ -207,6 +231,97 @@ class WatchlistCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildDataFreshnessIndicator() {
+    if (watchlist.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final hasAnyLiveData = watchlist.any((item) => item.hasLiveData);
+
+    if (!hasAnyLiveData) {
+      return Tooltip(
+        message: 'Market data service not available. Enable in settings.',
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.cloud_off, size: 12, color: Colors.grey.shade600),
+              const SizedBox(width: 4),
+              Text(
+                'Offline',
+                style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Find the oldest update time
+    final oldestUpdate = watchlist
+        .where((item) => item.hasLiveData && item.lastUpdated != null)
+        .map((item) => item.lastUpdated!)
+        .fold<DateTime?>(null, (oldest, current) {
+      if (oldest == null || current.isBefore(oldest)) {
+        return current;
+      }
+      return oldest;
+    });
+
+    if (oldestUpdate == null) {
+      return const SizedBox.shrink();
+    }
+
+    final age = DateTime.now().difference(oldestUpdate);
+    final isStale = age.inSeconds > 30; // Data is stale after 30 seconds
+
+    return Tooltip(
+      message: isStale
+          ? 'Data is ${age.inSeconds}s old. Click refresh to update.'
+          : 'Live data (${age.inSeconds}s ago)',
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        decoration: BoxDecoration(
+          color: isStale ? Colors.orange.shade100 : Colors.green.shade100,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isStale ? Icons.schedule : Icons.check_circle,
+              size: 12,
+              color: isStale ? Colors.orange.shade700 : Colors.green.shade700,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              _formatAge(age),
+              style: TextStyle(
+                fontSize: 10,
+                color: isStale ? Colors.orange.shade700 : Colors.green.shade700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatAge(Duration age) {
+    if (age.inSeconds < 60) {
+      return '${age.inSeconds}s';
+    } else if (age.inMinutes < 60) {
+      return '${age.inMinutes}m';
+    } else {
+      return '${age.inHours}h';
+    }
   }
 
   void _confirmRemove(BuildContext context, String ticker) {

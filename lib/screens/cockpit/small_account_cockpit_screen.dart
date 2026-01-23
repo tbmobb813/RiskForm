@@ -91,6 +91,7 @@ class SmallAccountCockpitScreen extends ConsumerWidget {
                           SnackBar(content: Text('Scan $ticker options (coming soon)')),
                         );
                       },
+                      onRefresh: () => ref.read(cockpitControllerProvider.notifier).refreshWatchlist(),
                     ),
                     const SizedBox(height: 16),
 

@@ -9,6 +9,7 @@ import '../models/weekly_summary.dart';
 import '../../../behavior/behavior_analytics.dart';
 import '../../../journal/journal_entry_model.dart';
 import '../../../state/account_providers.dart';
+import '../../../services/market_data/market_data_providers.dart';
 
 /// Controller for the Small Account Cockpit
 /// Aggregates data from multiple sources and manages cockpit state
@@ -137,7 +138,7 @@ class CockpitController extends StateNotifier<CockpitState> {
     }
   }
 
-  /// Load watchlist from Firestore
+  /// Load watchlist from Firestore with live market data
   Future<List<WatchlistItem>> _loadWatchlist() async {
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -149,11 +150,59 @@ class CockpitController extends StateNotifier<CockpitState> {
 
       final tickers = List<String>.from(doc.data()?['tickers'] ?? []);
 
-      // For Phase 1, return placeholder items (no live data)
-      return tickers.map((ticker) => WatchlistItem.placeholder(ticker)).toList();
+      // Attempt to fetch live data if market data service is available
+      return await _enrichWithLiveData(tickers);
     } catch (e) {
       return _getDefaultWatchlist();
     }
+  }
+
+  /// Enrich tickers with live market data
+  Future<List<WatchlistItem>> _enrichWithLiveData(List<String> tickers) async {
+    final marketDataService = ref.read(marketDataServiceProvider);
+
+    // If market data service is not available, return placeholders
+    if (marketDataService == null) {
+      return tickers.map((ticker) => WatchlistItem.placeholder(ticker)).toList();
+    }
+
+    try {
+      // Fetch quotes and IV percentiles in parallel
+      final results = await Future.wait(
+        tickers.map((ticker) async {
+          try {
+            // Fetch quote and IV percentile concurrently
+            final quoteFuture = marketDataService.fetchQuote(ticker);
+            final ivFuture = marketDataService.calculateIVPercentile(ticker);
+
+            final quote = await quoteFuture;
+            final ivPercentile = await ivFuture;
+
+            return WatchlistItem.withLiveData(
+              ticker: ticker,
+              price: quote.price,
+              ivPercentile: ivPercentile,
+              changePercent: quote.changePercent,
+            );
+          } catch (e) {
+            // On error for individual ticker, return placeholder
+            return WatchlistItem.placeholder(ticker);
+          }
+        }),
+      );
+
+      return results;
+    } catch (e) {
+      // On batch error, return placeholders for all
+      return tickers.map((ticker) => WatchlistItem.placeholder(ticker)).toList();
+    }
+  }
+
+  /// Refresh watchlist with latest market data
+  Future<void> refreshWatchlist() async {
+    final tickers = state.watchlist.map((w) => w.ticker).toList();
+    final updated = await _enrichWithLiveData(tickers);
+    state = state.copyWith(watchlist: updated);
   }
 
   /// Default watchlist for new users
@@ -242,7 +291,13 @@ class CockpitController extends StateNotifier<CockpitState> {
       throw Exception('Watchlist is limited to 5 tickers for small accounts');
     }
 
-    final newWatchlist = [...state.watchlist, WatchlistItem.placeholder(ticker.toUpperCase())];
+    final upperTicker = ticker.toUpperCase();
+
+    // Fetch live data for the new ticker
+    final enriched = await _enrichWithLiveData([upperTicker]);
+    final newItem = enriched.first;
+
+    final newWatchlist = [...state.watchlist, newItem];
     state = state.copyWith(watchlist: newWatchlist);
 
     // Persist to Firestore
