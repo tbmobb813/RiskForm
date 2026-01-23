@@ -7,15 +7,24 @@ final tradePlanServiceProvider = Provider<TradePlanService>((ref) {
 });
 
 class TradePlanService {
-  final FirebaseFirestore _db;
+  FirebaseFirestore? _db;
 
-  TradePlanService([FirebaseFirestore? db]) : _db = db ?? FirebaseFirestore.instance;
+  TradePlanService([FirebaseFirestore? db]) : _db = db;
+
+  FirebaseFirestore get _database {
+    try {
+      return _db ??= FirebaseFirestore.instance;
+    } catch (_) {
+      // Defer errors until a method that requires Firestore is called.
+      rethrow;
+    }
+  }
 
   Future<void> savePlan({
     required String uid,
     required TradePlan plan,
   }) async {
-    final ref = _db
+    final ref = _database
         .collection("users")
         .doc(uid)
         .collection("trade_plans")
@@ -30,12 +39,12 @@ class TradePlanService {
   }
 
   Future<List<TradePlan>> fetchPlans(String uid) async {
-    final snap = await _db
-        .collection("users")
-        .doc(uid)
-        .collection("trade_plans")
-        .orderBy("createdAt", descending: true)
-        .get();
+    final snap = await _database
+      .collection("users")
+      .doc(uid)
+      .collection("trade_plans")
+      .orderBy("createdAt", descending: true)
+      .get();
 
     return snap.docs.map((d) => TradePlan.fromDoc(d)).toList();
   }

@@ -6,12 +6,14 @@ import '../../exceptions/app_exceptions.dart';
 final positionServiceProvider = Provider<PositionService>((ref) => PositionService());
 
 class PositionService {
-  final FirebaseFirestore _db;
+  FirebaseFirestore? _db;
 
-  PositionService([FirebaseFirestore? db]) : _db = db ?? FirebaseFirestore.instance;
+  PositionService([FirebaseFirestore? db]) : _db = db;
+
+  FirebaseFirestore get _database => _db ??= FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> _positionsCollection(String uid) {
-    return _db.collection('users').doc(uid).collection('positions');
+    return _database.collection('users').doc(uid).collection('positions');
   }
 
   /// Fetches all positions for a user.
