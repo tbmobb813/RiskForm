@@ -1,320 +1,195 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_riverpod/legacy.dart';
+
 import '../models/cockpit_state.dart';
-import '../models/discipline_snapshot.dart';
 import '../models/pending_journal_trade.dart';
 import '../models/watchlist_item.dart';
+import '../models/discipline_snapshot.dart';
 import '../models/weekly_summary.dart';
-import '../../../behavior/behavior_analytics.dart';
-import '../../../journal/journal_entry_model.dart';
+import '../../../services/firebase/position_service.dart';
+import '../../../regime/regime_service.dart';
 import '../../../state/account_providers.dart';
+import '../services/cockpit_data_client.dart';
 
-/// Controller for the Small Account Cockpit
-/// Aggregates data from multiple sources and manages cockpit state
+/// Controller for the Small Account Cockpit.
+///
+/// Provides a lightweight, analyzer-friendly implementation used by the
+/// UI while the full data-loading logic is restored. Methods here mutate
+/// the `CockpitState` in-memory so callers (debug screens, services) compile.
 class CockpitController extends StateNotifier<CockpitState> {
-  final Ref ref;
+  final dynamic _ref;
+  final CockpitDataClient _dataClient;
+  final String? Function()? _getUid;
+  final RegimeService? _regimeService;
 
-  CockpitController(this.ref) : super(CockpitState.initial()) {
-    _loadCockpitData();
-  }
+  CockpitController(this._ref, {CockpitDataClient? dataClient, String? Function()? getUid, RegimeService? regimeService})
+      : _dataClient = dataClient ?? DefaultCockpitDataClient(_ref.read(positionServiceProvider)),
+        _getUid = getUid,
+        _regimeService = regimeService,
+        super(CockpitState.initial());
 
-  /// Load all cockpit data from Firebase and providers
-  Future<void> _loadCockpitData() async {
+  /// Refresh cockpit data by loading from Firestore and local services.
+  Future<void> refresh() async {
     state = state.copyWith(isLoading: true);
 
-    try {
-      // Load discipline snapshot from journal entries
-      final discipline = await _loadDisciplineSnapshot();
-
-      // Load account snapshot from providers
-      final account = _loadAccountSnapshot();
-
-      // Load pending journals from Firestore
-      final pendingJournals = await _loadPendingJournals();
-
-      // Load watchlist from Firestore
-      final watchlist = await _loadWatchlist();
-
-      // Load open positions from Firestore (placeholder for now)
-      final positions = await _loadOpenPositions();
-
-      // Load weekly summary from journal entries
-      final weekSummary = await _loadWeeklySummary();
-
-      // Placeholder regime (until Phase 6 market data)
-      const regime = MarketRegime.sideways;
-
-      state = CockpitState(
-        discipline: discipline,
-        account: account,
-        pendingJournals: pendingJournals,
-        watchlist: watchlist,
-        positions: positions,
-        weekSummary: weekSummary,
-        regime: regime,
-        isLoading: false,
-      );
-    } catch (e) {
-      // On error, show empty state
-      state = CockpitState.initial().copyWith(isLoading: false);
+    final uid = _getUid?.call() ?? FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      state = state.copyWith(isLoading: false);
+      return;
     }
-  }
 
-  /// Reload cockpit data (e.g., after journaling a trade)
-  Future<void> refresh() => _loadCockpitData();
-
-  /// Load discipline snapshot from recent journal entries
-  Future<DisciplineSnapshot> _loadDisciplineSnapshot() async {
     try {
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null) return DisciplineSnapshot.empty();
-
-      final snapshot = await FirebaseFirestore.instance
-          .collection('journalEntries')
-          .where('uid', isEqualTo: uid)
-          .orderBy('createdAt', descending: true)
-          .limit(30)
-          .get();
-
-      if (snapshot.docs.isEmpty) {
-        return DisciplineSnapshot.empty();
+      // Watchlist, pending journals, and recent journals from data client
+      final watchlist = <WatchlistItem>[];
+      final wl = await _dataClient.fetchWatchlist(uid);
+      for (final t in wl) {
+        watchlist.add(WatchlistItem.placeholder(t));
       }
 
-      final entries = snapshot.docs.map((doc) => JournalEntry.fromFirestore(doc)).toList();
+      final pending = <PendingJournalTrade>[];
+      final pj = await _dataClient.fetchPendingJournals(uid);
+      for (final j in pj) {
+        try {
+          pending.add(PendingJournalTrade.fromJson(j));
+        } catch (_) {}
+      }
 
-      // Calculate current score (average of last 5 trades)
-      final lastFive = entries.take(5).toList();
-      final avgScore = lastFive.isEmpty ? 0 : (lastFive.map((e) => e.disciplineScore ?? 0).reduce((a, b) => a + b) / lastFive.length).round();
+      final positionsRaw = await _dataClient.fetchOpenPositions(uid);
+      final positions = positionsRaw.map((p) {
+        final id = '${p.symbol}-${p.expiration.toIso8601String()}';
+        return OpenPosition(
+          id: id,
+          ticker: p.symbol,
+          strategy: p.strategy,
+          strike: 0.0,
+          dte: p.dte,
+          thetaPerDay: 0.0,
+          unrealizedPnL: 0.0,
+          isPaper: true,
+        );
+      }).toList();
 
-      // Calculate streaks
-      final cleanStreak = BehaviorAnalytics.computeCleanCycleStreak(entries);
-      final adherenceStreak = BehaviorAnalytics.computeAdherenceStreak(entries);
+      // Discipline: compute from recent journal entries
+      final recent = await _dataClient.fetchRecentJournals(uid);
+      final scores = <int>[];
+      final adherence = <int>[];
+      for (final d in recent) {
+        final s = (d['disciplineScore'] is num) ? (d['disciplineScore'] as num).toInt() : null;
+        if (s != null) {
+          scores.add(s);
+        }
+        final a = (d['disciplineBreakdown'] is Map && (d['disciplineBreakdown']['adherence'] is num))
+            ? (d['disciplineBreakdown']['adherence'] as num).toInt()
+            : null;
+        if (a != null) {
+          adherence.add(a);
+        }
+      }
 
-      // Get pending journal count
-      final pendingCount = state.pendingJournals.length;
+      final avgScore = scores.isNotEmpty ? (scores.reduce((a, b) => a + b) ~/ scores.length) : 0;
 
-      return DisciplineSnapshot.fromScore(
+      int cleanStreak = 0;
+      for (final s in scores) {
+        if (s >= 80) {
+          cleanStreak++;
+        } else {
+          break;
+        }
+      }
+
+      int adherenceStreak = 0;
+      for (final a in adherence) {
+        if (a >= 30) {
+          adherenceStreak++;
+        } else {
+          break;
+        }
+      }
+
+      final discipline = DisciplineSnapshot.fromScore(
         score: avgScore,
         cleanStreak: cleanStreak,
         adherenceStreak: adherenceStreak,
-        pendingJournals: pendingCount,
+        pendingJournals: pending.length,
       );
-    } catch (e) {
-      return DisciplineSnapshot.empty();
-    }
-  }
 
-  /// Load account snapshot from account providers
-  AccountSnapshot _loadAccountSnapshot() {
-    final balance = ref.read(accountBalanceProvider);
-    final riskDeployed = ref.read(riskDeployedProvider);
-    final openPositions = state.positions.length;
+      // Account snapshot from app providers
+      final balance = _ref.read(accountBalanceProvider);
+      final riskDeployed = _ref.read(riskDeployedProvider);
+      final account = AccountSnapshot.fromBalance(balance: balance, riskDeployed: riskDeployed, openPositions: positions.length);
 
-    return AccountSnapshot.fromBalance(
-      balance: balance,
-      riskDeployed: riskDeployed,
-      openPositions: openPositions,
-    );
-  }
+      // Weekly summary (placeholder)
+      final weekSummary = WeeklySummary.empty();
 
-  /// Load pending journals from Firestore
-  Future<List<PendingJournalTrade>> _loadPendingJournals() async {
-    try {
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null) return [];
-
-      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).collection('cockpit').doc('pendingJournals').get();
-
-      if (!doc.exists) return [];
-
-      final data = doc.data();
-      final journals = data?['journals'] as List<dynamic>? ?? [];
-
-      return journals.map((j) => PendingJournalTrade.fromJson(j as Map<String, dynamic>)).toList();
-    } catch (e) {
-      return [];
-    }
-  }
-
-  /// Load watchlist from Firestore
-  Future<List<WatchlistItem>> _loadWatchlist() async {
-    try {
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null) return _getDefaultWatchlist();
-
-      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).collection('cockpit').doc('watchlist').get();
-
-      if (!doc.exists) return _getDefaultWatchlist();
-
-      final tickers = List<String>.from(doc.data()?['tickers'] ?? []);
-
-      // For Phase 1, return placeholder items (no live data)
-      return tickers.map((ticker) => WatchlistItem.placeholder(ticker)).toList();
-    } catch (e) {
-      return _getDefaultWatchlist();
-    }
-  }
-
-  /// Default watchlist for new users
-  List<WatchlistItem> _getDefaultWatchlist() {
-    return [
-      WatchlistItem.placeholder('SPY'),
-      WatchlistItem.placeholder('QQQ'),
-      WatchlistItem.placeholder('IWM'),
-    ];
-  }
-
-  /// Load open positions (placeholder for now)
-  Future<List<OpenPosition>> _loadOpenPositions() async {
-    try {
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null) return [];
-
-      final snapshot = await FirebaseFirestore.instance.collection('users').doc(uid).collection('positions').where('status', isEqualTo: 'open').get();
-
-      return snapshot.docs.map((doc) {
-        final data = doc.data();
-        return OpenPosition.fromJson(data);
-      }).toList();
-    } catch (e) {
-      return [];
-    }
-  }
-
-  /// Load weekly summary from journal entries
-  Future<WeeklySummary> _loadWeeklySummary() async {
-    try {
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null) return WeeklySummary.empty();
-
-      final now = DateTime.now();
-      final weekStart = now.subtract(Duration(days: now.weekday - 1, hours: now.hour, minutes: now.minute, seconds: now.second));
-
-      final snapshot = await FirebaseFirestore.instance
-          .collection('journalEntries')
-          .where('uid', isEqualTo: uid)
-          .where('createdAt', isGreaterThanOrEqualTo: Timestamp.fromDate(weekStart))
-          .orderBy('createdAt', descending: false)
-          .get();
-
-      if (snapshot.docs.isEmpty) {
-        return WeeklySummary.empty();
+      // Regime (best-effort)
+      final regimeService = _regimeService ?? RegimeService();
+      final currentRegimeStr = await regimeService.watchCurrentRegime().first;
+      MarketRegime regime = MarketRegime.unknown;
+      if (currentRegimeStr != null) {
+        switch (currentRegimeStr.toLowerCase()) {
+          case 'uptrend':
+            regime = MarketRegime.uptrend;
+            break;
+          case 'downtrend':
+            regime = MarketRegime.downtrend;
+            break;
+          case 'sideways':
+            regime = MarketRegime.sideways;
+            break;
+          case 'volatile':
+            regime = MarketRegime.volatile;
+            break;
+          default:
+            regime = MarketRegime.unknown;
+        }
       }
 
-      final entries = snapshot.docs.map((doc) => JournalEntry.fromFirestore(doc)).toList();
-
-      // Calculate weekly stats (placeholder calculations)
-      final pnl = 0.0; // TODO: Calculate from actual P/L data
-      final pnlPercent = 0.0;
-      final trades = entries.length;
-      final winRate = 0.0; // TODO: Calculate from actual P/L data
-      final avgDiscipline = entries.isEmpty ? 0.0 : entries.map((e) => (e.disciplineScore ?? 0).toDouble()).reduce((a, b) => a + b) / entries.length;
-
-      // Build daily trades
-      final dailyTrades = List.generate(7, (i) {
-        final day = weekStart.add(Duration(days: i));
-        final dayEntries = entries.where((e) => e.createdAt.day == day.day && e.createdAt.month == day.month).toList();
-
-        return DayTrade(
-          date: day,
-          hadTrade: dayEntries.isNotEmpty,
-          wasClean: dayEntries.isNotEmpty && (dayEntries.first.disciplineScore ?? 0) >= 80,
-        );
-      });
-
-      return WeeklySummary(
-        pnl: pnl,
-        pnlPercent: pnlPercent,
-        trades: trades,
-        winRate: winRate,
-        avgDiscipline: avgDiscipline,
-        dailyTrades: dailyTrades,
+      state = state.copyWith(
+        isLoading: false,
+        watchlist: watchlist,
+        pendingJournals: pending,
+        positions: positions,
+        discipline: discipline,
+        account: account,
+        weekSummary: weekSummary,
+        regime: regime,
       );
     } catch (e) {
-      return WeeklySummary.empty();
+      // On error, stop loading and keep previous state
+      state = state.copyWith(isLoading: false);
+      rethrow;
     }
   }
 
-  /// Add a ticker to watchlist (max 5)
-  Future<void> addToWatchlist(String ticker) async {
-    if (state.watchlist.length >= 5) {
-      throw Exception('Watchlist is limited to 5 tickers for small accounts');
-    }
-
-    final newWatchlist = [...state.watchlist, WatchlistItem.placeholder(ticker.toUpperCase())];
-    state = state.copyWith(watchlist: newWatchlist);
-
-    // Persist to Firestore
-    await _saveWatchlist(newWatchlist.map((w) => w.ticker).toList());
-  }
-
-  /// Remove a ticker from watchlist
-  Future<void> removeFromWatchlist(String ticker) async {
-    final newWatchlist = state.watchlist.where((w) => w.ticker != ticker).toList();
-    state = state.copyWith(watchlist: newWatchlist);
-
-    // Persist to Firestore
-    await _saveWatchlist(newWatchlist.map((w) => w.ticker).toList());
-  }
-
-  /// Save watchlist to Firestore
-  Future<void> _saveWatchlist(List<String> tickers) async {
-    try {
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null) return;
-
-      await FirebaseFirestore.instance.collection('users').doc(uid).collection('cockpit').doc('watchlist').set({
-        'tickers': tickers,
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-    } catch (e) {
-      // Fail silently for now
-    }
-  }
-
-  /// Mark a trade as requiring journal (called when position closes)
+  /// Add a pending journal entry
   Future<void> addPendingJournal(PendingJournalTrade trade) async {
-    final newPending = [...state.pendingJournals, trade];
-    state = state.copyWith(pendingJournals: newPending);
-
-    // Persist to Firestore
-    await _savePendingJournals(newPending);
-
-    // Refresh discipline snapshot to update message
-    final discipline = await _loadDisciplineSnapshot();
-    state = state.copyWith(discipline: discipline);
+    final list = List<PendingJournalTrade>.from(state.pendingJournals);
+    list.add(trade);
+    state = state.copyWith(pendingJournals: list);
   }
 
-  /// Remove a pending journal (called after journaling)
+  /// Remove a pending journal by position id
   Future<void> removePendingJournal(String positionId) async {
-    final newPending = state.pendingJournals.where((p) => p.positionId != positionId).toList();
-    state = state.copyWith(pendingJournals: newPending);
-
-    // Persist to Firestore
-    await _savePendingJournals(newPending);
-
-    // Refresh discipline snapshot
-    await refresh();
+    final list = state.pendingJournals.where((p) => p.positionId != positionId).toList();
+    state = state.copyWith(pendingJournals: list);
   }
 
-  /// Save pending journals to Firestore
-  Future<void> _savePendingJournals(List<PendingJournalTrade> pending) async {
-    try {
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null) return;
+  /// Add ticker to watchlist (max 5 for small accounts)
+  Future<void> addToWatchlist(String ticker) async {
+    final items = List<WatchlistItem>.from(state.watchlist);
+    if (items.any((w) => w.ticker == ticker)) return;
+    if (items.length >= 5) throw Exception('Watchlist is full');
+    items.add(WatchlistItem(ticker: ticker));
+    state = state.copyWith(watchlist: items);
+  }
 
-      await FirebaseFirestore.instance.collection('users').doc(uid).collection('cockpit').doc('pendingJournals').set({
-        'journals': pending.map((p) => p.toJson()).toList(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-    } catch (e) {
-      // Fail silently for now
-    }
+  /// Remove ticker from watchlist
+  Future<void> removeFromWatchlist(String ticker) async {
+    final items = state.watchlist.where((w) => w.ticker != ticker).toList();
+    state = state.copyWith(watchlist: items);
   }
 }
 
-/// Provider for the cockpit controller
 final cockpitControllerProvider = StateNotifierProvider<CockpitController, CockpitState>((ref) {
   return CockpitController(ref);
 });

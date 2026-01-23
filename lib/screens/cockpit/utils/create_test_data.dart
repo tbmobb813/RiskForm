@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -31,7 +32,7 @@ class CockpitTestData {
       {'score': 86, 'adherence': 35, 'timing': 29, 'risk': 22, 'strategy': 'CSP', 'notes': 'Solid trade, minor timing delay'},
     ];
 
-    print('Creating ${testEntries.length} test journal entries...');
+    debugPrint('Creating ${testEntries.length} test journal entries...');
 
     for (int i = 0; i < testEntries.length; i++) {
       await firestore.collection('journalEntries').add({
@@ -52,9 +53,9 @@ class CockpitTestData {
       });
     }
 
-    print('✅ Created ${testEntries.length} test journal entries');
-    print('Average discipline score: ${testEntries.map((e) => e['score'] as int).reduce((a, b) => a + b) ~/ testEntries.length}');
-    print('Expected clean streak: ${_countCleanStreak(testEntries)}');
+    debugPrint('✅ Created ${testEntries.length} test journal entries');
+    debugPrint('Average discipline score: ${testEntries.map((e) => e['score'] as int).reduce((a, b) => a + b) ~/ testEntries.length}');
+    debugPrint('Expected clean streak: ${_countCleanStreak(testEntries)}');
   }
 
   static int _countCleanStreak(List<Map<String, dynamic>> entries) {
@@ -92,8 +93,8 @@ class CockpitTestData {
       'updatedAt': FieldValue.serverTimestamp(),
     });
 
-    print('✅ Created test pending journal');
-    print('You should now see "Required Action" card in cockpit');
+    debugPrint('✅ Created test pending journal');
+    debugPrint('You should now see "Required Action" card in cockpit');
   }
 
   /// Create test watchlist
@@ -110,27 +111,27 @@ class CockpitTestData {
       'updatedAt': FieldValue.serverTimestamp(),
     });
 
-    print('✅ Created test watchlist with SPY, QQQ, AAPL');
+    debugPrint('✅ Created test watchlist with SPY, QQQ, AAPL');
   }
 
   /// Create all test data at once
   static Future<void> createAllTestData() async {
-    print('Creating all test data for Small Account Cockpit...\n');
+    debugPrint('Creating all test data for Small Account Cockpit...\n');
 
     await createTestJournals();
-    print('');
+    debugPrint('');
 
     await createTestWatchlist();
-    print('');
+    debugPrint('');
 
-    print('✅ All test data created successfully!');
-    print('\nNext steps:');
-    print('1. Navigate to /cockpit');
-    print('2. Verify discipline score shows ~86/100');
-    print('3. Verify watchlist shows SPY, QQQ, AAPL');
-    print('4. Pull to refresh to update data');
-    print('\nTo test blocking:');
-    print('await CockpitTestData.createTestPendingJournal();');
+    debugPrint('✅ All test data created successfully!');
+    debugPrint('\nNext steps:');
+    debugPrint('1. Navigate to /cockpit');
+    debugPrint('2. Verify discipline score shows ~86/100');
+    debugPrint('3. Verify watchlist shows SPY, QQQ, AAPL');
+    debugPrint('4. Pull to refresh to update data');
+    debugPrint('\nTo test blocking:');
+    debugPrint('await CockpitTestData.createTestPendingJournal();');
   }
 
   /// Clear all test data
@@ -152,6 +153,6 @@ class CockpitTestData {
     await firestore.collection('users').doc(uid).collection('cockpit').doc('watchlist').delete();
     await firestore.collection('users').doc(uid).collection('cockpit').doc('pendingJournals').delete();
 
-    print('✅ Cleared all test data');
+    debugPrint('✅ Cleared all test data');
   }
 }

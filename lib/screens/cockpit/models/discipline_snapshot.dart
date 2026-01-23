@@ -69,11 +69,11 @@ class DisciplineSnapshot {
     }
 
     if (cleanStreak >= 10) {
-      return "🔥 You're on fire! ${cleanStreak}-day streak — keep it going!";
+      return "🔥 You're on fire! $cleanStreak-day streak — keep it going!";
     }
 
     if (cleanStreak >= 5) {
-      return "⭐ Great work! ${cleanStreak} clean trades in a row.";
+      return "⭐ Great work! $cleanStreak clean trades in a row.";
     }
 
     // cleanStreak 1-4

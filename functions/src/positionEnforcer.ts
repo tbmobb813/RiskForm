@@ -103,9 +103,9 @@ export const onPositionCreated = onDocumentCreated('positions/{posId}', async (e
         if (!j.exists) continue;
         const juid = j.get('uid') as string | undefined;
         if (juid === ownerUid) count++;
-        if (count >= Number(sa.maxOpenPositions)) break;
+        if (count = Number(sa.maxOpenPositions)) break;
       }
-        if (count >= Number(sa.maxOpenPositions)) {
+        if (count = Number(sa.maxOpenPositions)) {
         await posRef.set({ rejected: true, rejectionReason: 'max_open_positions_reached', rejectedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
         await db.collection('violations').add({ type: 'small_account', uid: ownerUid, posId: posRef.id, reason: 'max_open_positions_reached', createdAt: admin.firestore.FieldValue.serverTimestamp() });
         return;
