@@ -8,12 +8,17 @@ import 'components/backtest_results_card.dart';
 import 'active_positions_section.dart';
 import 'account_snapshot_card.dart';
 import 'tools_and_strategy_library.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riskform/state/strategy_controller.dart';
+import 'package:riskform/strategy_cockpit/strategies/small_account/screens/small_account_dashboard.dart' show SmallAccountDashboardBody;
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(strategyControllerProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Dashboard"),
@@ -22,29 +27,43 @@ class DashboardScreen extends StatelessWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              ModeSelectorCard(),
-              SizedBox(height: 16),
-              NextStrategyCard(),
-              SizedBox(height: 16),
-              ActiveWheelCycleCard(),
-              SizedBox(height: 16),
-              RiskExposureCard(),
-              SizedBox(height: 16),
-              BacktestResultsCard(),
-              SizedBox(height: 16),
-              ActivePositionsSection(),
-              SizedBox(height: 16),
-              AccountSnapshotCard(),
-              SizedBox(height: 16),
-              // Behavior Dashboard quick access
-              _BehaviorTile(),
-              SizedBox(height: 16),
-              ToolsAndStrategyLibrary(),
-            ],
-          ),
+          child: state.mode == AccountMode.smallAccount
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const ModeSelectorCard(),
+                    const SizedBox(height: 16),
+                    SmallAccountDashboardBody(),
+                    const SizedBox(height: 16),
+                    // Behavior Dashboard quick access
+                    const _BehaviorTile(),
+                    const SizedBox(height: 16),
+                    const ToolsAndStrategyLibrary(),
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    ModeSelectorCard(),
+                    SizedBox(height: 16),
+                    NextStrategyCard(),
+                    SizedBox(height: 16),
+                    ActiveWheelCycleCard(),
+                    SizedBox(height: 16),
+                    RiskExposureCard(),
+                    SizedBox(height: 16),
+                    BacktestResultsCard(),
+                    SizedBox(height: 16),
+                    ActivePositionsSection(),
+                    SizedBox(height: 16),
+                    AccountSnapshotCard(),
+                    SizedBox(height: 16),
+                    // Behavior Dashboard quick access
+                    _BehaviorTile(),
+                    SizedBox(height: 16),
+                    ToolsAndStrategyLibrary(),
+                  ],
+                ),
         ),
       ),
     );

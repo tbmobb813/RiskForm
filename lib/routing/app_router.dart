@@ -21,6 +21,8 @@ import '../behavior/behavior_dashboard_screen.dart';
 import 'package:riskform/strategy_cockpit/strategies/small_account/screens/spread_builder_screen.dart';
 import 'package:riskform/strategy_cockpit/strategies/small_account/screens/diagonal_builder_screen.dart';
 import '../screens/journal/attach_screenshot_screen.dart';
+import '../screens/cockpit/small_account_cockpit_screen.dart';
+import '../screens/cockpit/debug/cockpit_debug_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -94,6 +96,18 @@ final GoRouter appRouter = GoRouter(
       path: '/behavior',
       name: 'behavior',
       builder: (context, state) => const BehaviorDashboardScreen(),
+    ),
+    // Small Account Cockpit - Unified discipline-first dashboard
+    GoRoute(
+      path: '/cockpit',
+      name: 'cockpit',
+      builder: (context, state) => const SmallAccountCockpitScreen(),
+    ),
+    // Cockpit Debug Screen (for testing)
+    GoRoute(
+      path: '/debug/cockpit',
+      name: 'cockpit_debug',
+      builder: (context, state) => const CockpitDebugScreen(),
     ),
     GoRoute(
       path: '/small_account/spread_builder/:ticker',

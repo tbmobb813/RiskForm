@@ -1,13 +1,23 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'behavior_analytics.dart';
 import '../journal/journal_entry_model.dart';
+import '../services/firebase/firebase_dev.dart';
 
-class BehaviorDashboardScreen extends StatelessWidget {
+class BehaviorDashboardScreen extends ConsumerWidget {
   const BehaviorDashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final firebaseAvailable = ref.watch(firebaseAvailableProvider);
+    if (!firebaseAvailable) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Behavior Dashboard')),
+        body: const Center(child: Text('Behavior analytics unavailable (Firebase not initialized)')),
+      );
+    }
+
     final stream = FirebaseFirestore.instance
         .collection('journalEntries')
         .orderBy('createdAt', descending: true)
