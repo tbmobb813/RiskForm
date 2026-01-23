@@ -93,22 +93,42 @@ export const onPositionCreated = onDocumentCreated('positions/{posId}', async (e
   // Enforcement: max open positions — count positions that belong to this owner and are opened
   if (sa.maxOpenPositions != null && ownerUid) {
     try {
-      const openPositions = await db.collection('positions').where('cycleState', '==', 'opened').get();
-      let count = 0;
-      for (const doc of openPositions.docs) {
-        const p = doc.data();
-        const pid = p.planId as string | undefined;
-        if (!pid) continue;
-        const j = await db.collection('journalEntries').doc(pid).get();
-        if (!j.exists) continue;
-        const juid = j.get('uid') as string | undefined;
-        if (juid === ownerUid) count++;
-        if (count = Number(sa.maxOpenPositions)) break;
-      }
-        if (count = Number(sa.maxOpenPositions)) {
-        await posRef.set({ rejected: true, rejectionReason: 'max_open_positions_reached', rejectedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
-        await db.collection('violations').add({ type: 'small_account', uid: ownerUid, posId: posRef.id, reason: 'max_open_positions_reached', createdAt: admin.firestore.FieldValue.serverTimestamp() });
-        return;
+      // Cache numeric limit once
+      const maxOpen = Number(sa.maxOpenPositions) || 0;
+
+      // If the limit is zero (or coerces to zero) nothing to enforce here.
+      if (maxOpen > 0) {
+        let count = 0;
+
+        // Prefer querying positions already annotated with ownerUid to avoid extra reads.
+        try {
+          const q = await db.collection('positions')
+            .where('cycleState', '==', 'opened')
+            .where('ownerUid', '==', ownerUid)
+            .get();
+          count = q.size;
+        } catch (e) {
+          // Fallback: older positions may not have ownerUid populated; fall back to journal lookup.
+          const openPositions = await db.collection('positions').where('cycleState', '==', 'opened').get();
+          for (const doc of openPositions.docs) {
+            const p = doc.data();
+            const pid = p.planId as string | undefined;
+            if (!pid) continue;
+            const j = await db.collection('journalEntries').doc(pid).get();
+            if (!j.exists) continue;
+            const juid = j.get('uid') as string | undefined;
+            if (juid === ownerUid) {
+              count++;
+              if (count >= maxOpen) break;
+            }
+          }
+        }
+
+        if (count >= maxOpen) {
+          await posRef.set({ rejected: true, rejectionReason: 'max_open_positions_reached', rejectedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+          await db.collection('violations').add({ type: 'small_account', uid: ownerUid, posId: posRef.id, reason: 'max_open_positions_reached', createdAt: admin.firestore.FieldValue.serverTimestamp() });
+          return;
+        }
       }
     } catch (e) {
       // If counting fails, don't block; just continue
