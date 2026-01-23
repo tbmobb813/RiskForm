@@ -40,6 +40,24 @@ class StrategyCockpitViewModel extends ChangeNotifier {
   StreamSubscription? _backtestSub;
   StreamSubscription? _regimeSub;
 
+  // Cancellation-token mechanism for in-flight async callbacks. Each async
+  // generation flow obtains a token via `_beginAsyncCallback()` and must
+  // call `_endAsyncCallback(token)` when complete. `dispose()` clears all
+  // active tokens so outstanding callbacks will early-return when they try
+  // to update state or call `notifyListeners()`.
+  int _nextCallbackToken = 0;
+  final Set<int> _activeCallbackTokens = <int>{};
+
+  int _beginAsyncCallback() {
+    final t = _nextCallbackToken++;
+    _activeCallbackTokens.add(t);
+    return t;
+  }
+
+  void _endAsyncCallback(int t) {
+    _activeCallbackTokens.remove(t);
+  }
+
   StrategyCockpitViewModel({
     required this.strategyId,
     strategy_service.StrategyService? strategyService,
@@ -211,43 +229,85 @@ class StrategyCockpitViewModel extends ChangeNotifier {
       // Prefer LiveSyncManager if provided to orchestrate all live calls
       if (_liveSyncManager != null) {
         final lsm = _liveSyncManager;
+        final token = _beginAsyncCallback();
         lsm.refresh(symbol, ctx).then((res) {
+          if (!_activeCallbackTokens.contains(token)) {
+            _endAsyncCallback(token);
+            return;
+          }
           recommendations = res.recommendations;
           narrative = res.narrative;
           notifyListeners();
+          _endAsyncCallback(token);
         }).catchError((_) {
+          if (!_activeCallbackTokens.contains(token)) {
+            _endAsyncCallback(token);
+            return;
+          }
           recommendations = generateRecommendations(ctx);
           narrative = generateNarrative(ctx, recsBundle: recommendations);
           notifyListeners();
+          _endAsyncCallback(token);
         });
       } else {
         // best-effort asynchronous fetch; update recommendations/narrative when ready
+        final token = _beginAsyncCallback();
         final sym = symbol;
         mds.getRegime(sym).then((regimeSnap) async {
+          if (!_activeCallbackTokens.contains(token)) {
+            _endAsyncCallback(token);
+            return;
+          }
           final volSnap = await mds.getVolatility(sym);
+          if (!_activeCallbackTokens.contains(token)) {
+            _endAsyncCallback(token);
+            return;
+          }
           final liqSnap = await mds.getLiquidity(sym);
+          if (!_activeCallbackTokens.contains(token)) {
+            _endAsyncCallback(token);
+            return;
+          }
 
           final recs = await (_recsEngine?.generate(context: ctx, regime: regimeSnap, vol: volSnap, liq: liqSnap)
               ?? StrategyRecommendationsEngine().generate(context: ctx, regime: regimeSnap, vol: volSnap, liq: liqSnap));
+          if (!_activeCallbackTokens.contains(token)) {
+            _endAsyncCallback(token);
+            return;
+          }
 
           final narr = _narrativeEngine?.generate(context: ctx, recs: recs, regime: regimeSnap, vol: volSnap, liq: liqSnap)
               ?? const StrategyNarrativeEngine().generate(context: ctx, recs: recs, regime: regimeSnap, vol: volSnap, liq: liqSnap);
 
+          if (!_activeCallbackTokens.contains(token)) {
+            _endAsyncCallback(token);
+            return;
+          }
           recommendations = recs;
           narrative = narr;
           notifyListeners();
+          _endAsyncCallback(token);
         }).catchError((_) {
+          if (!_activeCallbackTokens.contains(token)) {
+            _endAsyncCallback(token);
+            return;
+          }
           // fallback to pure deterministic generator on any failure
           recommendations = generateRecommendations(ctx);
           narrative = generateNarrative(ctx, recsBundle: recommendations);
           notifyListeners();
+          _endAsyncCallback(token);
         });
       }
     } else {
+      final token = _beginAsyncCallback();
       recommendations = generateRecommendations(ctx);
       // Also generate and cache the human-friendly narrative alongside recommendations
       narrative = generateNarrative(ctx, recsBundle: recommendations);
-      notifyListeners();
+      if (_activeCallbackTokens.contains(token)) {
+        notifyListeners();
+      }
+      _endAsyncCallback(token);
     }
   }
 
@@ -299,6 +359,8 @@ class StrategyCockpitViewModel extends ChangeNotifier {
   // -----------------------------
   @override
   void dispose() {
+    // Invalidate any in-flight async callbacks and cancel stream subscriptions.
+    _activeCallbackTokens.clear();
     _strategySub?.cancel();
     _healthSub?.cancel();
     _backtestSub?.cancel();

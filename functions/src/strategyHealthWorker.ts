@@ -1,12 +1,10 @@
-import * as functions from "firebase-functions/v2";
+import {onDocumentWritten} from 'firebase-functions/v2/firestore';
 import * as admin from "firebase-admin";
 
 admin.initializeApp();
 const db = admin.firestore();
 
-export const recomputeStrategyHealth = functions.firestore
-  .document("strategyHealth/{strategyId}")
-  .onWrite(async (event) => {
+export const recomputeStrategyHealth = onDocumentWritten("strategyHealth/{strategyId}", async (event) => {
     const strategyId = event.params.strategyId;
 
     const after = event.data?.after?.data();
@@ -116,7 +114,7 @@ function computeHealthSnapshot(strategyId: string, cycles: any[]) {
   // ------------------------------------------------------------
   const weaknesses: string[] = [];
 
-  if (disciplineTrend.length > 0 && disciplineTrend.at(-1)! < 60) {
+  if (disciplineTrend.length > 0 && disciplineTrend[disciplineTrend.length - 1] < 60) {
     weaknesses.push("discipline_slipping");
   }
 

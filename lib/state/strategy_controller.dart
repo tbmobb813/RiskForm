@@ -6,10 +6,7 @@ import 'package:riskform/strategy_cockpit/strategies/persistence/strategy_persis
 import 'package:riskform/strategy_cockpit/strategies/persistence/strategy_factory.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-enum AccountMode {
-  smallAccount,
-  wheel,
-}
+enum AccountMode { smallAccount, wheel }
 
 class StrategyState {
   final AccountMode mode;
@@ -47,24 +44,26 @@ class StrategyController extends StateNotifier<StrategyState> {
   void clearStrategy() => state = state.copyWith(strategy: null);
 
   Future<void> _loadPersistedStrategy() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
-
-    final persisted = await StrategyPersistenceService().loadStrategy(uid);
-    if (persisted == null) return;
-
     try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+
+      final persisted = await StrategyPersistenceService().loadStrategy(uid);
+      if (persisted == null) return;
+
       final s = StrategyFactory.fromPersisted(persisted);
       if (s is TradingStrategy) setStrategySilently(s);
     } catch (_) {}
   }
 
   Future<void> _saveStrategy(TradingStrategy strategy) async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
 
-    final persisted = PersistedStrategy(type: strategy.typeId, data: strategy.toJson());
-    await StrategyPersistenceService().saveStrategy(uid: uid, strategy: persisted);
+      final persisted = PersistedStrategy(type: strategy.typeId, data: strategy.toJson());
+      await StrategyPersistenceService().saveStrategy(uid: uid, strategy: persisted);
+    } catch (_) {}
   }
 
   double? get maxRisk => state.strategy?.maxRisk;

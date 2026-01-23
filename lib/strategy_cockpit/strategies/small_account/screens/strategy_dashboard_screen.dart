@@ -3,6 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riskform/state/strategy_controller.dart';
 import 'package:riskform/state/option_pricing_provider.dart';
 import 'package:riskform/strategy_cockpit/strategies/payoff_point.dart';
+import 'package:riskform/strategy_cockpit/strategies/small_account/services/small_account_sizer.dart';
+import 'package:riskform/state/journal_providers.dart';
+import 'package:riskform/services/engines/backtest_engine.dart';
+import 'package:riskform_core/models/backtest/backtest_config.dart';
+import 'package:riskform/services/engines/option_pricing_engine.dart';
+// removed unused imports: payoff_engine, risk_engine, trade_inputs
+import 'package:riskform/models/journal/journal_entry.dart';
 
 class StrategyDashboardScreen extends ConsumerWidget {
   final double currentPrice;
@@ -71,12 +78,15 @@ class StrategyDashboardScreen extends ConsumerWidget {
   }
 }
 
-class StrategyHeaderCard extends StatelessWidget {
+class StrategyHeaderCard extends ConsumerWidget {
   final String strategyLabel;
   const StrategyHeaderCard({super.key, required this.strategyLabel});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strategy = ref.watch(strategyControllerProvider).strategy;
+    final journal = ref.read(journalRepositoryProvider);
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12.0),
@@ -84,7 +94,68 @@ class StrategyHeaderCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(strategyLabel, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), const SizedBox(height: 4), const Text('Small Account Mode')]),
-            ElevatedButton(onPressed: () {}, child: const Text('Take Trade'))
+            ElevatedButton(
+              onPressed: () async {
+                if (strategy == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No active strategy')));
+                  return;
+                }
+
+                final now = DateTime.now();
+                final payload = {
+                  'strategyId': strategy.id,
+                  'strategyLabel': strategy.label,
+                  'timestamp': now.toIso8601String(),
+                  'type': strategy.typeId.startsWith('long') ? 'BUY' : 'SELL',
+                  'qty': 1,
+                };
+
+                // Create journal entry locally (and persist if signed in)
+                final entry = JournalEntry(
+                  id: now.millisecondsSinceEpoch.toString(),
+                  timestamp: now,
+                  type: 'execution',
+                  data: {'strategy': strategy.toJson(), 'execution': payload, 'smallAccount': true},
+                );
+
+                await journal.addEntry(entry);
+
+                // Run a small local backtest (cheap simulated run) and attach summary
+                try {
+                  final bengine = BacktestEngine(optionPricing: OptionPricingEngine());
+                  final currentPrice = 100.0; // best-effort default when none available in UI
+                  final config = BacktestConfig(
+                    startingCapital: 500.0,
+                    maxCycles: 1,
+                    pricePath: [currentPrice * 0.95, currentPrice, currentPrice * 1.05],
+                    strategyId: strategy.typeId,
+                    label: strategy.label,
+                    symbol: strategy.label,
+                    startDate: DateTime.now().subtract(const Duration(days: 30)),
+                    endDate: DateTime.now(),
+                  );
+                  final result = bengine.run(config);
+                  // Attach summary to journal entry (best-effort) using available fields
+                  final enriched = JournalEntry(
+                    id: entry.id,
+                    timestamp: entry.timestamp,
+                    type: entry.type,
+                    data: Map<String, dynamic>.from(entry.data)
+                      ..['backtestSummary'] = {
+                        'totalReturn': result.totalReturn,
+                        'cyclesCompleted': result.cyclesCompleted,
+                        'cycles': result.cycles.length,
+                      },
+                  );
+                  await journal.updateEntry(enriched);
+                } catch (_) {
+                  // ignore backtest errors; journal entry is already created.
+                }
+
+                if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Trade journaled (small-account)')));
+              },
+              child: const Text('Take Trade'),
+            )
           ],
         ),
       ),
@@ -279,17 +350,20 @@ class ScenarioAnalysisCard extends StatelessWidget {
   }
 }
 
-class PositionSizingCard extends StatelessWidget {
+class PositionSizingCard extends ConsumerWidget {
   final double accountBalance;
   final double costPerContract;
 
   const PositionSizingCard({super.key, required this.accountBalance, required this.costPerContract});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final sizer = ref.read(smallAccountSizerProvider);
+
     final per = costPerContract > 0 ? costPerContract : 0.0;
-    final recommended5 = per > 0 ? (accountBalance * 0.05 / per).floor() : 0;
-    final recommended10 = per > 0 ? (accountBalance * 0.10 / per).floor() : 0;
+    final recommended5 = sizer.recommendedContractsByRisk(accountBalance: accountBalance, costPerContract: per, riskPct: 0.05);
+    final recommended10 = sizer.recommendedContractsByRisk(accountBalance: accountBalance, costPerContract: per, riskPct: 0.10);
+    final allocs = sizer.sizeRecommendations(accountBalance: accountBalance, costPerContract: per)['allocations'] as Map<String, int>? ?? {};
 
     return Card(
       child: Padding(
@@ -301,6 +375,8 @@ class PositionSizingCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text('Recommended (5% risk): $recommended5 contracts'),
           Text('Recommended (10% risk): $recommended10 contracts'),
+          const SizedBox(height: 6),
+          if (allocs.isNotEmpty) Text('Allocations: ${allocs.entries.map((e) => '${e.key}: ${e.value}').join(', ')}'),
         ]),
       ),
     );

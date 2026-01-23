@@ -1,4 +1,4 @@
-import * as functions from 'firebase-functions/v2';
+import {onDocumentWritten} from 'firebase-functions/v2/firestore';
 import * as admin from 'firebase-admin';
 
 admin.initializeApp();
@@ -8,9 +8,7 @@ const db = admin.firestore();
  * Triggered whenever a backtest run is written.
  * If all runs in the batch are complete, finalize the batch summary.
  */
-export const finalizeBatchBacktest = functions.firestore
-  .document('strategyBacktests/{strategyId}/runs/{runId}')
-  .onWrite(async (event) => {
+export const finalizeBatchBacktest = onDocumentWritten('strategyBacktests/{strategyId}/runs/{runId}', async (event) => {
     const strategyId = event.params.strategyId as string;
     const after = event.data?.after?.data();
 
@@ -53,7 +51,7 @@ export const finalizeBatchBacktest = functions.firestore
       .map((d) => ({ runId: d.id, ...(d.data() as Record<string, any>) }));
 
     // If any run is not complete yet, do nothing
-    if (runs.some((r) => r.status !== 'complete')) {
+    if (runs.some((r) => (r as any).status !== 'complete')) {
       return;
     }
 

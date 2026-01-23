@@ -29,6 +29,9 @@ class ExecutionService {
     final strategyId = envelope['strategyId'] as String?;
     if (strategyId == null) throw Exception('Missing strategyId');
 
+    final userId = envelope['userId'] as String? ?? envelope['uid'] as String?;
+    if (userId == null) throw Exception('Missing userId in execution envelope');
+
     final strategyDoc = await _firestore.collection('strategies').doc(strategyId).get();
     if (!strategyDoc.exists) throw Exception('Strategy not found: $strategyId');
 
@@ -45,11 +48,30 @@ class ExecutionService {
     final constraints = Map<String, dynamic>.from(strategyData['constraints'] ?? {});
     final maxPositions = constraints['maxPositions'] as int?;
     if (maxPositions != null) {
-      // count positions (simplified): read positions collection for strategy
-      final q = await _firestore
-          .collection('positions')
-          .where('strategyId', isEqualTo: strategyId)
-          .get();
+      // Count open positions for this strategy. Positions are stored under
+      // users/{uid}/positions with a `strategy` field (not `strategyId`). If
+      // the caller supplies a `userId` in the envelope we'll scope the
+      // query to that user's positions; otherwise fall back to a
+      // collection-group query across all users' positions (requires an
+      // index and is less precise for per-user enforcement).
+      final userId = envelope['userId'] as String? ?? envelope['uid'] as String?;
+      QuerySnapshot q;
+      if (userId != null) {
+        q = await _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('positions')
+            .where('strategy', isEqualTo: strategyId)
+            .where('isOpen', isEqualTo: true)
+            .get();
+      } else {
+        q = await _firestore
+            .collectionGroup('positions')
+            .where('strategy', isEqualTo: strategyId)
+            .where('isOpen', isEqualTo: true)
+            .get();
+      }
+
       if (q.docs.length >= maxPositions) {
         throw Exception('Strategy has reached max positions: $maxPositions');
       }

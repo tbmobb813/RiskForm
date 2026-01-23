@@ -2,6 +2,9 @@ import 'leg.dart';
 import 'payoff_point.dart';
 import 'strategy_explanation.dart';
 
+/// Base trading strategy interface. Concrete strategies (Wheel, LongCall,
+/// DebitSpread, etc.) should implement this API so planner and execution
+/// code can treat them uniformly.
 abstract class TradingStrategy {
   String get id;
   String get label;

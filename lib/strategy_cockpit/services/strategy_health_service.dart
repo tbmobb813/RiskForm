@@ -5,16 +5,16 @@ import '../../models/strategy_health_snapshot.dart';
 import '../models/strategy_cycle.dart';
 
 class StrategyHealthService {
-  final FirebaseFirestore _firestore;
+  final FirebaseFirestore? _firestore;
 
-  StrategyHealthService({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+  StrategyHealthService({FirebaseFirestore? firestore}) : _firestore = firestore;
+
+  FirebaseFirestore get _db => _firestore ?? FirebaseFirestore.instance;
 
   // ------------------------------------------------------------
   // Collection reference
   // ------------------------------------------------------------
-  CollectionReference get _health =>
-      _firestore.collection('strategyHealth');
+  CollectionReference get _health => _db.collection('strategyHealth');
 
   // ------------------------------------------------------------
   // Watch health snapshot for a strategy
@@ -82,8 +82,8 @@ class StrategyHealthService {
   // ------------------------------------------------------------
   Future<void> recomputeHealth(String strategyId) async {
     // 1) Load all cycles for the strategy ordered by start time
-    final query = await _firestore
-        .collection('strategyCycles')
+    final query = await _db
+      .collection('strategyCycles')
         .where('strategyId', isEqualTo: strategyId)
         .orderBy('startedAt')
         .get();

@@ -8,6 +8,7 @@ import '../components/account_context_card.dart';
 import '../components/hints_section.dart';
 import '../components/recommended_range_slider.dart';
 import '../components/input_summary_card.dart';
+import '../../../services/strategy/strategy_health_service.dart';
 
 class TradePlannerScreen extends ConsumerWidget {
   const TradePlannerScreen({super.key});
@@ -44,6 +45,30 @@ class TradePlannerScreen extends ConsumerWidget {
                 state.strategyDescription ?? "",
                 style: const TextStyle(color: Colors.white70),
               ),
+
+              const SizedBox(height: 12),
+              // Strategy health score
+              Builder(builder: (context) {
+                final health = StrategyHealthService().compute(inputs: state.inputs, payoff: state.payoff);
+                final score = (health.overall * 100).toStringAsFixed(0);
+                return Card(
+                  color: Colors.blueGrey[900],
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          const Text('Strategy Health', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 4),
+                          Text('Overall: $score%', style: const TextStyle(fontSize: 12)),
+                        ]),
+                        CircularProgressIndicator(value: health.overall, color: Colors.green),
+                      ],
+                    ),
+                  ),
+                );
+              }),
 
               const SizedBox(height: 24),
 
