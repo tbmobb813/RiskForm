@@ -32,6 +32,11 @@ class ToolsAndStrategyLibrary extends ConsumerWidget {
           runSpacing: 12,
           children: [
             ToolTile(
+              label: "Signal Engine",
+              icon: Icons.bolt,
+              onTap: () => GoRouter.of(context).pushNamed('signal_engine'),
+            ),
+            ToolTile(
               label: "Payoff Visualizer",
               icon: Icons.show_chart,
               onTap: () {
@@ -70,7 +75,11 @@ class ToolsAndStrategyLibrary extends ConsumerWidget {
                 icon: Icons.cloud_outlined,
                 locked: true,
                 onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sign in to access cloud journal')));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Sign in to access cloud journal'),
+                    ),
+                  );
                 },
               ),
             ToolTile(
@@ -90,9 +99,9 @@ class ToolsAndStrategyLibrary extends ConsumerWidget {
               locked: !isPro,
               onTap: () {
                 if (!isPro) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Pro feature")),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text("Pro feature")));
                   return;
                 }
               },
@@ -127,7 +136,8 @@ class ToolsAndStrategyLibrary extends ConsumerWidget {
           name: "Credit Spread",
           category: "Income",
           color: Colors.greenAccent,
-          onTap: () => GoRouter.of(context).pushNamed("planner", extra: "credit_spread"),
+          onTap: () =>
+              GoRouter.of(context).pushNamed("planner", extra: "credit_spread"),
         ),
 
         const SizedBox(height: 16),
@@ -139,37 +149,46 @@ class ToolsAndStrategyLibrary extends ConsumerWidget {
           name: "Protective Put",
           category: "Hedging",
           color: Colors.yellowAccent,
-          onTap: () => GoRouter.of(context).pushNamed("planner", extra: "protective_put"),
+          onTap: () => GoRouter.of(
+            context,
+          ).pushNamed("planner", extra: "protective_put"),
         ),
         StrategyTile(
           name: "Collar",
           category: "Hedging",
           color: Colors.yellowAccent,
-          onTap: () => GoRouter.of(context).pushNamed("planner", extra: "collar"),
+          onTap: () =>
+              GoRouter.of(context).pushNamed("planner", extra: "collar"),
         ),
 
         const SizedBox(height: 16),
 
         // Speculation Strategies
-        const Text("Speculation", style: TextStyle(fontWeight: FontWeight.w600)),
+        const Text(
+          "Speculation",
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
         const SizedBox(height: 8),
         StrategyTile(
           name: "Long Call",
           category: "Speculation",
           color: Colors.blueAccent,
-          onTap: () => GoRouter.of(context).pushNamed("planner", extra: "long_call"),
+          onTap: () =>
+              GoRouter.of(context).pushNamed("planner", extra: "long_call"),
         ),
         StrategyTile(
           name: "Long Put",
           category: "Speculation",
           color: Colors.blueAccent,
-          onTap: () => GoRouter.of(context).pushNamed("planner", extra: "long_put"),
+          onTap: () =>
+              GoRouter.of(context).pushNamed("planner", extra: "long_put"),
         ),
         StrategyTile(
           name: "Debit Spread",
           category: "Speculation",
           color: Colors.blueAccent,
-          onTap: () => GoRouter.of(context).pushNamed("planner", extra: "debit_spread"),
+          onTap: () =>
+              GoRouter.of(context).pushNamed("planner", extra: "debit_spread"),
         ),
       ],
     );

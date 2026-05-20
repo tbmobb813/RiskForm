@@ -32,3 +32,4 @@ setGlobalOptions({ maxInstances: 10 });
 export { onBacktestJobCreated } from "./backtestWorker";
 export { scoreTrade } from "./scoreTrade";
 export { onPositionCreated } from "./positionEnforcer";
+export { generateSignal } from "./generateSignal";

@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../screens/signals/signal_engine_screen.dart';
 import 'package:riskform/strategy_cockpit/strategies/small_account/services/cheap_options_scanner.dart';
 import 'package:riskform/strategy_cockpit/strategies/small_account/services/default_options_chain_service.dart';
 import 'package:riskform/strategy_cockpit/strategies/small_account/screens/scanner_screen.dart';
@@ -118,7 +119,9 @@ final GoRouter appRouter = GoRouter(
 
         final svc = extra is OptionsChainService
             ? extra
-            : ProviderScope.containerOf(context).read(defaultOptionsChainServiceProvider);
+            : ProviderScope.containerOf(
+                context,
+              ).read(defaultOptionsChainServiceProvider);
 
         return SpreadBuilderScreen(chainService: svc, ticker: ticker);
       },
@@ -131,7 +134,9 @@ final GoRouter appRouter = GoRouter(
         final extra = state.extra;
         final svc = extra is OptionsChainService
             ? extra
-            : ProviderScope.containerOf(context).read(defaultOptionsChainServiceProvider);
+            : ProviderScope.containerOf(
+                context,
+              ).read(defaultOptionsChainServiceProvider);
         return DiagonalBuilderScreen(chainService: svc, ticker: ticker);
       },
     ),
@@ -144,7 +149,9 @@ final GoRouter appRouter = GoRouter(
 
         final svc = extra is OptionsChainService
             ? extra
-            : ProviderScope.containerOf(context).read(defaultOptionsChainServiceProvider);
+            : ProviderScope.containerOf(
+                context,
+              ).read(defaultOptionsChainServiceProvider);
 
         return ScannerScreen(chainService: svc, ticker: ticker);
       },
@@ -169,7 +176,9 @@ final GoRouter appRouter = GoRouter(
           body: Center(
             child: Padding(
               padding: const EdgeInsets.all(24.0),
-              child: Text('Open the scanner from the Small Account Dashboard or navigate to /small_account/scanner/<TICKER> with an OptionsChainService provided in navigation extra.'),
+              child: Text(
+                'Open the scanner from the Small Account Dashboard or navigate to /small_account/scanner/<TICKER> with an OptionsChainService provided in navigation extra.',
+              ),
             ),
           ),
         );
@@ -184,7 +193,9 @@ final GoRouter appRouter = GoRouter(
           body: Center(
             child: Padding(
               padding: const EdgeInsets.all(24.0),
-              child: Text('Open the spread builder from the Small Account Dashboard or navigate to /small_account/spread_builder/<TICKER> with an OptionsChainService provided in navigation extra.'),
+              child: Text(
+                'Open the spread builder from the Small Account Dashboard or navigate to /small_account/spread_builder/<TICKER> with an OptionsChainService provided in navigation extra.',
+              ),
             ),
           ),
         );
@@ -199,6 +210,11 @@ final GoRouter appRouter = GoRouter(
       path: '/journal/attach_screenshot',
       name: 'attach_screenshot',
       builder: (context, state) => const AttachScreenshotScreen(),
+    ),
+    GoRoute(
+      path: '/signals',
+      name: 'signal_engine',
+      builder: (context, state) => const SignalEngineScreen(),
     ),
   ],
 );
