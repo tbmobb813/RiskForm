@@ -37,6 +37,11 @@ class ToolsAndStrategyLibrary extends ConsumerWidget {
               onTap: () => GoRouter.of(context).pushNamed('signal_engine'),
             ),
             ToolTile(
+              label: "Best Opps",
+              icon: Icons.star_border_rounded,
+              onTap: () => GoRouter.of(context).pushNamed('best_opps'),
+            ),
+            ToolTile(
               label: "Payoff Visualizer",
               icon: Icons.show_chart,
               onTap: () {

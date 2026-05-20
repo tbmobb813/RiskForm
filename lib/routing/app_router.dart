@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../screens/signals/signal_engine_screen.dart';
+import '../screens/best_opps/best_opps_screen.dart';
 import 'package:riskform/strategy_cockpit/strategies/small_account/services/cheap_options_scanner.dart';
 import 'package:riskform/strategy_cockpit/strategies/small_account/services/default_options_chain_service.dart';
 import 'package:riskform/strategy_cockpit/strategies/small_account/screens/scanner_screen.dart';
@@ -215,6 +216,11 @@ final GoRouter appRouter = GoRouter(
       path: '/signals',
       name: 'signal_engine',
       builder: (context, state) => const SignalEngineScreen(),
+    ),
+    GoRoute(
+      path: '/best-opps',
+      name: 'best_opps',
+      builder: (context, state) => const BestOppsScreen(),
     ),
   ],
 );
