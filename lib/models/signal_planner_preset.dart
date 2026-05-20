@@ -158,7 +158,7 @@ class SignalPlannerPreset {
   static DateTime? _estimateExpiry(String timeframe) {
     final t = timeframe.toUpperCase();
     final now = DateTime.now();
-    if (t.contains('DAY')) return now.add(const Duration(days: 5));
+    if (t.contains('DAYS')) return now.add(const Duration(days: 5));
     if (t.contains('WEEK')) return now.add(const Duration(days: 21));
     if (t.contains('MONTH')) return now.add(const Duration(days: 45));
     return null;
