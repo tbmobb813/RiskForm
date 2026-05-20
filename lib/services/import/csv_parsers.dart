@@ -2,6 +2,33 @@ import 'package:csv/csv.dart';
 import 'package:uuid/uuid.dart';
 import '../../models/imported_trade.dart';
 
+// ── Fidelity symbol parser ─────────────────────────────────────────────────────
+// Format: "-AAPL240119C150"  (dash prefix, YYMMDD, C|P, strike without padding)
+class _FidelitySymbol {
+  final String underlying;
+  final DateTime expiry;
+  final String type; // "C" or "P"
+  final double strike;
+  _FidelitySymbol(this.underlying, this.expiry, this.type, this.strike);
+}
+
+_FidelitySymbol? _parseFidelitySymbol(String raw) {
+  // Strip leading dash
+  final s = raw.startsWith('-') ? raw.substring(1) : raw;
+  // Pattern: letters + 6-digit date + C|P + numeric strike (may include decimal)
+  final m = RegExp(r'^([A-Z]+)(\d{6})([CP])([\d.]+)$').firstMatch(s);
+  if (m == null) return null;
+  final root = m.group(1)!;
+  final dateStr = m.group(2)!;
+  final type = m.group(3)!;
+  final strike = double.tryParse(m.group(4)!);
+  if (strike == null) return null;
+  final y = 2000 + int.parse(dateStr.substring(0, 2));
+  final mo = int.parse(dateStr.substring(2, 4));
+  final d = int.parse(dateStr.substring(4, 6));
+  return _FidelitySymbol(root, DateTime(y, mo, d), type, strike);
+}
+
 const _uuid = Uuid();
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
@@ -355,4 +382,137 @@ List<ImportedTrade> parseRobinhood(String csvContent) {
   }
 
   return trades;
+}
+
+// ── Fidelity parser ────────────────────────────────────────────────────────────
+// Headers: Run Date,Action,Symbol,Security Description,Security Type,
+//          Quantity,Price ($),Commission ($),Fees ($),Accrued Interest ($),
+//          Amount ($),Cash Balance ($),Settlement Date
+//
+// Preamble: Fidelity prepends ~5 metadata lines before the header row.
+// Options symbol: "-AAPL240119C150" (dash-prefixed, short strike)
+// Action strings: "YOU BOUGHT OPENING TRANSACTION", "YOU SOLD CLOSING TRANSACTION", etc.
+// Dates: MM/DD/YYYY
+
+List<ImportedTrade> parseFidelity(String csvContent) {
+  final lines = csvContent
+      .replaceAll('\r\n', '\n')
+      .replaceAll('\r', '\n')
+      .split('\n');
+
+  // Skip preamble — find first row that starts with "Run Date" (the header)
+  int headerIdx = -1;
+  for (int i = 0; i < lines.length; i++) {
+    if (lines[i].trim().toLowerCase().startsWith('run date')) {
+      headerIdx = i;
+      break;
+    }
+  }
+  if (headerIdx < 0) return [];
+
+  final csvBody = lines.sublist(headerIdx).join('\n');
+  final rows = _parseCsv(csvBody);
+  if (rows.length < 2) return [];
+
+  final headers = rows.first
+      .map((h) => h.toString().trim().toLowerCase())
+      .toList();
+  int col(String name) =>
+      headers.indexWhere((h) => h.contains(name.toLowerCase()));
+
+  final iDate = col('run date');
+  final iAction = col('action');
+  final iSymbol = col('symbol');
+  final iSecType = col('security type');
+  final iQty = col('quantity');
+  final iPrice = col('price');
+  final iComm = col('commission');
+  final iFees = col('fees');
+  final iAmount = col('amount');
+
+  final trades = <ImportedTrade>[];
+
+  for (final row in rows.skip(1)) {
+    if (row.isEmpty || iAction < 0 || row.length <= iAction) continue;
+
+    final actionRaw = iAction >= 0 ? row[iAction].toString().toUpperCase() : '';
+
+    // Only process opening/closing option and equity trades
+    final action = _parseFidelityAction(actionRaw);
+    if (action == null) continue;
+
+    final symbol = iSymbol >= 0 ? row[iSymbol].toString().trim() : '';
+    if (symbol.isEmpty) continue;
+
+    final secType = iSecType >= 0 ? row[iSecType].toString().toUpperCase() : '';
+    final isOption = secType.contains('OPTION') || symbol.startsWith('-');
+
+    // Parse date MM/DD/YYYY
+    DateTime? dt;
+    if (iDate >= 0) {
+      final parts = row[iDate].toString().trim().split('/');
+      if (parts.length == 3) {
+        try {
+          dt = DateTime(
+            int.parse(parts[2]),
+            int.parse(parts[0]),
+            int.parse(parts[1]),
+          );
+        } catch (_) {}
+      }
+    }
+    if (dt == null) continue;
+
+    // Parse Fidelity-specific option symbol
+    final fid = isOption ? _parseFidelitySymbol(symbol) : null;
+    final underlying = fid?.underlying ?? symbol;
+
+    final qty = _d(iQty >= 0 ? row[iQty] : null).abs();
+    final price = _d(iPrice >= 0 ? row[iPrice] : null).abs();
+    final amount = _d(iAmount >= 0 ? row[iAmount] : null);
+    final comm = _d(iComm >= 0 ? row[iComm] : null).abs();
+    final fees = _d(iFees >= 0 ? row[iFees] : null).abs();
+
+    trades.add(
+      ImportedTrade(
+        id: _uuid.v4(),
+        broker: ImportBroker.fidelity,
+        dateTime: dt,
+        action: action,
+        instrumentKind: isOption
+            ? InstrumentKind.option
+            : InstrumentKind.equity,
+        underlying: underlying,
+        quantity: qty,
+        avgPrice: price,
+        netValue: amount,
+        commissions: comm,
+        fees: fees,
+        strike: fid?.strike,
+        expiry: fid?.expiry,
+        optionType: fid?.type,
+        rawDescription: actionRaw,
+      ),
+    );
+  }
+
+  return trades;
+}
+
+TradeAction? _parseFidelityAction(String action) {
+  if (action.contains('SOLD') && action.contains('OPENING')) {
+    return TradeAction.sellToOpen;
+  }
+  if (action.contains('SOLD') && action.contains('CLOSING')) {
+    return TradeAction.sellToClose;
+  }
+  if (action.contains('BOUGHT') && action.contains('OPENING')) {
+    return TradeAction.buyToOpen;
+  }
+  if (action.contains('BOUGHT') && action.contains('CLOSING')) {
+    return TradeAction.buyToClose;
+  }
+  if (action.contains('YOU BOUGHT')) return TradeAction.buy;
+  if (action.contains('YOU SOLD')) return TradeAction.sell;
+  return null;
 }

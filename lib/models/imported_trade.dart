@@ -1,4 +1,4 @@
-enum ImportBroker { tastytrade, thinkorswim, robinhood }
+enum ImportBroker { tastytrade, thinkorswim, robinhood, fidelity }
 
 enum TradeAction {
   buyToOpen,

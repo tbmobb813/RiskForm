@@ -104,6 +104,7 @@ class ImportNotifier extends Notifier<ImportState> {
         ImportBroker.tastytrade => parseTastytrade(csvContent),
         ImportBroker.thinkorswim => parseThinkorswim(csvContent),
         ImportBroker.robinhood => parseRobinhood(csvContent),
+        ImportBroker.fidelity => parseFidelity(csvContent),
       };
     } catch (e) {
       state = state.copyWith(
@@ -168,6 +169,7 @@ extension on ImportBroker {
     ImportBroker.tastytrade => 'tastytrade',
     ImportBroker.thinkorswim => 'thinkorSwim',
     ImportBroker.robinhood => 'Robinhood',
+    ImportBroker.fidelity => 'Fidelity',
   };
 }
 

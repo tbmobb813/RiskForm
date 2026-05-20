@@ -128,18 +128,21 @@ class _BrokerCard extends StatelessWidget {
     ImportBroker.tastytrade => Icons.trending_up,
     ImportBroker.thinkorswim => Icons.candlestick_chart,
     ImportBroker.robinhood => Icons.bar_chart,
+    ImportBroker.fidelity => Icons.account_balance,
   };
 
   String get _name => switch (broker) {
     ImportBroker.tastytrade => 'tastytrade',
     ImportBroker.thinkorswim => 'thinkorSwim / TD Ameritrade / Schwab',
     ImportBroker.robinhood => 'Robinhood',
+    ImportBroker.fidelity => 'Fidelity',
   };
 
   String get _hint => switch (broker) {
     ImportBroker.tastytrade => 'Account → History → Export Transactions (CSV)',
     ImportBroker.thinkorswim => 'Monitor → Account Statement → Export to CSV',
     ImportBroker.robinhood => 'Account → Statements & History → Download CSV',
+    ImportBroker.fidelity => 'Accounts & Trade → History → Download (.CSV)',
   };
 
   @override
@@ -220,6 +223,12 @@ class _ExportInstructions extends StatelessWidget {
       'Click "Download" next to any period',
       'Open the downloaded CSV',
     ],
+    ImportBroker.fidelity => [
+      'Log in at fidelity.com',
+      'Go to Accounts & Trade → History',
+      'Select your account and date range',
+      'Click "Download" and choose CSV (.CSV) format',
+    ],
   };
 
   @override
@@ -236,11 +245,12 @@ class _ExportInstructions extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'How to export from ${broker == ImportBroker.tastytrade
-                ? 'tastytrade'
-                : broker == ImportBroker.thinkorswim
-                ? 'thinkorSwim'
-                : 'Robinhood'}',
+            'How to export from ${switch (broker) {
+              ImportBroker.tastytrade => 'tastytrade',
+              ImportBroker.thinkorswim => 'thinkorSwim',
+              ImportBroker.robinhood => 'Robinhood',
+              ImportBroker.fidelity => 'Fidelity',
+            }}',
             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
