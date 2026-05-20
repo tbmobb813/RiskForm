@@ -95,7 +95,9 @@ class _DisciplineSparkline extends StatelessWidget {
           ),
           alignment: Alignment.center,
           child: Text(
-            values.isEmpty ? 'No data yet' : 'Sparkline (${values.length} points)',
+            values.isEmpty
+                ? 'No data yet'
+                : 'Sparkline (${values.length} points)',
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ),
@@ -118,15 +120,24 @@ class _ViolationsBreakdown extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Violations Breakdown', style: Theme.of(context).textTheme.titleSmall),
+        Text(
+          'Violations Breakdown',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
         const SizedBox(height: 8),
         Row(
           children: [
-            Expanded(child: _ViolationTile(label: 'Adherence', count: adherence)),
+            Expanded(
+              child: _ViolationTile(label: 'Adherence', count: adherence),
+            ),
             const SizedBox(width: 8),
-            Expanded(child: _ViolationTile(label: 'Timing', count: timing)),
+            Expanded(
+              child: _ViolationTile(label: 'Timing', count: timing),
+            ),
             const SizedBox(width: 8),
-            Expanded(child: _ViolationTile(label: 'Risk', count: risk)),
+            Expanded(
+              child: _ViolationTile(label: 'Risk', count: risk),
+            ),
           ],
         ),
       ],
@@ -151,7 +162,10 @@ class _ViolationTile extends StatelessWidget {
           children: [
             Text(label, style: Theme.of(context).textTheme.bodySmall),
             const SizedBox(height: 4),
-            Text(count.toString(), style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              count.toString(),
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
           ],
         ),
       ),
@@ -164,17 +178,27 @@ class _StreakRow extends StatelessWidget {
   final int adherence;
   final int risk;
 
-  const _StreakRow({required this.clean, required this.adherence, required this.risk});
+  const _StreakRow({
+    required this.clean,
+    required this.adherence,
+    required this.risk,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: _StreakCard(label: 'Clean Cycles', value: clean)),
+        Expanded(
+          child: _StreakCard(label: 'Clean Cycles', value: clean),
+        ),
         const SizedBox(width: 8),
-        Expanded(child: _StreakCard(label: 'Adherence', value: adherence)),
+        Expanded(
+          child: _StreakCard(label: 'Adherence', value: adherence),
+        ),
         const SizedBox(width: 8),
-        Expanded(child: _StreakCard(label: 'Risk', value: risk)),
+        Expanded(
+          child: _StreakCard(label: 'Risk', value: risk),
+        ),
       ],
     );
   }
@@ -197,7 +221,10 @@ class _StreakCard extends StatelessWidget {
           children: [
             Text(label, style: Theme.of(context).textTheme.bodySmall),
             const SizedBox(height: 4),
-            Text(value.toString(), style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              value.toString(),
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
           ],
         ),
       ),
@@ -219,7 +246,10 @@ class _RecentEventsList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Recent Discipline Events', style: Theme.of(context).textTheme.titleSmall),
+        Text(
+          'Recent Discipline Events',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
         const SizedBox(height: 8),
         ...events.map((e) => _EventTile(event: e)),
       ],

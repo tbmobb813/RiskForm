@@ -13,7 +13,7 @@ void main() {
         'Strike Price': _F('42.5'),
         'Premium Paid': _F('1.5'),
         'Shares Owned': _F('100'),
-        'Expiration Date': _F('2023-12-31')
+        'Expiration Date': _F('2023-12-31'),
       };
 
       final t = TradeInputs.fromControllers(controllers);

@@ -12,7 +12,10 @@ class LiveRegimeEngine implements RegimeEngine {
   final MarketDataService marketData;
   final Duration cacheTtl;
 
-  LiveRegimeEngine(this.marketData, {this.cacheTtl = const Duration(seconds: 45)});
+  LiveRegimeEngine(
+    this.marketData, {
+    this.cacheTtl = const Duration(seconds: 45),
+  });
 
   final Map<String, _CacheEntry<MarketRegimeSnapshot>> _cache = {};
 

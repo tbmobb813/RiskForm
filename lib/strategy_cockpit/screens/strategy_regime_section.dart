@@ -84,10 +84,7 @@ class _CurrentRegimeCard extends StatelessWidget {
   final String currentRegime;
   final String hint;
 
-  const _CurrentRegimeCard({
-    required this.currentRegime,
-    required this.hint,
-  });
+  const _CurrentRegimeCard({required this.currentRegime, required this.hint});
 
   @override
   Widget build(BuildContext context) {
@@ -109,10 +106,7 @@ class _CurrentRegimeCard extends StatelessWidget {
             ),
             if (hint.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Text(
-                hint,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
+              Text(hint, style: Theme.of(context).textTheme.bodySmall),
             ],
           ],
         ),
@@ -124,9 +118,7 @@ class _CurrentRegimeCard extends StatelessWidget {
 class _RegimePerformanceTable extends StatelessWidget {
   final Map<String, Map<String, dynamic>> data;
 
-  const _RegimePerformanceTable({
-    required this.data,
-  });
+  const _RegimePerformanceTable({required this.data});
 
   @override
   Widget build(BuildContext context) {
@@ -205,10 +197,7 @@ class _HeaderCell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.bodySmall,
-      ),
+      child: Text(label, style: Theme.of(context).textTheme.bodySmall),
     );
   }
 }
@@ -222,10 +211,7 @@ class _DataCell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8),
-      child: Text(
-        value,
-        style: Theme.of(context).textTheme.bodyMedium,
-      ),
+      child: Text(value, style: Theme.of(context).textTheme.bodyMedium),
     );
   }
 }

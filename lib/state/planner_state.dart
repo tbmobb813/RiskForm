@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:riskform/strategy_cockpit/analytics/regime_aware_planner_hints.dart' as planner_hints;
+import 'package:riskform/strategy_cockpit/analytics/regime_aware_planner_hints.dart'
+    as planner_hints;
 import '../models/trade_inputs.dart';
 import '../models/payoff_result.dart';
 import '../models/risk_result.dart';
@@ -71,17 +72,17 @@ class PlannerState extends Equatable {
 
   @override
   List<Object?> get props => [
-        strategyId,
-        strategyName,
-      strategySymbol,
-        strategyDescription,
-        inputs,
-        payoff,
-        risk,
-        notes,
-        tags,
-        isLoading,
-        errorMessage,
-        hintsBundle,
-      ];
+    strategyId,
+    strategyName,
+    strategySymbol,
+    strategyDescription,
+    inputs,
+    payoff,
+    risk,
+    notes,
+    tags,
+    isLoading,
+    errorMessage,
+    hintsBundle,
+  ];
 }

@@ -38,7 +38,6 @@ class AccountSnapshotCard extends ConsumerWidget {
                 style: TextStyle(color: Colors.white70),
               ),
             ]
-
             // CASE 2: Snapshot available
             else ...[
               _row("Account Size", snapshot.accountSizeString),

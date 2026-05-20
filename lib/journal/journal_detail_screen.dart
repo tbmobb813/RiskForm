@@ -16,7 +16,9 @@ class _JournalDetailScreenState extends State<JournalDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _ref = FirebaseFirestore.instance.collection('journalEntries').doc(widget.entryId);
+    _ref = FirebaseFirestore.instance
+        .collection('journalEntries')
+        .doc(widget.entryId);
   }
 
   Future<void> _editNotes(String? current) async {
@@ -31,8 +33,14 @@ class _JournalDetailScreenState extends State<JournalDetailScreen> {
           decoration: const InputDecoration(border: OutlineInputBorder()),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          ElevatedButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text('Save')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, controller.text),
+            child: const Text('Save'),
+          ),
         ],
       ),
     );
@@ -40,7 +48,9 @@ class _JournalDetailScreenState extends State<JournalDetailScreen> {
     if (result != null) {
       await _ref.update({'notes': result});
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Notes saved')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Notes saved')));
     }
   }
 
@@ -50,20 +60,31 @@ class _JournalDetailScreenState extends State<JournalDetailScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Add Tag'),
-        content: TextField(controller: controller, decoration: const InputDecoration(hintText: 'tag')),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(hintText: 'tag'),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          ElevatedButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text('Add')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, controller.text),
+            child: const Text('Add'),
+          ),
         ],
       ),
     );
 
     if (result != null && result.trim().isNotEmpty) {
       await _ref.update({
-        'tags': FieldValue.arrayUnion([result.trim()])
+        'tags': FieldValue.arrayUnion([result.trim()]),
       });
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tag added')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Tag added')));
     }
   }
 
@@ -82,7 +103,14 @@ class _JournalDetailScreenState extends State<JournalDetailScreen> {
           }
 
           final data = snapshot.data!.data()!;
-          final createdAt = (data['createdAt'] as Timestamp?)?.toDate().toLocal().toString().split('.').first ?? '';
+          final createdAt =
+              (data['createdAt'] as Timestamp?)
+                  ?.toDate()
+                  .toLocal()
+                  .toString()
+                  .split('.')
+                  .first ??
+              '';
 
           return Padding(
             padding: const EdgeInsets.all(16.0),
@@ -90,7 +118,10 @@ class _JournalDetailScreenState extends State<JournalDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Strategy: ${data['strategyId'] ?? 'unknown'}', style: Theme.of(context).textTheme.titleMedium),
+                  Text(
+                    'Strategy: ${data['strategyId'] ?? 'unknown'}',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                   const SizedBox(height: 8),
                   Text('State: ${data['cycleState'] ?? 'unknown'}'),
                   const SizedBox(height: 8),
@@ -102,50 +133,69 @@ class _JournalDetailScreenState extends State<JournalDetailScreen> {
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 8,
-                    children: (List<String>.from(data['tags'] ?? <String>[]))
-                        .map((t) => Chip(label: Text(t)))
-                        .toList(),
+                    children: (List<String>.from(
+                      data['tags'] ?? <String>[],
+                    )).map((t) => Chip(label: Text(t))).toList(),
                   ),
                   const SizedBox(height: 16),
                   if (data['disciplineScore'] != null) ...[
-                    Text('Discipline score: ${data['disciplineScore']}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      'Discipline score: ${data['disciplineScore']}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(height: 8),
                     if (data['disciplineBreakdown'] != null)
-                      Builder(builder: (context) {
-                        final breakdown = Map<String, dynamic>.from(data['disciplineBreakdown'] ?? <String, dynamic>{});
-                        final adherence = breakdown['adherence'] ?? 0;
-                        final timing = breakdown['timing'] ?? 0;
-                        final risk = breakdown['risk'] ?? 0;
-                        return Card(
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Adherence: $adherence/40'),
-                                const SizedBox(height: 6),
-                                Text('Timing: $timing/30'),
-                                const SizedBox(height: 6),
-                                Text('Risk: $risk/30'),
-                              ],
+                      Builder(
+                        builder: (context) {
+                          final breakdown = Map<String, dynamic>.from(
+                            data['disciplineBreakdown'] ?? <String, dynamic>{},
+                          );
+                          final adherence = breakdown['adherence'] ?? 0;
+                          final timing = breakdown['timing'] ?? 0;
+                          final risk = breakdown['risk'] ?? 0;
+                          return Card(
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                          ),
-                        );
-                      }),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Adherence: $adherence/40'),
+                                  const SizedBox(height: 6),
+                                  Text('Timing: $timing/30'),
+                                  const SizedBox(height: 6),
+                                  Text('Risk: $risk/30'),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     const SizedBox(height: 12),
                   ],
                   Row(
                     children: [
-                      ElevatedButton(onPressed: () => _editNotes(data['notes'] as String?), child: const Text('Edit Notes')),
+                      ElevatedButton(
+                        onPressed: () => _editNotes(data['notes'] as String?),
+                        child: const Text('Edit Notes'),
+                      ),
                       const SizedBox(width: 8),
-                      ElevatedButton(onPressed: _addTag, child: const Text('Add Tag')),
+                      ElevatedButton(
+                        onPressed: _addTag,
+                        child: const Text('Add Tag'),
+                      ),
                       const SizedBox(width: 8),
                       if (data['planId'] != null)
                         OutlinedButton(
                           onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Open plan (not implemented)')));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Open plan (not implemented)'),
+                              ),
+                            );
                           },
                           child: const Text('View Plan'),
                         ),
@@ -153,7 +203,13 @@ class _JournalDetailScreenState extends State<JournalDetailScreen> {
                       if (data['positionId'] != null)
                         OutlinedButton(
                           onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Open position (not implemented)')));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Open position (not implemented)',
+                                ),
+                              ),
+                            );
                           },
                           child: const Text('View Position'),
                         ),

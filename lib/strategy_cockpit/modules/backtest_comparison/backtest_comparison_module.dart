@@ -64,10 +64,7 @@ class _BestConfigCard extends StatelessWidget {
 
     return _CockpitCard(
       title: 'Best Configuration',
-      child: Text(
-        config.toString(),
-        style: const TextStyle(fontSize: 14),
-      ),
+      child: Text(config.toString(), style: const TextStyle(fontSize: 14)),
     );
   }
 }
@@ -83,10 +80,7 @@ class _WeakConfigCard extends StatelessWidget {
 
     return _CockpitCard(
       title: 'Weak Configuration',
-      child: Text(
-        config.toString(),
-        style: const TextStyle(fontSize: 14),
-      ),
+      child: Text(config.toString(), style: const TextStyle(fontSize: 14)),
     );
   }
 }
@@ -129,10 +123,7 @@ class _SummaryNoteCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return _CockpitCard(
       title: 'Summary',
-      child: Text(
-        note,
-        style: const TextStyle(fontSize: 14),
-      ),
+      child: Text(note, style: const TextStyle(fontSize: 14)),
     );
   }
 }
@@ -192,11 +183,10 @@ class _CockpitCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              )),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 8),
           child,
         ],

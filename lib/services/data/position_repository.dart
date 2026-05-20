@@ -55,14 +55,19 @@ class PositionRepository implements RepositoryInterface<Position> {
     final uid = _requireAuth();
 
     // Generate a cache key for this position
-    final cacheKey = '${item.symbol}_${item.type.name}_${item.expiration.toIso8601String()}';
+    final cacheKey =
+        '${item.symbol}_${item.type.name}_${item.expiration.toIso8601String()}';
 
     // Check if we have a cached ID for this position
     final existingId = _idCache[cacheKey];
 
     if (existingId != null) {
       // Update existing position
-      await _service.updatePosition(uid: uid, positionId: existingId, position: item);
+      await _service.updatePosition(
+        uid: uid,
+        positionId: existingId,
+        position: item,
+      );
     } else {
       // Create new position and cache the ID
       final newId = await _service.createPosition(uid: uid, position: item);

@@ -17,7 +17,11 @@ class ComparisonRunner {
 
     for (final c in config.configs) {
       // Run backtest in a background isolate using `compute` for CPU-bound work.
-      final mapResult = await compute<Map<String, dynamic>, Map<String, dynamic>>(backtestCompute, c.toMap());
+      final mapResult =
+          await compute<Map<String, dynamic>, Map<String, dynamic>>(
+            backtestCompute,
+            c.toMap(),
+          );
       final result = BacktestResult.fromMap(mapResult);
       // persist journal entries if service provided
       if (journalService != null) {

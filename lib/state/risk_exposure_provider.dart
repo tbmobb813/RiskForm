@@ -14,10 +14,14 @@ final riskExposureProvider = FutureProvider<RiskExposure>((ref) async {
   final base = positions.length * 1.0;
 
   // Normalize by account size (very small accounts get higher percent)
-  final normalized = account.accountSize > 0 ? (base / (account.accountSize / 1000)) : base;
+  final normalized = account.accountSize > 0
+      ? (base / (account.accountSize / 1000))
+      : base;
   final totalRisk = normalized.clamp(0.0, 100.0);
 
-  final assignmentExposure = positions.any((p) => p.type == PositionType.csp || p.type == PositionType.coveredCall);
+  final assignmentExposure = positions.any(
+    (p) => p.type == PositionType.csp || p.type == PositionType.coveredCall,
+  );
 
   final warnings = <String>[];
   if (totalRisk > (riskProfile.maxRiskPercent * 2)) {

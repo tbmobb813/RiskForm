@@ -17,9 +17,9 @@ class CalendarStrategy extends TradingStrategy {
 
   @override
   Map<String, dynamic> toJson() => {
-        'longLeg': longLeg.toJson(),
-        'shortLeg': shortLeg.toJson(),
-      };
+    'longLeg': longLeg.toJson(),
+    'shortLeg': shortLeg.toJson(),
+  };
 
   @override
   String get id => 'calendar_${longLeg.id}_${shortLeg.id}';
@@ -28,7 +28,10 @@ class CalendarStrategy extends TradingStrategy {
   String get label => 'Calendar Spread';
 
   @override
-  List<Leg> get legs => [Leg(contract: longLeg, quantity: 1), Leg(contract: shortLeg, quantity: -1)];
+  List<Leg> get legs => [
+    Leg(contract: longLeg, quantity: 1),
+    Leg(contract: shortLeg, quantity: -1),
+  ];
 
   @override
   double get maxRisk {
@@ -43,7 +46,11 @@ class CalendarStrategy extends TradingStrategy {
   double get breakeven => longLeg.strike + (longLeg.premium - shortLeg.premium);
 
   @override
-  List<PayoffPoint> payoffCurve({required double underlyingPrice, required double rangePercent, required int steps}) {
+  List<PayoffPoint> payoffCurve({
+    required double underlyingPrice,
+    required double rangePercent,
+    required int steps,
+  }) {
     final engine = PayoffEngine();
 
     // Map to TradeInputs and use debit_spread as approximation for calendar payoff
@@ -65,14 +72,20 @@ class CalendarStrategy extends TradingStrategy {
       points: steps,
     );
 
-    return offsets.map((o) => PayoffPoint(underlyingPrice: o.dx, profitLoss: o.dy)).toList();
+    return offsets
+        .map((o) => PayoffPoint(underlyingPrice: o.dx, profitLoss: o.dy))
+        .toList();
   }
 
   @override
   StrategyExplanation explain() {
     return StrategyExplanation(
-      summary: 'Calendar spread: long longer-dated option, short near-dated option at same strike.',
-      pros: ['Time decay advantage on short leg', 'Can benefit from stable prices'],
+      summary:
+          'Calendar spread: long longer-dated option, short near-dated option at same strike.',
+      pros: [
+        'Time decay advantage on short leg',
+        'Can benefit from stable prices',
+      ],
       cons: ['Complex theta dynamics', 'Requires managing expiries'],
       idealConditions: ['Low-to-stable IV', 'Neutral market'],
       risks: ['Volatility shifts', 'Assignment risk on short leg near expiry'],

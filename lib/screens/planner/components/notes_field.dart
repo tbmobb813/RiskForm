@@ -27,7 +27,8 @@ class NotesField extends StatelessWidget {
           maxLines: 5,
           decoration: const InputDecoration(
             border: OutlineInputBorder(),
-            hintText: "Why are you planning this trade? What conditions matter?",
+            hintText:
+                "Why are you planning this trade? What conditions matter?",
           ),
           onChanged: onChanged,
         ),

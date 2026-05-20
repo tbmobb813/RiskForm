@@ -7,21 +7,17 @@ import '../../dashboard/strategy_tile.dart';
 class StrategySelectorScreen extends ConsumerWidget {
   final String? preselectedStrategyId;
 
-  const StrategySelectorScreen({
-    super.key,
-    this.preselectedStrategyId,
-  });
+  const StrategySelectorScreen({super.key, this.preselectedStrategyId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final planner = ref.read(plannerNotifierProvider.notifier);
-    final symbolFromUrl = Uri.base.queryParameters['symbol']?.toString().toUpperCase();
+    final symbolFromUrl = Uri.base.queryParameters['symbol']
+        ?.toString()
+        .toUpperCase();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Select Strategy"),
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text("Select Strategy"), elevation: 0),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -41,15 +37,22 @@ class StrategySelectorScreen extends ConsumerWidget {
               const SizedBox(height: 24),
 
               // Income Strategies
-              const Text("Income", style: TextStyle(fontWeight: FontWeight.w600)),
+              const Text(
+                "Income",
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
               const SizedBox(height: 8),
               StrategyTile(
                 name: "Cash-Secured Put",
                 category: "Income",
                 color: Colors.greenAccent,
                 onTap: () {
-                  planner.setStrategy("csp", "Cash-Secured Put",
-                      "Sell a put and set aside cash for assignment.", symbol: symbolFromUrl);
+                  planner.setStrategy(
+                    "csp",
+                    "Cash-Secured Put",
+                    "Sell a put and set aside cash for assignment.",
+                    symbol: symbolFromUrl,
+                  );
                   context.pushNamed("trade_planner");
                 },
               ),
@@ -58,8 +61,12 @@ class StrategySelectorScreen extends ConsumerWidget {
                 category: "Income",
                 color: Colors.greenAccent,
                 onTap: () {
-                  planner.setStrategy("cc", "Covered Call",
-                      "Sell a call against shares you already own.", symbol: symbolFromUrl);
+                  planner.setStrategy(
+                    "cc",
+                    "Covered Call",
+                    "Sell a call against shares you already own.",
+                    symbol: symbolFromUrl,
+                  );
                   context.pushNamed("trade_planner");
                 },
               ),
@@ -68,8 +75,12 @@ class StrategySelectorScreen extends ConsumerWidget {
                 category: "Income",
                 color: Colors.greenAccent,
                 onTap: () {
-                  planner.setStrategy("credit_spread", "Credit Spread",
-                      "Sell a put and buy a lower strike put to define risk.", symbol: symbolFromUrl);
+                  planner.setStrategy(
+                    "credit_spread",
+                    "Credit Spread",
+                    "Sell a put and buy a lower strike put to define risk.",
+                    symbol: symbolFromUrl,
+                  );
                   context.pushNamed("trade_planner");
                 },
               ),
@@ -77,15 +88,22 @@ class StrategySelectorScreen extends ConsumerWidget {
               const SizedBox(height: 24),
 
               // Hedging Strategies
-              const Text("Hedging", style: TextStyle(fontWeight: FontWeight.w600)),
+              const Text(
+                "Hedging",
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
               const SizedBox(height: 8),
               StrategyTile(
                 name: "Protective Put",
                 category: "Hedging",
                 color: Colors.yellowAccent,
                 onTap: () {
-                  planner.setStrategy("protective_put", "Protective Put",
-                      "Buy a put to limit downside risk.", symbol: symbolFromUrl);
+                  planner.setStrategy(
+                    "protective_put",
+                    "Protective Put",
+                    "Buy a put to limit downside risk.",
+                    symbol: symbolFromUrl,
+                  );
                   context.pushNamed("trade_planner");
                 },
               ),
@@ -94,8 +112,12 @@ class StrategySelectorScreen extends ConsumerWidget {
                 category: "Hedging",
                 color: Colors.yellowAccent,
                 onTap: () {
-                  planner.setStrategy("collar", "Collar",
-                      "Sell a call and buy a put to cap upside and limit downside.", symbol: symbolFromUrl);
+                  planner.setStrategy(
+                    "collar",
+                    "Collar",
+                    "Sell a call and buy a put to cap upside and limit downside.",
+                    symbol: symbolFromUrl,
+                  );
                   context.pushNamed("trade_planner");
                 },
               ),
@@ -103,16 +125,22 @@ class StrategySelectorScreen extends ConsumerWidget {
               const SizedBox(height: 24),
 
               // Speculation Strategies
-              const Text("Speculation",
-                  style: TextStyle(fontWeight: FontWeight.w600)),
+              const Text(
+                "Speculation",
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
               const SizedBox(height: 8),
               StrategyTile(
                 name: "Long Call",
                 category: "Speculation",
                 color: Colors.blueAccent,
                 onTap: () {
-                  planner.setStrategy("long_call", "Long Call",
-                      "Buy a call for directional upside exposure.", symbol: symbolFromUrl);
+                  planner.setStrategy(
+                    "long_call",
+                    "Long Call",
+                    "Buy a call for directional upside exposure.",
+                    symbol: symbolFromUrl,
+                  );
                   context.pushNamed("trade_planner");
                 },
               ),
@@ -121,8 +149,12 @@ class StrategySelectorScreen extends ConsumerWidget {
                 category: "Speculation",
                 color: Colors.blueAccent,
                 onTap: () {
-                  planner.setStrategy("long_put", "Long Put",
-                      "Buy a put for directional downside exposure.", symbol: symbolFromUrl);
+                  planner.setStrategy(
+                    "long_put",
+                    "Long Put",
+                    "Buy a put for directional downside exposure.",
+                    symbol: symbolFromUrl,
+                  );
                   context.pushNamed("trade_planner");
                 },
               ),
@@ -131,8 +163,12 @@ class StrategySelectorScreen extends ConsumerWidget {
                 category: "Speculation",
                 color: Colors.blueAccent,
                 onTap: () {
-                  planner.setStrategy("debit_spread", "Debit Spread",
-                      "Buy a call and sell a higher strike call to reduce cost.", symbol: symbolFromUrl);
+                  planner.setStrategy(
+                    "debit_spread",
+                    "Debit Spread",
+                    "Buy a call and sell a higher strike call to reduce cost.",
+                    symbol: symbolFromUrl,
+                  );
                   context.pushNamed("trade_planner");
                 },
               ),

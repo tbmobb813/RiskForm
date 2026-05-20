@@ -10,7 +10,11 @@ class ScannerScreen extends ConsumerStatefulWidget {
   final OptionsChainService chainService;
   final String ticker;
 
-  const ScannerScreen({required this.chainService, required this.ticker, super.key});
+  const ScannerScreen({
+    required this.chainService,
+    required this.ticker,
+    super.key,
+  });
 
   @override
   ConsumerState<ScannerScreen> createState() => _ScannerScreenState();
@@ -42,7 +46,10 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
           children: [
             ScannerFiltersCard(),
             const SizedBox(height: 8),
-            ElevatedButton(onPressed: _loading ? null : _runScan, child: const Text('Scan')),
+            ElevatedButton(
+              onPressed: _loading ? null : _runScan,
+              child: const Text('Scan'),
+            ),
             const SizedBox(height: 12),
             if (_loading) const CircularProgressIndicator(),
             const SizedBox(height: 8),
@@ -53,7 +60,6 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
     );
   }
 }
-
 
 class ScannerFiltersCard extends ConsumerWidget {
   const ScannerFiltersCard({super.key});
@@ -66,60 +72,84 @@ class ScannerFiltersCard extends ConsumerWidget {
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: Padding(
         padding: const EdgeInsets.all(12.0),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Filters', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Filters',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
 
-          Text('Max Premium: \$${filters.maxPremium.toStringAsFixed(0)}'),
-          Slider(
-            value: filters.maxPremium,
-            min: 10,
-            max: 200,
-            divisions: 19,
-            onChanged: (v) => ref.read(scannerFiltersProvider.notifier).setMaxPremium(v),
-          ),
+            Text('Max Premium: \$${filters.maxPremium.toStringAsFixed(0)}'),
+            Slider(
+              value: filters.maxPremium,
+              min: 10,
+              max: 200,
+              divisions: 19,
+              onChanged: (v) =>
+                  ref.read(scannerFiltersProvider.notifier).setMaxPremium(v),
+            ),
 
-          Text('DTE Range: ${filters.minDte}–${filters.maxDte}'),
-          RangeSlider(
-            values: RangeValues(filters.minDte.toDouble(), filters.maxDte.toDouble()),
-            min: 7,
-            max: 90,
-            divisions: 83,
-            onChanged: (r) => ref.read(scannerFiltersProvider.notifier).setDteRange(r.start.toInt(), r.end.toInt()),
-          ),
+            Text('DTE Range: ${filters.minDte}–${filters.maxDte}'),
+            RangeSlider(
+              values: RangeValues(
+                filters.minDte.toDouble(),
+                filters.maxDte.toDouble(),
+              ),
+              min: 7,
+              max: 90,
+              divisions: 83,
+              onChanged: (r) => ref
+                  .read(scannerFiltersProvider.notifier)
+                  .setDteRange(r.start.toInt(), r.end.toInt()),
+            ),
 
-          Text('Delta Range: ${(filters.minDelta ?? 0.05).toStringAsFixed(2)}–${(filters.maxDelta ?? 0.80).toStringAsFixed(2)}'),
-          RangeSlider(
-            values: RangeValues(filters.minDelta ?? 0.05, filters.maxDelta ?? 0.80),
-            min: 0.05,
-            max: 0.80,
-            divisions: 75,
-            onChanged: (r) => ref.read(scannerFiltersProvider.notifier).setDeltaRange(r.start, r.end),
-          ),
+            Text(
+              'Delta Range: ${(filters.minDelta ?? 0.05).toStringAsFixed(2)}–${(filters.maxDelta ?? 0.80).toStringAsFixed(2)}',
+            ),
+            RangeSlider(
+              values: RangeValues(
+                filters.minDelta ?? 0.05,
+                filters.maxDelta ?? 0.80,
+              ),
+              min: 0.05,
+              max: 0.80,
+              divisions: 75,
+              onChanged: (r) => ref
+                  .read(scannerFiltersProvider.notifier)
+                  .setDeltaRange(r.start, r.end),
+            ),
 
-          Text('Min Open Interest: ${filters.minOpenInterest}'),
-          Slider(
-            value: filters.minOpenInterest.toDouble(),
-            min: 0,
-            max: 500,
-            divisions: 50,
-            onChanged: (v) => ref.read(scannerFiltersProvider.notifier).setMinOpenInterest(v.toInt()),
-          ),
+            Text('Min Open Interest: ${filters.minOpenInterest}'),
+            Slider(
+              value: filters.minOpenInterest.toDouble(),
+              min: 0,
+              max: 500,
+              divisions: 50,
+              onChanged: (v) => ref
+                  .read(scannerFiltersProvider.notifier)
+                  .setMinOpenInterest(v.toInt()),
+            ),
 
-          Text('Max Bid-Ask Spread: \$${filters.maxBidAskSpread.toStringAsFixed(2)}'),
-          Slider(
-            value: filters.maxBidAskSpread,
-            min: 0.01,
-            max: 0.50,
-            divisions: 49,
-            onChanged: (v) => ref.read(scannerFiltersProvider.notifier).setMaxBidAskSpread(v),
-          ),
-        ]),
+            Text(
+              'Max Bid-Ask Spread: \$${filters.maxBidAskSpread.toStringAsFixed(2)}',
+            ),
+            Slider(
+              value: filters.maxBidAskSpread,
+              min: 0.01,
+              max: 0.50,
+              divisions: 49,
+              onChanged: (v) => ref
+                  .read(scannerFiltersProvider.notifier)
+                  .setMaxBidAskSpread(v),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
-
 
 class ScannerResultsList extends ConsumerWidget {
   const ScannerResultsList({super.key});
@@ -138,7 +168,12 @@ class ScannerResultsList extends ConsumerWidget {
           strategy: strategy,
           onTap: () {
             ref.read(strategyControllerProvider.notifier).setStrategy(strategy);
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const StrategyDashboardScreen()));
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const StrategyDashboardScreen(),
+              ),
+            );
           },
         );
       },
@@ -146,12 +181,15 @@ class ScannerResultsList extends ConsumerWidget {
   }
 }
 
-
 class StrategyResultCard extends StatelessWidget {
   final TradingStrategy strategy;
   final VoidCallback onTap;
 
-  const StrategyResultCard({super.key, required this.strategy, required this.onTap});
+  const StrategyResultCard({
+    super.key,
+    required this.strategy,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {

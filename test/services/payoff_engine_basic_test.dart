@@ -20,7 +20,11 @@ void main() {
   test('long call payoffAtPrice behavior', () {
     final inputs = TradeInputs(strike: 100, premiumPaid: 3);
     // at S = 110, payoff per contract = (-premium + max(0, S-K)) * 100 = (-3 + 10)*100 = 700
-    final payoff = engine.payoffAtPrice(strategyId: 'long_call', inputs: inputs, underlyingPrice: 110);
+    final payoff = engine.payoffAtPrice(
+      strategyId: 'long_call',
+      inputs: inputs,
+      underlyingPrice: 110,
+    );
     expect(payoff, closeTo(700, 0.001));
   });
 }

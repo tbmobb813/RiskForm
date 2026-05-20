@@ -44,7 +44,6 @@ class NextStrategyCard extends ConsumerWidget {
                 child: const Text("No Action Available"),
               ),
             ]
-
             // CASE 2: Recommendation exists
             else ...[
               Text(
@@ -71,8 +70,11 @@ class NextStrategyCard extends ConsumerWidget {
                       padding: const EdgeInsets.only(bottom: 4),
                       child: Row(
                         children: [
-                          const Icon(Icons.warning_amber_rounded,
-                              color: Colors.amber, size: 18),
+                          const Icon(
+                            Icons.warning_amber_rounded,
+                            color: Colors.amber,
+                            size: 18,
+                          ),
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(

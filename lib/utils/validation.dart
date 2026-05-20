@@ -5,9 +5,7 @@ class ValidationResult {
   final bool isValid;
   final Map<String, String> errors;
 
-  const ValidationResult.valid()
-      : isValid = true,
-        errors = const {};
+  const ValidationResult.valid() : isValid = true, errors = const {};
 
   const ValidationResult.invalid(this.errors) : isValid = false;
 
@@ -170,4 +168,5 @@ class ValidationBuilder {
 }
 
 /// Convenience function to create a validator.
-Validator<T> validate<T>(String fieldName, T? value) => Validator(fieldName, value);
+Validator<T> validate<T>(String fieldName, T? value) =>
+    Validator(fieldName, value);

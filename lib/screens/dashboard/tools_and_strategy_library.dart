@@ -42,6 +42,11 @@ class ToolsAndStrategyLibrary extends ConsumerWidget {
               onTap: () => GoRouter.of(context).pushNamed('best_opps'),
             ),
             ToolTile(
+              label: "Import Trades",
+              icon: Icons.upload_file,
+              onTap: () => GoRouter.of(context).pushNamed('import_trades'),
+            ),
+            ToolTile(
               label: "Payoff Visualizer",
               icon: Icons.show_chart,
               onTap: () {

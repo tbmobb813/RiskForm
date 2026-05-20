@@ -21,7 +21,8 @@ final riskEngineProvider = Provider<RiskEngine>((ref) {
 
   return accountAsync.maybeWhen(
     data: (account) => RiskEngine(account),
-    orElse: () => RiskEngine(const AccountContext(accountSize: 0, buyingPower: 0)),
+    orElse: () =>
+        RiskEngine(const AccountContext(accountSize: 0, buyingPower: 0)),
   );
 });
 
@@ -101,10 +102,14 @@ class RiskEngine {
     final warnings = <String>[];
 
     if (riskPercent > RiskThresholds.moderateRiskPercent) {
-      warnings.add("This trade locks more than ${RiskThresholds.moderateRiskPercent.toInt()}% of your account.");
+      warnings.add(
+        "This trade locks more than ${RiskThresholds.moderateRiskPercent.toInt()}% of your account.",
+      );
     }
     if (riskPercent > RiskThresholds.highRiskPercent) {
-      warnings.add("This trade locks more than ${RiskThresholds.highRiskPercent.toInt()}% of your account.");
+      warnings.add(
+        "This trade locks more than ${RiskThresholds.highRiskPercent.toInt()}% of your account.",
+      );
     }
     if (assignmentExposure) {
       warnings.add("This strategy carries assignment exposure.");

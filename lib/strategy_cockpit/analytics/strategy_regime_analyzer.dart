@@ -11,7 +11,8 @@ class StrategyRegimeAnalyzer {
   // }
   // ------------------------------------------------------------
   static Map<String, Map<String, dynamic>> computeRegimePerformance(
-      StrategyHealthSnapshot snapshot) {
+    StrategyHealthSnapshot snapshot,
+  ) {
     final cycles = snapshot.cycleSummaries;
     if (cycles.isEmpty) return {};
 
@@ -40,7 +41,6 @@ class StrategyRegimeAnalyzer {
         totalDiscipline += discipline;
 
         if (pnl > 0) wins++;
-      
       }
 
       final winRate = list.isEmpty ? 0 : wins / list.length;
@@ -65,8 +65,7 @@ class StrategyRegimeAnalyzer {
   //   "Discipline deteriorates in downtrend"
   // ]
   // ------------------------------------------------------------
-  static List<String> computeRegimeWeaknesses(
-      StrategyHealthSnapshot snapshot) {
+  static List<String> computeRegimeWeaknesses(StrategyHealthSnapshot snapshot) {
     final performance = computeRegimePerformance(snapshot);
     final List<String> flags = [];
 
@@ -146,6 +145,7 @@ class StrategyRegimeAnalyzer {
     );
   }
 }
+
 class CycleRegimeResult {
   final String? dominantRegime;
   final double regimeScore;

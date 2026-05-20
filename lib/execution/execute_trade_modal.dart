@@ -13,15 +13,31 @@ class ExecuteTradeModal extends StatefulWidget {
   final String strategyId;
   final FirebaseFirestore? firestore;
 
-  const ExecuteTradeModal({super.key, required this.planId, required this.strategyId, this.firestore});
+  const ExecuteTradeModal({
+    super.key,
+    required this.planId,
+    required this.strategyId,
+    this.firestore,
+  });
 
-  static Future<void> show(BuildContext context, {required String planId, required String strategyId, FirebaseFirestore? firestore}) {
+  static Future<void> show(
+    BuildContext context, {
+    required String planId,
+    required String strategyId,
+    FirebaseFirestore? firestore,
+  }) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (_) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-        child: ExecuteTradeModal(planId: planId, strategyId: strategyId, firestore: firestore),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: ExecuteTradeModal(
+          planId: planId,
+          strategyId: strategyId,
+          firestore: firestore,
+        ),
       ),
     );
   }
@@ -57,58 +73,82 @@ class _ExecuteTradeModalState extends State<ExecuteTradeModal> {
 
     final firestore = widget.firestore ?? FirebaseFirestore.instance;
 
+    try {
+      // Small-account enforcement (optional): read settings from provider if available
+      SmallAccountSettings? sa;
       try {
-        // Small-account enforcement (optional): read settings from provider if available
-        SmallAccountSettings? sa;
+        final container = ProviderScope.containerOf(context, listen: false);
+        final st = container.read(smallAccountProvider);
+        sa = st.settings;
+      } catch (_) {
+        sa = null;
+      }
+
+      if (sa != null && sa.enabled) {
+        final entryCost = entryPrice * contracts;
+        if (entryCost < sa.minTradeSize) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Trade below minimum size for small accounts'),
+            ),
+          );
+          setState(() => _loading = false);
+          return;
+        }
+        if (entryCost > sa.startingCapital * sa.maxAllocationPct) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Trade exceeds max allocation for small accounts'),
+            ),
+          );
+          setState(() => _loading = false);
+          return;
+        }
+
+        // enforce max open positions by counting existing opened positions for this strategy
         try {
-          final container = ProviderScope.containerOf(context, listen: false);
-          final st = container.read(smallAccountProvider);
-          sa = st.settings;
+          final q = await firestore
+              .collection('positions')
+              .where('strategyId', isEqualTo: widget.strategyId)
+              .where('cycleState', isEqualTo: 'opened')
+              .get();
+          final openCount = q.docs.length;
+          if (openCount >= sa.maxOpenPositions) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Max open positions reached for small accounts'),
+              ),
+            );
+            setState(() => _loading = false);
+            return;
+          }
         } catch (_) {
-          sa = null;
+          // ignore firestore errors and allow execution to continue
         }
-
-        if (sa != null && sa.enabled) {
-          final entryCost = entryPrice * contracts;
-          if (entryCost < sa.minTradeSize) {
-            if (!mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Trade below minimum size for small accounts')));
-            setState(() => _loading = false);
-            return;
-          }
-          if (entryCost > sa.startingCapital * sa.maxAllocationPct) {
-            if (!mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Trade exceeds max allocation for small accounts')));
-            setState(() => _loading = false);
-            return;
-          }
-
-          // enforce max open positions by counting existing opened positions for this strategy
-          try {
-            final q = await firestore.collection('positions').where('strategyId', isEqualTo: widget.strategyId).where('cycleState', isEqualTo: 'opened').get();
-            final openCount = q.docs.length;
-            if (openCount >= sa.maxOpenPositions) {
-              if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Max open positions reached for small accounts')));
-              setState(() => _loading = false);
-              return;
-            }
-          } catch (_) {
-            // ignore firestore errors and allow execution to continue
-          }
-        }
+      }
 
       // 1. Read existing journal (planned) params so we can score the execution
-      final journalRef = firestore.collection('journalEntries').doc(widget.planId);
+      final journalRef = firestore
+          .collection('journalEntries')
+          .doc(widget.planId);
       final journalSnap = await journalRef.get();
-      final planData = journalSnap.exists ? (journalSnap.data() as Map<String, dynamic>) : <String, dynamic>{};
+      final planData = journalSnap.exists
+          ? (journalSnap.data() as Map<String, dynamic>)
+          : <String, dynamic>{};
 
       // Build planned params (best-effort mapping)
       final plannedParams = <String, dynamic>{
         'strike': planData['strike'],
-        'expiration': planData['expiration'] is Timestamp ? (planData['expiration'] as Timestamp).toDate() : planData['expiration'],
+        'expiration': planData['expiration'] is Timestamp
+            ? (planData['expiration'] as Timestamp).toDate()
+            : planData['expiration'],
         'contracts': planData['contracts'],
-        'plannedEntryTime': planData['plannedEntryTime'] is Timestamp ? (planData['plannedEntryTime'] as Timestamp).toDate() : planData['plannedEntryTime'],
+        'plannedEntryTime': planData['plannedEntryTime'] is Timestamp
+            ? (planData['plannedEntryTime'] as Timestamp).toDate()
+            : planData['plannedEntryTime'],
         'maxEntryPrice': planData['maxEntryPrice'],
         'maxRisk': planData['maxRisk'],
       };
@@ -129,7 +169,10 @@ class _ExecuteTradeModalState extends State<ExecuteTradeModal> {
       executedParams['strike'] = plannedParams['strike'];
       executedParams['expiration'] = plannedParams['expiration'];
 
-      final score = DisciplineEngine.scoreTrade(plannedParams: plannedParams, executedParams: executedParams);
+      final score = DisciplineEngine.scoreTrade(
+        plannedParams: plannedParams,
+        executedParams: executedParams,
+      );
 
       // 3. Create position
       // 3. Create position
@@ -159,7 +202,11 @@ class _ExecuteTradeModalState extends State<ExecuteTradeModal> {
         final callable = functions.httpsCallable('scoreTrade');
 
         // Build canonical payload using payload builder (includes strike/expiration)
-        final payload = pb.buildScoreTradePayload(journalId: widget.planId, plannedParams: plannedParams, executedParams: executedParams);
+        final payload = pb.buildScoreTradePayload(
+          journalId: widget.planId,
+          plannedParams: plannedParams,
+          executedParams: executedParams,
+        );
         final res = await callable.call(payload);
 
         if (res.data != null) {
@@ -187,12 +234,16 @@ class _ExecuteTradeModalState extends State<ExecuteTradeModal> {
       if (widget.firestore == null) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => JournalDetailScreen(entryId: widget.planId)),
+          MaterialPageRoute(
+            builder: (_) => JournalDetailScreen(entryId: widget.planId),
+          ),
         );
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Execution failed: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Execution failed: $e')));
       setState(() => _loading = false);
     }
   }
@@ -212,7 +263,9 @@ class _ExecuteTradeModalState extends State<ExecuteTradeModal> {
               children: [
                 TextFormField(
                   controller: _priceCtrl,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: const InputDecoration(labelText: 'Entry Price'),
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) return 'Required';
@@ -238,14 +291,18 @@ class _ExecuteTradeModalState extends State<ExecuteTradeModal> {
                   controller: _notesCtrl,
                   keyboardType: TextInputType.multiline,
                   maxLines: 3,
-                  decoration: const InputDecoration(labelText: 'Notes (optional)'),
+                  decoration: const InputDecoration(
+                    labelText: 'Notes (optional)',
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: _loading ? null : () => Navigator.pop(context),
+                        onPressed: _loading
+                            ? null
+                            : () => Navigator.pop(context),
                         child: const Text('Cancel'),
                       ),
                     ),
@@ -253,7 +310,15 @@ class _ExecuteTradeModalState extends State<ExecuteTradeModal> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: _loading ? null : _execute,
-                        child: _loading ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Confirm Execution'),
+                        child: _loading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text('Confirm Execution'),
                       ),
                     ),
                   ],

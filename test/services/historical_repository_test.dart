@@ -16,10 +16,7 @@ void main() {
       fakeSource = FakeHistoricalDataSource();
       fakeBox = FakeBox();
       cache = HistoricalCache(fakeBox);
-      repository = HistoricalRepository(
-        source: fakeSource,
-        cache: cache,
-      );
+      repository = HistoricalRepository(source: fakeSource, cache: cache);
     });
 
     group('Successful Fetches', () {
@@ -133,51 +130,54 @@ void main() {
         expect(fakeSource.fetchCallCount, equals(0)); // Source not called
       });
 
-      test('should use cache for multiple requests with same parameters', () async {
-        // Arrange
-        final symbol = 'MSFT';
-        final start = DateTime(2025, 3, 1);
-        final end = DateTime(2025, 3, 15);
-        final mockPrices = [
-          HistoricalPrice(
-            date: DateTime(2025, 3, 1),
-            open: 300.0,
-            high: 305.0,
-            low: 298.0,
-            close: 303.0,
-            volume: 1500000.0,
-          ),
-        ];
-        fakeSource.mockResponse = mockPrices;
+      test(
+        'should use cache for multiple requests with same parameters',
+        () async {
+          // Arrange
+          final symbol = 'MSFT';
+          final start = DateTime(2025, 3, 1);
+          final end = DateTime(2025, 3, 15);
+          final mockPrices = [
+            HistoricalPrice(
+              date: DateTime(2025, 3, 1),
+              open: 300.0,
+              high: 305.0,
+              low: 298.0,
+              close: 303.0,
+              volume: 1500000.0,
+            ),
+          ];
+          fakeSource.mockResponse = mockPrices;
 
-        // Act - First request fetches from source
-        final result1 = await repository.getDailyPrices(
-          symbol: symbol,
-          start: start,
-          end: end,
-        );
+          // Act - First request fetches from source
+          final result1 = await repository.getDailyPrices(
+            symbol: symbol,
+            start: start,
+            end: end,
+          );
 
-        // Act - Second request should use cache
-        final result2 = await repository.getDailyPrices(
-          symbol: symbol,
-          start: start,
-          end: end,
-        );
+          // Act - Second request should use cache
+          final result2 = await repository.getDailyPrices(
+            symbol: symbol,
+            start: start,
+            end: end,
+          );
 
-        // Assert
-        expect(result1.length, equals(result2.length));
-        for (var i = 0; i < result1.length; i++) {
-          final p1 = result1[i];
-          final p2 = result2[i];
-          expect(p1.date, equals(p2.date));
-          expect(p1.open, equals(p2.open));
-          expect(p1.high, equals(p2.high));
-          expect(p1.low, equals(p2.low));
-          expect(p1.close, equals(p2.close));
-          expect(p1.volume, equals(p2.volume));
-        }
-        expect(fakeSource.fetchCallCount, equals(1)); // Called only once
-      });
+          // Assert
+          expect(result1.length, equals(result2.length));
+          for (var i = 0; i < result1.length; i++) {
+            final p1 = result1[i];
+            final p2 = result2[i];
+            expect(p1.date, equals(p2.date));
+            expect(p1.open, equals(p2.open));
+            expect(p1.high, equals(p2.high));
+            expect(p1.low, equals(p2.low));
+            expect(p1.close, equals(p2.close));
+            expect(p1.volume, equals(p2.volume));
+          }
+          expect(fakeSource.fetchCallCount, equals(1)); // Called only once
+        },
+      );
 
       test('should handle case-insensitive symbol caching', () async {
         // Arrange
@@ -196,11 +196,7 @@ void main() {
         fakeSource.mockResponse = mockPrices;
 
         // Act - First request with lowercase
-        await repository.getDailyPrices(
-          symbol: 'aapl',
-          start: start,
-          end: end,
-        );
+        await repository.getDailyPrices(symbol: 'aapl', start: start, end: end);
 
         // Act - Second request with uppercase should hit cache
         final result = await repository.getDailyPrices(
@@ -216,103 +212,109 @@ void main() {
     });
 
     group('Cache Misses', () {
-      test('should fetch from source when different symbol requested', () async {
-        // Arrange
-        final start = DateTime(2025, 5, 1);
-        final end = DateTime(2025, 5, 31);
-        final cachedPrices = [
-          HistoricalPrice(
-            date: DateTime(2025, 5, 1),
-            open: 150.0,
-            high: 155.0,
-            low: 149.0,
-            close: 154.0,
-            volume: 1000000.0,
-          ),
-        ];
-        final newPrices = [
-          HistoricalPrice(
-            date: DateTime(2025, 5, 1),
-            open: 200.0,
-            high: 205.0,
-            low: 199.0,
-            close: 204.0,
-            volume: 2000000.0,
-          ),
-        ];
+      test(
+        'should fetch from source when different symbol requested',
+        () async {
+          // Arrange
+          final start = DateTime(2025, 5, 1);
+          final end = DateTime(2025, 5, 31);
+          final cachedPrices = [
+            HistoricalPrice(
+              date: DateTime(2025, 5, 1),
+              open: 150.0,
+              high: 155.0,
+              low: 149.0,
+              close: 154.0,
+              volume: 1000000.0,
+            ),
+          ];
+          final newPrices = [
+            HistoricalPrice(
+              date: DateTime(2025, 5, 1),
+              open: 200.0,
+              high: 205.0,
+              low: 199.0,
+              close: 204.0,
+              volume: 2000000.0,
+            ),
+          ];
 
-        // Cache for AAPL
-        await cache.save(
-          symbol: 'AAPL',
-          start: start,
-          end: end,
-          prices: cachedPrices,
-        );
+          // Cache for AAPL
+          await cache.save(
+            symbol: 'AAPL',
+            start: start,
+            end: end,
+            prices: cachedPrices,
+          );
 
-        fakeSource.mockResponse = newPrices;
+          fakeSource.mockResponse = newPrices;
 
-        // Act - Request for different symbol TSLA
-        final result = await repository.getDailyPrices(
-          symbol: 'TSLA',
-          start: start,
-          end: end,
-        );
+          // Act - Request for different symbol TSLA
+          final result = await repository.getDailyPrices(
+            symbol: 'TSLA',
+            start: start,
+            end: end,
+          );
 
-        // Assert
-        expect(result, equals(newPrices));
-        expect(fakeSource.fetchCallCount, equals(1)); // Source called
-      });
+          // Assert
+          expect(result, equals(newPrices));
+          expect(fakeSource.fetchCallCount, equals(1)); // Source called
+        },
+      );
 
-      test('should fetch from source when different date range requested', () async {
-        // Arrange
-        final symbol = 'AAPL';
-        final cachedStart = DateTime(2025, 1, 1);
-        final cachedEnd = DateTime(2025, 1, 31);
-        final newStart = DateTime(2025, 2, 1);
-        final newEnd = DateTime(2025, 2, 28);
-        
-        final cachedPrices = [
-          HistoricalPrice(
-            date: DateTime(2025, 1, 1),
-            open: 150.0,
-            high: 155.0,
-            low: 149.0,
-            close: 154.0,
-            volume: 1000000.0,
-          ),
-        ];
-        final newPrices = [
-          HistoricalPrice(
-            date: DateTime(2025, 2, 1),
-            open: 160.0,
-            high: 165.0,
-            low: 159.0,
-            close: 164.0,
-            volume: 1200000.0,
-          ),
-        ];
+      test(
+        'should fetch from source when different date range requested',
+        () async {
+          // Arrange
+          final symbol = 'AAPL';
+          final cachedStart = DateTime(2025, 1, 1);
+          final cachedEnd = DateTime(2025, 1, 31);
+          final newStart = DateTime(2025, 2, 1);
+          final newEnd = DateTime(2025, 2, 28);
 
-        // Cache for one date range
-        await cache.save(
-          symbol: symbol,
-          start: cachedStart,
-          end: cachedEnd,
-          prices: cachedPrices,
-        );
+          final cachedPrices = [
+            HistoricalPrice(
+              date: DateTime(2025, 1, 1),
+              open: 150.0,
+              high: 155.0,
+              low: 149.0,
+              close: 154.0,
+              volume: 1000000.0,
+            ),
+          ];
+          final newPrices = [
+            HistoricalPrice(
+              date: DateTime(2025, 2, 1),
+              open: 160.0,
+              high: 165.0,
+              low: 159.0,
+              close: 164.0,
+              volume: 1200000.0,
+            ),
+          ];
 
-        fakeSource.mockResponse = newPrices;
+          // Cache for one date range
+          await cache.save(
+            symbol: symbol,
+            start: cachedStart,
+            end: cachedEnd,
+            prices: cachedPrices,
+          );
 
-        // Act - Request for different date range
-        final result = await repository.getDailyPrices(
-          symbol: symbol,
-          start: newStart,
-          end: newEnd,
-        );
+          fakeSource.mockResponse = newPrices;
 
-        // Assert
-        expect(result, equals(newPrices));
-        expect(fakeSource.fetchCallCount, equals(1)); // Source called
-      });
+          // Act - Request for different date range
+          final result = await repository.getDailyPrices(
+            symbol: symbol,
+            start: newStart,
+            end: newEnd,
+          );
+
+          // Assert
+          expect(result, equals(newPrices));
+          expect(fakeSource.fetchCallCount, equals(1)); // Source called
+        },
+      );
 
       test('should save fetched data to cache after cache miss', () async {
         // Arrange
@@ -332,11 +334,7 @@ void main() {
         fakeSource.mockResponse = mockPrices;
 
         // Act - First request (cache miss)
-        await repository.getDailyPrices(
-          symbol: symbol,
-          start: start,
-          end: end,
-        );
+        await repository.getDailyPrices(symbol: symbol, start: start, end: end);
 
         // Act - Second request (should be cache hit)
         final result = await repository.getDailyPrices(
@@ -356,7 +354,10 @@ void main() {
                 .toList(),
           ),
         );
-        expect(fakeSource.fetchCallCount, equals(1)); // Only called once, second was cached
+        expect(
+          fakeSource.fetchCallCount,
+          equals(1),
+        ); // Only called once, second was cached
       });
     });
 
@@ -370,11 +371,8 @@ void main() {
 
         // Act & Assert
         expect(
-          () => repository.getDailyPrices(
-            symbol: symbol,
-            start: start,
-            end: end,
-          ),
+          () =>
+              repository.getDailyPrices(symbol: symbol, start: start, end: end),
           throwsException,
         );
       });
@@ -420,7 +418,10 @@ void main() {
 
         // Assert
         expect(result, equals(mockPrices));
-        expect(fakeSource.fetchCallCount, equals(2)); // Called twice due to first failure
+        expect(
+          fakeSource.fetchCallCount,
+          equals(2),
+        ); // Called twice due to first failure
       });
 
       test('should handle empty price list from source', () async {
@@ -450,11 +451,7 @@ void main() {
         fakeSource.mockResponse = [];
 
         // Act - First request
-        await repository.getDailyPrices(
-          symbol: symbol,
-          start: start,
-          end: end,
-        );
+        await repository.getDailyPrices(symbol: symbol, start: start, end: end);
 
         // Act - Second request should use cached empty list
         final result = await repository.getDailyPrices(

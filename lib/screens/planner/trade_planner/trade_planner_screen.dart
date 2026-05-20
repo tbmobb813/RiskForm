@@ -19,9 +19,7 @@ class TradePlannerScreen extends ConsumerWidget {
     final planner = ref.read(plannerNotifierProvider.notifier);
 
     if (state.strategyId == null) {
-      return const Scaffold(
-        body: Center(child: Text("No strategy selected.")),
-      );
+      return const Scaffold(body: Center(child: Text("No strategy selected.")));
     }
 
     return Scaffold(
@@ -38,7 +36,10 @@ class TradePlannerScreen extends ConsumerWidget {
               // Strategy Header
               Text(
                 state.strategyName!,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
@@ -48,27 +49,47 @@ class TradePlannerScreen extends ConsumerWidget {
 
               const SizedBox(height: 12),
               // Strategy health score
-              Builder(builder: (context) {
-                final health = StrategyHealthService().compute(inputs: state.inputs, payoff: state.payoff);
-                final score = (health.overall * 100).toStringAsFixed(0);
-                return Card(
-                  color: Colors.blueGrey[900],
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          const Text('Strategy Health', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                          const SizedBox(height: 4),
-                          Text('Overall: $score%', style: const TextStyle(fontSize: 12)),
-                        ]),
-                        CircularProgressIndicator(value: health.overall, color: Colors.green),
-                      ],
+              Builder(
+                builder: (context) {
+                  final health = StrategyHealthService().compute(
+                    inputs: state.inputs,
+                    payoff: state.payoff,
+                  );
+                  final score = (health.overall * 100).toStringAsFixed(0);
+                  return Card(
+                    color: Colors.blueGrey[900],
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Strategy Health',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Overall: $score%',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ],
+                          ),
+                          CircularProgressIndicator(
+                            value: health.overall,
+                            color: Colors.green,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              }),
+                  );
+                },
+              ),
 
               const SizedBox(height: 24),
 
@@ -91,7 +112,11 @@ class TradePlannerScreen extends ConsumerWidget {
               const SizedBox(height: 12),
               const RecommendedRangeSlider(field: 'dte', min: 1.0, max: 120.0),
               const SizedBox(height: 12),
-              const RecommendedRangeSlider(field: 'width', min: 1.0, max: 100.0),
+              const RecommendedRangeSlider(
+                field: 'width',
+                min: 1.0,
+                max: 100.0,
+              ),
 
               const SizedBox(height: 12),
               // Summary card that reflects persisted slider values
@@ -103,9 +128,7 @@ class TradePlannerScreen extends ConsumerWidget {
               const SizedBox(height: 16),
 
               // Optional Inputs
-              OptionalInputsSection(
-                onNotesChanged: (notes) {},
-              ),
+              OptionalInputsSection(onNotesChanged: (notes) {}),
 
               const SizedBox(height: 24),
 

@@ -27,7 +27,12 @@ class ComparisonEquityChart extends StatelessWidget {
             const SizedBox(height: 12),
             SizedBox(
               height: 300,
-              child: _MultiLineChart(curves: curves, labels: result.results.map((r) => (r.notes.isNotEmpty) ? r.notes.first : '').toList()),
+              child: _MultiLineChart(
+                curves: curves,
+                labels: result.results
+                    .map((r) => (r.notes.isNotEmpty) ? r.notes.first : '')
+                    .toList(),
+              ),
             ),
           ],
         ),
@@ -45,7 +50,11 @@ class _MultiLineChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      painter: _MultiLinePainter(curves: curves, labels: labels, theme: Theme.of(context)),
+      painter: _MultiLinePainter(
+        curves: curves,
+        labels: labels,
+        theme: Theme.of(context),
+      ),
       size: Size.infinite,
     );
   }
@@ -55,11 +64,15 @@ class _MultiLinePainter extends CustomPainter {
   final List<List<double>> curves;
   final List<String> labels;
   final ThemeData theme;
-  
+
   static const int _axisAlpha = 80;
   static const int _tickAlpha = 140;
 
-  _MultiLinePainter({required this.curves, required this.labels, required this.theme});
+  _MultiLinePainter({
+    required this.curves,
+    required this.labels,
+    required this.theme,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -81,22 +94,33 @@ class _MultiLinePainter extends CustomPainter {
     }
 
     // draw axes lines
-    final axisPaint = Paint()..color = theme.colorScheme.onSurface.withAlpha(_axisAlpha);
+    final axisPaint = Paint()
+      ..color = theme.colorScheme.onSurface.withAlpha(_axisAlpha);
     final leftPadding = 44.0;
     final bottomPadding = 24.0;
     final w = size.width - leftPadding - 8;
     final h = size.height - bottomPadding - 8;
 
     // y ticks
-    final tpStyle = TextStyle(color: theme.colorScheme.onSurface.withAlpha(_tickAlpha), fontSize: 10);
+    final tpStyle = TextStyle(
+      color: theme.colorScheme.onSurface.withAlpha(_tickAlpha),
+      fontSize: 10,
+    );
     final tickCount = 4;
     for (int i = 0; i <= tickCount; i++) {
       final v = minY + (i * (maxY - minY) / tickCount);
       final y = 8 + h - (i * h / tickCount);
-      final tp = TextPainter(text: TextSpan(text: v.toStringAsFixed(0), style: tpStyle), textDirection: TextDirection.ltr);
+      final tp = TextPainter(
+        text: TextSpan(text: v.toStringAsFixed(0), style: tpStyle),
+        textDirection: TextDirection.ltr,
+      );
       tp.layout();
       tp.paint(canvas, Offset(6, y - tp.height / 2));
-      canvas.drawLine(Offset(leftPadding, y), Offset(leftPadding + w, y), axisPaint..strokeWidth = 0.5);
+      canvas.drawLine(
+        Offset(leftPadding, y),
+        Offset(leftPadding + w, y),
+        axisPaint..strokeWidth = 0.5,
+      );
     }
 
     // draw each curve
@@ -131,7 +155,13 @@ class _MultiLinePainter extends CustomPainter {
       final r = Rect.fromLTWH(legendX, legendY, 12, 8);
       final boxPaint = Paint()..color = color;
       canvas.drawRect(r, boxPaint);
-      final tp = TextPainter(text: TextSpan(text: '  $label', style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 11)), textDirection: TextDirection.ltr);
+      final tp = TextPainter(
+        text: TextSpan(
+          text: '  $label',
+          style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 11),
+        ),
+        textDirection: TextDirection.ltr,
+      );
       tp.layout(maxWidth: size.width - legendX - 8);
       tp.paint(canvas, Offset(legendX + 18, legendY - 4));
       legendY += 18;

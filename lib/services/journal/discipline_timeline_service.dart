@@ -37,7 +37,11 @@ class DisciplineTimelineService {
     final Map<DateTime, List<JournalEntry>> byDay = {};
 
     for (final e in entries) {
-      final day = DateTime(e.timestamp.year, e.timestamp.month, e.timestamp.day);
+      final day = DateTime(
+        e.timestamp.year,
+        e.timestamp.month,
+        e.timestamp.day,
+      );
       byDay.putIfAbsent(day, () => []).add(e);
     }
 
@@ -48,13 +52,15 @@ class DisciplineTimelineService {
       final dayEntries = byDay[day]!;
       final score = scoring.compute(dayEntries);
 
-      snapshots.add(DailyDisciplineSnapshot(
-        date: day,
-        score: score.score,
-        cyclesCompleted: dayEntries.where((e) => e.type == 'cycle').length,
-        assignments: dayEntries.where((e) => e.type == 'assignment').length,
-        calledAway: dayEntries.where((e) => e.type == 'calledAway').length,
-      ));
+      snapshots.add(
+        DailyDisciplineSnapshot(
+          date: day,
+          score: score.score,
+          cyclesCompleted: dayEntries.where((e) => e.type == 'cycle').length,
+          assignments: dayEntries.where((e) => e.type == 'assignment').length,
+          calledAway: dayEntries.where((e) => e.type == 'calledAway').length,
+        ),
+      );
     }
 
     return snapshots;
@@ -117,8 +123,12 @@ class DisciplineTimelineService {
     }).length;
 
     final cleanCycleRate = cycles.isEmpty ? 0.0 : cleanCycles / cycles.length;
-    final assignmentAvoidanceRate = cycles.isEmpty ? 0.0 : (1 - assignments / cycles.length);
-    final planAdherenceRate = cycles.isEmpty ? 0.0 : (calledAway / cycles.length);
+    final assignmentAvoidanceRate = cycles.isEmpty
+        ? 0.0
+        : (1 - assignments / cycles.length);
+    final planAdherenceRate = cycles.isEmpty
+        ? 0.0
+        : (calledAway / cycles.length);
 
     return HabitStats(
       cleanCycleRate: cleanCycleRate,

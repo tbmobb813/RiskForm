@@ -197,7 +197,8 @@ class PayoffEngine {
 
     final netPremium = callPremium - putPremium;
 
-    final capitalRequired = (costBasis + putPremium - callPremium) * contractSize;
+    final capitalRequired =
+        (costBasis + putPremium - callPremium) * contractSize;
 
     final maxGainPerShare = (kCall - costBasis) + netPremium;
     final maxGain = maxGainPerShare * contractSize;
@@ -349,7 +350,10 @@ class PayoffEngine {
     final callPremium = i.premiumReceived ?? 0;
     final putPremium = i.premiumPaid ?? 0;
     final costBasis = i.costBasis ?? 0;
-    final perShare = (S - costBasis) + (callPremium - max(0, S - kCall)) + (-putPremium + max(0, kPut - S));
+    final perShare =
+        (S - costBasis) +
+        (callPremium - max(0, S - kCall)) +
+        (-putPremium + max(0, kPut - S));
     return perShare * contractSize;
   }
 

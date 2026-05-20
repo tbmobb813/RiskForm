@@ -2,14 +2,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../exceptions/app_exceptions.dart';
 
-final firestoreServiceProvider = Provider<FirestoreService>((ref) => FirestoreService());
+final firestoreServiceProvider = Provider<FirestoreService>(
+  (ref) => FirestoreService(),
+);
 
 /// Base Firestore service providing common CRUD operations.
 /// Subclasses can extend this for collection-specific functionality.
 class FirestoreService {
   final FirebaseFirestore _db;
 
-  FirestoreService([FirebaseFirestore? db]) : _db = db ?? FirebaseFirestore.instance;
+  FirestoreService([FirebaseFirestore? db])
+    : _db = db ?? FirebaseFirestore.instance;
 
   /// Gets a reference to a collection.
   CollectionReference<Map<String, dynamic>> collection(String path) {
@@ -17,7 +20,10 @@ class FirestoreService {
   }
 
   /// Gets a reference to a document.
-  DocumentReference<Map<String, dynamic>> doc(String collectionPath, String docId) {
+  DocumentReference<Map<String, dynamic>> doc(
+    String collectionPath,
+    String docId,
+  ) {
     return _db.collection(collectionPath).doc(docId);
   }
 
@@ -46,14 +52,11 @@ class FirestoreService {
     bool merge = false,
   }) async {
     try {
-      await _db.collection(collectionPath).doc(docId).set(
-        {
-          ...data,
-          'updatedAt': FieldValue.serverTimestamp(),
-          if (!merge) 'createdAt': FieldValue.serverTimestamp(),
-        },
-        SetOptions(merge: merge),
-      );
+      await _db.collection(collectionPath).doc(docId).set({
+        ...data,
+        'updatedAt': FieldValue.serverTimestamp(),
+        if (!merge) 'createdAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: merge));
     } catch (e) {
       throw FirestoreException.fromError(e);
     }
@@ -154,7 +157,9 @@ class FirestoreService {
     required String collectionPath,
     required String docId,
   }) {
-    return _db.collection(collectionPath).doc(docId).snapshots().map((snapshot) {
+    return _db.collection(collectionPath).doc(docId).snapshots().map((
+      snapshot,
+    ) {
       if (!snapshot.exists) return null;
       return {'id': snapshot.id, ...?snapshot.data()};
     });
@@ -185,8 +190,9 @@ class FirestoreService {
     }
 
     return query.snapshots().map(
-          (snapshot) => snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList(),
-        );
+      (snapshot) =>
+          snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList(),
+    );
   }
 
   /// Runs a batch write operation.
@@ -201,7 +207,9 @@ class FirestoreService {
   }
 
   /// Runs a transaction.
-  Future<T> transaction<T>(Future<T> Function(Transaction transaction) operations) async {
+  Future<T> transaction<T>(
+    Future<T> Function(Transaction transaction) operations,
+  ) async {
     try {
       return await _db.runTransaction(operations);
     } catch (e) {

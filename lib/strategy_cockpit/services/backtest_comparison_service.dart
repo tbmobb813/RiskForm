@@ -6,10 +6,12 @@ class BacktestComparisonService {
   final FirebaseFirestore _firestore;
 
   BacktestComparisonService({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
-  CollectionReference _runs(String strategyId) =>
-      _firestore.collection('strategyBacktests').doc(strategyId).collection('runs');
+  CollectionReference _runs(String strategyId) => _firestore
+      .collection('strategyBacktests')
+      .doc(strategyId)
+      .collection('runs');
 
   // Compare last N completed backtests
   Future<BacktestComparisonResult> compareLastN({
@@ -24,10 +26,7 @@ class BacktestComparisonService {
 
     final runs = snap.docs.map((d) {
       final data = d.data() as Map<String, dynamic>;
-      return {
-        'runId': d.id,
-        ...data,
-      };
+      return {'runId': d.id, ...data};
     }).toList();
 
     if (runs.isEmpty) {
@@ -93,7 +92,9 @@ class BacktestComparisonService {
     return worst;
   }
 
-  Map<String, String> _computeRegimeWeaknesses(List<Map<String, dynamic>> runs) {
+  Map<String, String> _computeRegimeWeaknesses(
+    List<Map<String, dynamic>> runs,
+  ) {
     final Map<String, double> regimePnl = {};
     final Map<String, int> regimeCount = {};
 

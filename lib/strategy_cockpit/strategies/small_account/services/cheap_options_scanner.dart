@@ -15,7 +15,12 @@ class OptionExpiry {
   final int dte;
   final List<ChainOption> calls;
   final List<ChainOption> puts;
-  OptionExpiry({required this.expiry, required this.dte, required this.calls, required this.puts});
+  OptionExpiry({
+    required this.expiry,
+    required this.dte,
+    required this.calls,
+    required this.puts,
+  });
 }
 
 class ChainOption {
@@ -29,7 +34,14 @@ class ChainOption {
   double get premium => (bid + ask) / 2.0;
   double get bidAskSpread => (ask - bid).abs();
 
-  ChainOption({required this.contract, required this.bid, required this.ask, required this.volume, required this.openInterest, required this.delta});
+  ChainOption({
+    required this.contract,
+    required this.bid,
+    required this.ask,
+    required this.volume,
+    required this.openInterest,
+    required this.delta,
+  });
 }
 
 /// Abstraction for fetching chains from existing services.

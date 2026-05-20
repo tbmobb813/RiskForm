@@ -25,7 +25,9 @@ class JournalEntry {
     this.disciplineBreakdown,
   });
 
-  factory JournalEntry.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
+  factory JournalEntry.fromFirestore(
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) {
     final data = doc.data() ?? <String, dynamic>{};
     final ts = data['createdAt'];
     DateTime created = DateTime.now();
@@ -41,19 +43,21 @@ class JournalEntry {
       notes: data['notes'] as String?,
       tags: List<String>.from(data['tags'] ?? <String>[]),
       disciplineScore: data['disciplineScore'] as int?,
-      disciplineBreakdown: data['disciplineBreakdown'] is Map ? Map<String, dynamic>.from(data['disciplineBreakdown']) : null,
+      disciplineBreakdown: data['disciplineBreakdown'] is Map
+          ? Map<String, dynamic>.from(data['disciplineBreakdown'])
+          : null,
     );
   }
 
   Map<String, dynamic> toMap() => {
-        'createdAt': Timestamp.fromDate(createdAt),
-        'strategyId': strategyId,
-        'planId': planId,
-        'positionId': positionId,
-        'cycleState': cycleState,
-        'notes': notes,
-        'tags': tags,
-        'disciplineScore': disciplineScore,
-        'disciplineBreakdown': disciplineBreakdown,
-      };
+    'createdAt': Timestamp.fromDate(createdAt),
+    'strategyId': strategyId,
+    'planId': planId,
+    'positionId': positionId,
+    'cycleState': cycleState,
+    'notes': notes,
+    'tags': tags,
+    'disciplineScore': disciplineScore,
+    'disciplineBreakdown': disciplineBreakdown,
+  };
 }

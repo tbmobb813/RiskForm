@@ -6,8 +6,8 @@ enum DashboardDataSource { local, cloud, both }
 /// Provider for the current dashboard data source selection.
 final dashboardDataSourceProvider =
     StateNotifierProvider<DashboardDataSourceNotifier, DashboardDataSource>(
-  (ref) => DashboardDataSourceNotifier(),
-);
+      (ref) => DashboardDataSourceNotifier(),
+    );
 
 /// Notifier for managing the dashboard data source state.
 class DashboardDataSourceNotifier extends StateNotifier<DashboardDataSource> {

@@ -59,12 +59,17 @@ class AccountSnapshotCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Account Snapshot', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Account Snapshot',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 12),
 
             Text('Balance: \$${balance.toStringAsFixed(2)}'),
             Text('Risk Deployed: \$${riskDeployed.toStringAsFixed(2)}'),
-            Text('Available Risk: \$${(balance - riskDeployed).toStringAsFixed(2)}'),
+            Text(
+              'Available Risk: \$${(balance - riskDeployed).toStringAsFixed(2)}',
+            ),
           ],
         ),
       ),
@@ -86,10 +91,19 @@ class _ToolsSectionState extends ConsumerState<ToolsSection> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Enter Ticker'),
-        content: TextField(controller: ctl, decoration: const InputDecoration(hintText: 'e.g. SPY')),
+        content: TextField(
+          controller: ctl,
+          decoration: const InputDecoration(hintText: 'e.g. SPY'),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(null), child: const Text('Cancel')),
-          ElevatedButton(onPressed: () => Navigator.of(ctx).pop(ctl.text.trim()), child: const Text('Go')),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(null),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(ctl.text.trim()),
+            child: const Text('Go'),
+          ),
         ],
       ),
     );
@@ -100,7 +114,10 @@ class _ToolsSectionState extends ConsumerState<ToolsSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Tools', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const Text(
+          'Tools',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 12),
 
         ToolCard(
@@ -126,8 +143,10 @@ class _ToolsSectionState extends ConsumerState<ToolsSection> {
             final ticker = await _promptTicker();
             if (!mounted) return;
             if (ticker == null || ticker.isEmpty) return;
-            // ignore: use_build_context_synchronously
-            Navigator.of(context).pushNamed('/small_account/spread_builder/$ticker');
+            Navigator.of(
+              // ignore: use_build_context_synchronously
+              context,
+            ).pushNamed('/small_account/spread_builder/$ticker');
           },
         ),
       ],
@@ -143,7 +162,13 @@ class ToolCard extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
 
-  const ToolCard({super.key, required this.title, required this.subtitle, required this.icon, required this.onTap});
+  const ToolCard({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -175,18 +200,26 @@ class ActiveStrategySection extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Active Strategy', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Active Strategy',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 12),
 
             Text(strategy!.label, style: const TextStyle(fontSize: 16)),
             Text('Breakeven: ${strategy!.breakeven.toStringAsFixed(2)}'),
             Text('Max Risk: \$${strategy!.maxRisk.toStringAsFixed(2)}'),
-            Text('Max Profit: ${strategy!.maxProfit.isInfinite ? "∞" : "\$${strategy!.maxProfit.toStringAsFixed(2)}"}'),
+            Text(
+              'Max Profit: ${strategy!.maxProfit.isInfinite ? "∞" : "\$${strategy!.maxProfit.toStringAsFixed(2)}"}',
+            ),
 
             const SizedBox(height: 16),
 
             ElevatedButton(
-              onPressed: () => Navigator.pushNamed(context, '/small_account/strategy_dashboard'),
+              onPressed: () => Navigator.pushNamed(
+                context,
+                '/small_account/strategy_dashboard',
+              ),
               child: const Text('Open Strategy Dashboard'),
             ),
           ],

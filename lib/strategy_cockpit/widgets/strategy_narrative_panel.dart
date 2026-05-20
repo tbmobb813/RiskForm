@@ -10,31 +10,53 @@ class StrategyNarrativePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (vm.strategy == null || vm.health == null) return const SizedBox.shrink();
+    if (vm.strategy == null || vm.health == null) {
+      return const SizedBox.shrink();
+    }
 
     // Build StrategyContext from vm (best-effort)
     final c = vm.health!;
 
     final constraintsMap = vm.strategy!.constraints;
     final constraints = Constraints(
-      maxRisk: (constraintsMap['maxRisk'] is int) ? constraintsMap['maxRisk'] as int : 100,
-      maxPositions: (constraintsMap['maxPositions'] is int) ? constraintsMap['maxPositions'] as int : 5,
-      allowedDteRange: constraintsMap['allowedDteRange'] is List ? List<int>.from(constraintsMap['allowedDteRange']) : null,
-      allowedDeltaRange: constraintsMap['allowedDeltaRange'] is List ? List<double>.from(constraintsMap['allowedDeltaRange'].map((v) => (v as num).toDouble())) : null,
+      maxRisk: (constraintsMap['maxRisk'] is int)
+          ? constraintsMap['maxRisk'] as int
+          : 100,
+      maxPositions: (constraintsMap['maxPositions'] is int)
+          ? constraintsMap['maxPositions'] as int
+          : 5,
+      allowedDteRange: constraintsMap['allowedDteRange'] is List
+          ? List<int>.from(constraintsMap['allowedDteRange'])
+          : null,
+      allowedDeltaRange: constraintsMap['allowedDeltaRange'] is List
+          ? List<double>.from(
+              constraintsMap['allowedDeltaRange'].map(
+                (v) => (v as num).toDouble(),
+              ),
+            )
+          : null,
     );
 
     final recent = <CycleSummary>[];
     for (var i = 0; i < (c.cycleSummaries.length); i++) {
       final m = c.cycleSummaries[i];
-      final ds = (m['disciplineScore'] is num) ? (m['disciplineScore'] as num).toInt() : 50;
+      final ds = (m['disciplineScore'] is num)
+          ? (m['disciplineScore'] as num).toInt()
+          : 50;
       final pnl = (m['pnl'] is num) ? (m['pnl'] as num).toDouble() : 0.0;
-      final r = (m['regime'] is String) ? m['regime'] as String : vm.currentRegime ?? 'unknown';
+      final r = (m['regime'] is String)
+          ? m['regime'] as String
+          : vm.currentRegime ?? 'unknown';
       recent.add(CycleSummary(disciplineScore: ds, pnl: pnl, regime: r));
     }
 
     final backtest = vm.latestBacktest == null
         ? null
-        : BacktestSummary(bestConfig: vm.latestBacktest, weakConfig: null, summaryNote: null);
+        : BacktestSummary(
+            bestConfig: vm.latestBacktest,
+            weakConfig: null,
+            summaryNote: null,
+          );
 
     final ctx = StrategyContext(
       healthScore: (c.healthScore ?? 50).toInt(),
@@ -47,7 +69,8 @@ class StrategyNarrativePanel extends StatelessWidget {
       backtestComparison: backtest,
     );
 
-    final narrative = vm.narrative ?? generateNarrative(ctx, recsBundle: vm.recommendations);
+    final narrative =
+        vm.narrative ?? generateNarrative(ctx, recsBundle: vm.recommendations);
 
     return Card(
       elevation: 0,
@@ -57,20 +80,38 @@ class StrategyNarrativePanel extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(narrative.title, style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              narrative.title,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 8),
-            Text(narrative.summary, style: Theme.of(context).textTheme.bodyMedium),
+            Text(
+              narrative.summary,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
             const SizedBox(height: 8),
-            ...narrative.bullets.map((b) => Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: Row(children: [
+            ...narrative.bullets.map(
+              (b) => Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  children: [
                     const Icon(Icons.fiber_manual_record, size: 8),
                     const SizedBox(width: 8),
-                    Expanded(child: Text(b, style: Theme.of(context).textTheme.bodySmall)),
-                  ]),
-                )),
+                    Expanded(
+                      child: Text(
+                        b,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(height: 8),
-            Text('Outlook: ${narrative.outlook}', style: Theme.of(context).textTheme.bodySmall),
+            Text(
+              'Outlook: ${narrative.outlook}',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
           ],
         ),
       ),

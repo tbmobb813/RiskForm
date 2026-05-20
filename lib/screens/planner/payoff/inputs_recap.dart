@@ -22,10 +22,7 @@ class InputsRecap extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 6),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(entry.key),
-                    Text(entry.value.toString()),
-                  ],
+                  children: [Text(entry.key), Text(entry.value.toString())],
                 ),
               );
             }).toList(),

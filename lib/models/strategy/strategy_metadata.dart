@@ -12,16 +12,16 @@ class StrategyMetadata {
   });
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'name': name,
-        'description': description,
-        'params': params,
-      };
+    'id': id,
+    'name': name,
+    'description': description,
+    'params': params,
+  };
 
   factory StrategyMetadata.fromMap(Map<String, dynamic> m) => StrategyMetadata(
-        id: m['id'] as String,
-        name: m['name'] as String,
-        description: m['description'] as String,
-        params: Map<String, dynamic>.from(m['params'] as Map? ?? {}),
-      );
+    id: m['id'] as String,
+    name: m['name'] as String,
+    description: m['description'] as String,
+    params: Map<String, dynamic>.from(m['params'] as Map? ?? {}),
+  );
 }

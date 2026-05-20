@@ -14,12 +14,12 @@ class OptionContract {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'strike': strike,
-        'premium': premium,
-        'expiry': expiry.toIso8601String(),
-        'type': type,
-      };
+    'id': id,
+    'strike': strike,
+    'premium': premium,
+    'expiry': expiry.toIso8601String(),
+    'type': type,
+  };
 
   static OptionContract fromJson(Map<String, dynamic> j) {
     return OptionContract(

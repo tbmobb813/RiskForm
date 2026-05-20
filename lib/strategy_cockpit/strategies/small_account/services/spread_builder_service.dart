@@ -10,7 +10,9 @@ class SpreadBuilderService {
 
     // Validation: short strike must be higher than long for a call debit spread
     if (shortLeg.strike <= longLeg.strike) {
-      throw Exception('Short strike must be higher than long strike for a call debit spread.');
+      throw Exception(
+        'Short strike must be higher than long strike for a call debit spread.',
+      );
     }
 
     return DebitSpreadStrategy(longLeg: longLeg, shortLeg: shortLeg);

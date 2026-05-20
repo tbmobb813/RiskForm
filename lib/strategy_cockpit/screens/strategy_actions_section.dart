@@ -48,9 +48,14 @@ class _StrategyActionsSectionState extends State<StrategyActionsSection> {
           )
         : ChangeNotifierProvider<StrategyCockpitViewModel>(
             create: (context) {
-              final container = ProviderScope.containerOf(context, listen: false);
+              final container = ProviderScope.containerOf(
+                context,
+                listen: false,
+              );
               final md = container.read(marketDataServiceProvider);
-              final recs = container.read(strategyRecommendationsEngineProvider);
+              final recs = container.read(
+                strategyRecommendationsEngineProvider,
+              );
               final narr = container.read(strategyNarrativeEngineProvider);
               final live = container.read(liveSyncManagerProvider);
               return StrategyCockpitViewModel(
@@ -94,10 +99,9 @@ class _StrategyActionsSectionState extends State<StrategyActionsSection> {
           // Open Planner
           OutlinedButton(
             onPressed: () {
-              Navigator.of(context).pushNamed(
-                '/planner',
-                arguments: widget.strategyId,
-              );
+              Navigator.of(
+                context,
+              ).pushNamed('/planner', arguments: widget.strategyId);
             },
             child: const Text('Open Planner'),
           ),
@@ -157,8 +161,6 @@ class _LifecycleButtons extends StatelessWidget {
   }
 
   void _notify(BuildContext context, String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg)),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 }

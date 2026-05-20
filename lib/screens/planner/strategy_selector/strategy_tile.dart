@@ -28,8 +28,10 @@ class StrategyTile extends StatelessWidget {
             children: [
               // Category Tag
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: color.withAlpha((0.2 * 255).round()),
                   borderRadius: BorderRadius.circular(12),

@@ -24,6 +24,7 @@ class SpreadBuilderController extends StateNotifier<SpreadSelection> {
   }
 }
 
-final spreadBuilderControllerProvider = StateNotifierProvider<SpreadBuilderController, SpreadSelection>((ref) {
-  return SpreadBuilderController();
-});
+final spreadBuilderControllerProvider =
+    StateNotifierProvider<SpreadBuilderController, SpreadSelection>((ref) {
+      return SpreadBuilderController();
+    });

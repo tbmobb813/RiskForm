@@ -20,10 +20,12 @@ class ExecutionService {
     required JournalRepository journalRepo,
     StrategyCycleService? cycleService,
     StrategyHealthService? healthService,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _journalRepo = journalRepo,
-        _cycleService = cycleService ?? StrategyCycleService(firestore: firestore),
-        _healthService = healthService ?? StrategyHealthService(firestore: firestore);
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _journalRepo = journalRepo,
+       _cycleService =
+           cycleService ?? StrategyCycleService(firestore: firestore),
+       _healthService =
+           healthService ?? StrategyHealthService(firestore: firestore);
 
   Future<void> executeStrategyTrade(Map<String, dynamic> envelope) async {
     final strategyId = envelope['strategyId'] as String?;
@@ -32,7 +34,10 @@ class ExecutionService {
     final userId = envelope['userId'] as String? ?? envelope['uid'] as String?;
     if (userId == null) throw Exception('Missing userId in execution envelope');
 
-    final strategyDoc = await _firestore.collection('strategies').doc(strategyId).get();
+    final strategyDoc = await _firestore
+        .collection('strategies')
+        .doc(strategyId)
+        .get();
     if (!strategyDoc.exists) throw Exception('Strategy not found: $strategyId');
 
     final strategyData = strategyDoc.data() as Map<String, dynamic>;
@@ -45,7 +50,9 @@ class ExecutionService {
     final execution = envelope['execution'] as Map<String, dynamic>? ?? {};
 
     // Basic constraint enforcement (example: maxPositions)
-    final constraints = Map<String, dynamic>.from(strategyData['constraints'] ?? {});
+    final constraints = Map<String, dynamic>.from(
+      strategyData['constraints'] ?? {},
+    );
     final maxPositions = constraints['maxPositions'] as int?;
     if (maxPositions != null) {
       // Count open positions for this strategy. Positions are stored under
@@ -54,7 +61,8 @@ class ExecutionService {
       // query to that user's positions; otherwise fall back to a
       // collection-group query across all users' positions (requires an
       // index and is less precise for per-user enforcement).
-      final userId = envelope['userId'] as String? ?? envelope['uid'] as String?;
+      final userId =
+          envelope['userId'] as String? ?? envelope['uid'] as String?;
       QuerySnapshot q;
       if (userId != null) {
         q = await _firestore
@@ -101,9 +109,13 @@ class ExecutionService {
         state: state,
         tags: List<String>.from(strategyData['tags'] ?? []),
         constraintsSummary: strategyData['constraintsSummary'],
-        constraints: Map<String, dynamic>.from(strategyData['constraints'] ?? {}),
+        constraints: Map<String, dynamic>.from(
+          strategyData['constraints'] ?? {},
+        ),
         currentRegime: strategyData['currentRegime'],
-        disciplineFlags: List<String>.from(strategyData['disciplineFlags'] ?? []),
+        disciplineFlags: List<String>.from(
+          strategyData['disciplineFlags'] ?? [],
+        ),
         updatedAt: DateTime.now(),
       );
 

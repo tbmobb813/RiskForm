@@ -30,10 +30,7 @@ class AccountSnapshotCard extends StatelessWidget {
           children: [
             const Text(
               'Account Snapshot',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
 
@@ -51,9 +48,19 @@ class AccountSnapshotCard extends StatelessWidget {
             // Second row: Risk deployed + Available
             Row(
               children: [
-                Expanded(child: _buildStatColumn('Risk Deployed', account.riskDeployedDisplay)),
+                Expanded(
+                  child: _buildStatColumn(
+                    'Risk Deployed',
+                    account.riskDeployedDisplay,
+                  ),
+                ),
                 const SizedBox(width: 16),
-                Expanded(child: _buildStatColumn('Available', account.availableRiskDisplay)),
+                Expanded(
+                  child: _buildStatColumn(
+                    'Available',
+                    account.availableRiskDisplay,
+                  ),
+                ),
               ],
             ),
 
@@ -62,7 +69,12 @@ class AccountSnapshotCard extends StatelessWidget {
             // Third row: Open positions + Buying power
             Row(
               children: [
-                Expanded(child: _buildStatColumn('Open Positions', '${account.openPositions}')),
+                Expanded(
+                  child: _buildStatColumn(
+                    'Open Positions',
+                    '${account.openPositions}',
+                  ),
+                ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
@@ -83,7 +95,9 @@ class AccountSnapshotCard extends StatelessWidget {
                                 minHeight: 8,
                                 backgroundColor: Colors.grey[300],
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                  _getBuyingPowerColor(account.buyingPowerPercent),
+                                  _getBuyingPowerColor(
+                                    account.buyingPowerPercent,
+                                  ),
                                 ),
                               ),
                             ),
@@ -116,7 +130,11 @@ class AccountSnapshotCard extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.lightbulb_outline, size: 16, color: Colors.blue.shade700),
+                    Icon(
+                      Icons.lightbulb_outline,
+                      size: 16,
+                      color: Colors.blue.shade700,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -148,10 +166,7 @@ class AccountSnapshotCard extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ],
     );
@@ -163,7 +178,9 @@ class AccountSnapshotCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: _getRegimeColor(regime).withAlpha((0.1 * 255).round()),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _getRegimeColor(regime).withAlpha((0.3 * 255).round())),
+        border: Border.all(
+          color: _getRegimeColor(regime).withAlpha((0.3 * 255).round()),
+        ),
       ),
       child: Text(
         regime.displayName,

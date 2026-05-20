@@ -3,7 +3,8 @@ class AccountSnapshot {
   final double buyingPower;
   final Map<String, int> sharesOwned;
   final double totalRiskExposurePercent;
-  final String wheelState; // "cash", "short_put", "shares_owned", "covered_call"
+  final String
+  wheelState; // "cash", "short_put", "shares_owned", "covered_call"
 
   AccountSnapshot({
     required this.accountSize,

@@ -27,7 +27,11 @@ class LineTouchTooltipData {
   final Color? tooltipBgColor;
   final double? tooltipRoundedRadius;
   final List<LineTooltipItem> Function(List<LineBarSpot>)? getTooltipItems;
-  LineTouchTooltipData({this.tooltipBgColor, this.tooltipRoundedRadius, this.getTooltipItems});
+  LineTouchTooltipData({
+    this.tooltipBgColor,
+    this.tooltipRoundedRadius,
+    this.getTooltipItems,
+  });
 }
 
 class LineTooltipItem {
@@ -47,7 +51,11 @@ class LineTouchData {
   final bool enabled;
   final bool handleBuiltInTouches;
   final LineTouchTooltipData? touchTooltipData;
-  LineTouchData({this.enabled = false, this.handleBuiltInTouches = false, this.touchTooltipData});
+  LineTouchData({
+    this.enabled = false,
+    this.handleBuiltInTouches = false,
+    this.touchTooltipData,
+  });
 }
 
 class FlDotData {
@@ -68,7 +76,14 @@ class LineChartBarData {
   final double? barWidth;
   final FlDotData? dotData;
   final BarAreaData? belowBarData;
-  LineChartBarData({this.spots, this.isCurved = false, this.color, this.barWidth, this.dotData, this.belowBarData});
+  LineChartBarData({
+    this.spots,
+    this.isCurved = false,
+    this.color,
+    this.barWidth,
+    this.dotData,
+    this.belowBarData,
+  });
 }
 
 class LineChartData {
@@ -79,7 +94,15 @@ class LineChartData {
   final List<LineChartBarData>? lineBarsData;
   final double? minY;
   final double? maxY;
-  LineChartData({this.gridData, this.titlesData, this.borderData, this.lineTouchData, this.lineBarsData, this.minY, this.maxY});
+  LineChartData({
+    this.gridData,
+    this.titlesData,
+    this.borderData,
+    this.lineTouchData,
+    this.lineBarsData,
+    this.minY,
+    this.maxY,
+  });
 }
 
 class LineChart extends StatelessWidget {

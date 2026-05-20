@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:riskform/screens/planner/payoff/components/payoff_chart_card.dart' as new_card;
+import 'package:riskform/screens/planner/payoff/components/payoff_chart_card.dart'
+    as new_card;
 import '../../../models/payoff_result.dart';
 
 class PayoffChartCard extends StatelessWidget {

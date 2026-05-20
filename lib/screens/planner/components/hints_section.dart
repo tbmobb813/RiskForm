@@ -22,19 +22,29 @@ class HintsSection extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Planner Hints', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            const Text(
+              'Planner Hints',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
             const SizedBox(height: 8),
-            ...bundle.hints.map((h) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _iconForSeverity(h.severity),
-                      const SizedBox(width: 8),
-                      Expanded(child: Text(h.message, style: TextStyle(color: _colorForSeverity(h.severity)))),
-                    ],
-                  ),
-                )),
+            ...bundle.hints.map(
+              (h) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _iconForSeverity(h.severity),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        h.message,
+                        style: TextStyle(color: _colorForSeverity(h.severity)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),

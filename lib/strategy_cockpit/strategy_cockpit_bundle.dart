@@ -21,18 +21,12 @@ import 'widgets/strategy_narrative_panel.dart';
 class StrategyCockpitScreen extends StatelessWidget {
   final String strategyId;
 
-  const StrategyCockpitScreen({
-    super.key,
-    required this.strategyId,
-  });
+  const StrategyCockpitScreen({super.key, required this.strategyId});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Strategy Cockpit'),
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text('Strategy Cockpit'), elevation: 0),
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: 32),
         child: Column(
@@ -64,11 +58,7 @@ class StrategyHeader extends StatelessWidget {
   final String strategyId;
   final dynamic viewModel; // optional injection for tests / previews
 
-  const StrategyHeader({
-    super.key,
-    required this.strategyId,
-    this.viewModel,
-  });
+  const StrategyHeader({super.key, required this.strategyId, this.viewModel});
 
   @override
   Widget build(BuildContext context) {
@@ -171,9 +161,11 @@ class StrategyHeader extends StatelessWidget {
           if (vm.recommendations != null) ...[
             Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
-              child: Builder(builder: (ctx) {
-                return RecommendationsPanel(bundle: vm.recommendations);
-              }),
+              child: Builder(
+                builder: (ctx) {
+                  return RecommendationsPanel(bundle: vm.recommendations);
+                },
+              ),
             ),
           ],
         ],
@@ -265,10 +257,9 @@ class _HeaderActions extends StatelessWidget {
         Expanded(
           child: OutlinedButton(
             onPressed: () {
-              Navigator.of(context).pushNamed(
-                '/editStrategy',
-                arguments: vm.strategy?.id,
-              );
+              Navigator.of(
+                context,
+              ).pushNamed('/editStrategy', arguments: vm.strategy?.id);
             },
             child: const Text('Edit'),
           ),
@@ -278,9 +269,7 @@ class _HeaderActions extends StatelessWidget {
   }
 
   void _notify(BuildContext context, String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg)),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 }
 
@@ -304,18 +293,13 @@ class StrategySectionContainer extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Card(
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
+              Text(title, style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 12),
               child,
             ],
@@ -347,10 +331,7 @@ class StrategyMetricCard extends StatelessWidget {
           children: [
             Text(label, style: Theme.of(context).textTheme.bodySmall),
             const SizedBox(height: 4),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text(value, style: Theme.of(context).textTheme.titleMedium),
           ],
         ),
       ),
@@ -384,7 +365,9 @@ class StrategySparkline extends StatelessWidget {
           ),
           alignment: Alignment.center,
           child: Text(
-            values.isEmpty ? 'No data yet' : 'Sparkline (${values.length} points)',
+            values.isEmpty
+                ? 'No data yet'
+                : 'Sparkline (${values.length} points)',
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ),
@@ -396,10 +379,7 @@ class StrategySparkline extends StatelessWidget {
 class StrategyFlagChip extends StatelessWidget {
   final String label;
 
-  const StrategyFlagChip({
-    super.key,
-    required this.label,
-  });
+  const StrategyFlagChip({super.key, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -420,10 +400,7 @@ class StrategyFlagChip extends StatelessWidget {
 class StrategyPerformanceSection extends StatelessWidget {
   final String strategyId;
 
-  const StrategyPerformanceSection({
-    super.key,
-    required this.strategyId,
-  });
+  const StrategyPerformanceSection({super.key, required this.strategyId});
 
   @override
   Widget build(BuildContext context) {
@@ -450,10 +427,7 @@ class StrategyPerformanceSection extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                StrategySparkline(
-                  title: 'PnL Trend',
-                  values: vm.pnlTrend,
-                ),
+                StrategySparkline(title: 'PnL Trend', values: vm.pnlTrend),
                 const SizedBox(height: 16),
                 Row(
                   children: [
@@ -522,10 +496,7 @@ class _CycleCard extends StatelessWidget {
   final String title;
   final Map<String, dynamic>? cycle;
 
-  const _CycleCard({
-    required this.title,
-    required this.cycle,
-  });
+  const _CycleCard({required this.title, required this.cycle});
 
   @override
   Widget build(BuildContext context) {
@@ -561,10 +532,7 @@ class _CycleCard extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 4),
-            Text(
-              _formatPnl(pnl),
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
+            Text(_formatPnl(pnl), style: Theme.of(context).textTheme.bodyLarge),
           ],
         ),
       ),
@@ -584,10 +552,7 @@ class _CycleCard extends StatelessWidget {
 class StrategyDisciplineSection extends StatelessWidget {
   final String strategyId;
 
-  const StrategyDisciplineSection({
-    super.key,
-    required this.strategyId,
-  });
+  const StrategyDisciplineSection({super.key, required this.strategyId});
 
   @override
   Widget build(BuildContext context) {
@@ -654,7 +619,9 @@ class _DisciplineSparkline extends StatelessWidget {
           ),
           alignment: Alignment.center,
           child: Text(
-            values.isEmpty ? 'No data yet' : 'Sparkline (${values.length} points)',
+            values.isEmpty
+                ? 'No data yet'
+                : 'Sparkline (${values.length} points)',
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ),
@@ -677,15 +644,24 @@ class _ViolationsBreakdown extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Violations Breakdown', style: Theme.of(context).textTheme.titleSmall),
+        Text(
+          'Violations Breakdown',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
         const SizedBox(height: 8),
         Row(
           children: [
-            Expanded(child: _ViolationTile(label: 'Adherence', count: adherence)),
+            Expanded(
+              child: _ViolationTile(label: 'Adherence', count: adherence),
+            ),
             const SizedBox(width: 8),
-            Expanded(child: _ViolationTile(label: 'Timing', count: timing)),
+            Expanded(
+              child: _ViolationTile(label: 'Timing', count: timing),
+            ),
             const SizedBox(width: 8),
-            Expanded(child: _ViolationTile(label: 'Risk', count: risk)),
+            Expanded(
+              child: _ViolationTile(label: 'Risk', count: risk),
+            ),
           ],
         ),
       ],
@@ -697,10 +673,7 @@ class _ViolationTile extends StatelessWidget {
   final String label;
   final int count;
 
-  const _ViolationTile({
-    required this.label,
-    required this.count,
-  });
+  const _ViolationTile({required this.label, required this.count});
 
   @override
   Widget build(BuildContext context) {
@@ -713,7 +686,10 @@ class _ViolationTile extends StatelessWidget {
           children: [
             Text(label, style: Theme.of(context).textTheme.bodySmall),
             const SizedBox(height: 4),
-            Text(count.toString(), style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              count.toString(),
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
           ],
         ),
       ),
@@ -736,11 +712,17 @@ class _StreakRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: _StreakCard(label: 'Clean Cycles', value: clean)),
+        Expanded(
+          child: _StreakCard(label: 'Clean Cycles', value: clean),
+        ),
         const SizedBox(width: 8),
-        Expanded(child: _StreakCard(label: 'Adherence', value: adherence)),
+        Expanded(
+          child: _StreakCard(label: 'Adherence', value: adherence),
+        ),
         const SizedBox(width: 8),
-        Expanded(child: _StreakCard(label: 'Risk', value: risk)),
+        Expanded(
+          child: _StreakCard(label: 'Risk', value: risk),
+        ),
       ],
     );
   }
@@ -750,10 +732,7 @@ class _StreakCard extends StatelessWidget {
   final String label;
   final int value;
 
-  const _StreakCard({
-    required this.label,
-    required this.value,
-  });
+  const _StreakCard({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -766,7 +745,10 @@ class _StreakCard extends StatelessWidget {
           children: [
             Text(label, style: Theme.of(context).textTheme.bodySmall),
             const SizedBox(height: 4),
-            Text(value.toString(), style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              value.toString(),
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
           ],
         ),
       ),
@@ -788,7 +770,10 @@ class _RecentEventsList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Recent Discipline Events', style: Theme.of(context).textTheme.titleSmall),
+        Text(
+          'Recent Discipline Events',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
         const SizedBox(height: 8),
         ...events.map((e) => _EventTile(event: e)),
       ],
@@ -823,10 +808,7 @@ class _EventTile extends StatelessWidget {
 class StrategyRegimeSection extends StatelessWidget {
   final String strategyId;
 
-  const StrategyRegimeSection({
-    super.key,
-    required this.strategyId,
-  });
+  const StrategyRegimeSection({super.key, required this.strategyId});
 
   @override
   Widget build(BuildContext context) {
@@ -881,10 +863,7 @@ class _CurrentRegimeCard extends StatelessWidget {
   final String currentRegime;
   final String hint;
 
-  const _CurrentRegimeCard({
-    required this.currentRegime,
-    required this.hint,
-  });
+  const _CurrentRegimeCard({required this.currentRegime, required this.hint});
 
   @override
   Widget build(BuildContext context) {
@@ -895,9 +874,15 @@ class _CurrentRegimeCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Current Regime', style: Theme.of(context).textTheme.titleSmall),
+            Text(
+              'Current Regime',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
             const SizedBox(height: 4),
-            Text(currentRegime.isEmpty ? '—' : currentRegime, style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              currentRegime.isEmpty ? '—' : currentRegime,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             if (hint.isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(hint, style: Theme.of(context).textTheme.bodySmall),
@@ -921,11 +906,22 @@ class _RegimePerformanceTable extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Regime Performance', style: Theme.of(context).textTheme.titleSmall),
+        Text(
+          'Regime Performance',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
         const SizedBox(height: 8),
         Table(
-          border: TableBorder.all(color: Theme.of(context).dividerColor, width: 0.5),
-          columnWidths: const {0: FlexColumnWidth(1.2), 1: FlexColumnWidth(1), 2: FlexColumnWidth(1), 3: FlexColumnWidth(1)},
+          border: TableBorder.all(
+            color: Theme.of(context).dividerColor,
+            width: 0.5,
+          ),
+          columnWidths: const {
+            0: FlexColumnWidth(1.2),
+            1: FlexColumnWidth(1),
+            2: FlexColumnWidth(1),
+            3: FlexColumnWidth(1),
+          },
           children: [
             _headerRow(),
             ...data.entries.map((e) => _dataRow(e.key, e.value)),
@@ -937,7 +933,12 @@ class _RegimePerformanceTable extends StatelessWidget {
 
   TableRow _headerRow() {
     return const TableRow(
-      children: [_HeaderCell('Regime'), _HeaderCell('PnL'), _HeaderCell('Win Rate'), _HeaderCell('Discipline')],
+      children: [
+        _HeaderCell('Regime'),
+        _HeaderCell('PnL'),
+        _HeaderCell('Win Rate'),
+        _HeaderCell('Discipline'),
+      ],
     );
   }
 
@@ -971,7 +972,10 @@ class _HeaderCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(padding: const EdgeInsets.all(8), child: Text(label, style: Theme.of(context).textTheme.bodySmall));
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: Text(label, style: Theme.of(context).textTheme.bodySmall),
+    );
   }
 }
 
@@ -982,7 +986,10 @@ class _DataCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(padding: const EdgeInsets.all(8), child: Text(value, style: Theme.of(context).textTheme.bodyMedium));
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: Text(value, style: Theme.of(context).textTheme.bodyMedium),
+    );
   }
 }
 
@@ -993,10 +1000,7 @@ class _DataCell extends StatelessWidget {
 class StrategyBacktestSection extends StatelessWidget {
   final String strategyId;
 
-  const StrategyBacktestSection({
-    super.key,
-    required this.strategyId,
-  });
+  const StrategyBacktestSection({super.key, required this.strategyId});
 
   @override
   Widget build(BuildContext context) {
@@ -1005,11 +1009,17 @@ class StrategyBacktestSection extends StatelessWidget {
       child: Consumer<StrategyBacktestViewModel>(
         builder: (context, vm, _) {
           if (vm.isLoading) {
-            return const StrategySectionContainer(title: 'Backtests', child: Center(child: CircularProgressIndicator()));
+            return const StrategySectionContainer(
+              title: 'Backtests',
+              child: Center(child: CircularProgressIndicator()),
+            );
           }
 
           if (vm.hasError) {
-            return const StrategySectionContainer(title: 'Backtests', child: Center(child: Text('Unable to load backtest data')));
+            return const StrategySectionContainer(
+              title: 'Backtests',
+              child: Center(child: Text('Unable to load backtest data')),
+            );
           }
 
           return StrategySectionContainer(
@@ -1039,7 +1049,16 @@ class _LatestBacktestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (latest == null) {
-      return Card(elevation: 0, child: Padding(padding: const EdgeInsets.all(12), child: Text('No backtest results yet', style: Theme.of(context).textTheme.bodyMedium)));
+      return Card(
+        elevation: 0,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Text(
+            'No backtest results yet',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ),
+      );
     }
 
     final summary = latest!['summary'] ?? {};
@@ -1054,7 +1073,10 @@ class _LatestBacktestCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Latest Backtest', style: Theme.of(context).textTheme.titleSmall),
+            Text(
+              'Latest Backtest',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
             const SizedBox(height: 8),
             Text('Total PnL: ${_formatPnl(pnl)}'),
             Text('Win Rate: ${(winRate * 100).toStringAsFixed(1)}%'),
@@ -1080,7 +1102,14 @@ class _BacktestHistoryList extends StatelessWidget {
   Widget build(BuildContext context) {
     if (history.isEmpty) return const Text('No backtest history yet');
 
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Backtest History', style: Theme.of(context).textTheme.titleSmall), const SizedBox(height: 8), ...history.map((item) => _HistoryTile(item: item))]);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Backtest History', style: Theme.of(context).textTheme.titleSmall),
+        const SizedBox(height: 8),
+        ...history.map((item) => _HistoryTile(item: item)),
+      ],
+    );
   }
 }
 
@@ -1125,7 +1154,31 @@ class _BacktestActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(children: [Expanded(child: OutlinedButton(onPressed: () { Navigator.of(context).pushNamed('/cloudBacktest', arguments: strategyId); }, child: const Text('Run Backtest'))), const SizedBox(width: 12), Expanded(child: OutlinedButton(onPressed: () { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Re-run not implemented yet'))); }, child: const Text('Re-run Last')))]);
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton(
+            onPressed: () {
+              Navigator.of(
+                context,
+              ).pushNamed('/cloudBacktest', arguments: strategyId);
+            },
+            child: const Text('Run Backtest'),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: OutlinedButton(
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Re-run not implemented yet')),
+              );
+            },
+            child: const Text('Re-run Last'),
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -1136,10 +1189,7 @@ class _BacktestActions extends StatelessWidget {
 class StrategyActionsSection extends StatelessWidget {
   final String strategyId;
 
-  const StrategyActionsSection({
-    super.key,
-    required this.strategyId,
-  });
+  const StrategyActionsSection({super.key, required this.strategyId});
 
   @override
   Widget build(BuildContext context) {
@@ -1161,11 +1211,17 @@ class StrategyActionsSection extends StatelessWidget {
       child: Consumer<StrategyCockpitViewModel>(
         builder: (context, vm, _) {
           if (vm.isLoading) {
-            return const StrategySectionContainer(title: 'Actions', child: Center(child: CircularProgressIndicator()));
+            return const StrategySectionContainer(
+              title: 'Actions',
+              child: Center(child: CircularProgressIndicator()),
+            );
           }
 
           if (vm.hasError) {
-            return const StrategySectionContainer(title: 'Actions', child: Center(child: Text('Unable to load strategy state')));
+            return const StrategySectionContainer(
+              title: 'Actions',
+              child: Center(child: Text('Unable to load strategy state')),
+            );
           }
 
           return StrategySectionContainer(
@@ -1175,7 +1231,9 @@ class StrategyActionsSection extends StatelessWidget {
               children: [
                 OutlinedButton(
                   onPressed: () {
-                    Navigator.of(context).pushNamed('/planner', arguments: strategyId);
+                    Navigator.of(
+                      context,
+                    ).pushNamed('/planner', arguments: strategyId);
                   },
                   child: const Text('Open Planner'),
                 ),

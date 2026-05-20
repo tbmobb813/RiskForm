@@ -88,19 +88,19 @@ class QuickActionsCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
         decoration: BoxDecoration(
-          color: disabled ? Colors.grey.shade100 : color.withAlpha((0.1 * 255).round()),
+          color: disabled
+              ? Colors.grey.shade100
+              : color.withAlpha((0.1 * 255).round()),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: disabled ? Colors.grey.shade300 : color.withAlpha((0.3 * 255).round()),
+            color: disabled
+                ? Colors.grey.shade300
+                : color.withAlpha((0.3 * 255).round()),
           ),
         ),
         child: Column(
           children: [
-            Icon(
-              icon,
-              size: 32,
-              color: disabled ? Colors.grey : color,
-            ),
+            Icon(icon, size: 32, color: disabled ? Colors.grey : color),
             const SizedBox(height: 8),
             Text(
               label,

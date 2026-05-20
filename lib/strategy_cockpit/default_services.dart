@@ -4,5 +4,7 @@ import 'analytics/strategy_narrative_engine.dart';
 
 /// Central default services used by UI factories and tests.
 final MockMarketDataService defaultMarketDataService = MockMarketDataService();
-const StrategyRecommendationsEngine defaultRecsEngine = StrategyRecommendationsEngine();
-const StrategyNarrativeEngine defaultNarrativeEngine = StrategyNarrativeEngine();
+const StrategyRecommendationsEngine defaultRecsEngine =
+    StrategyRecommendationsEngine();
+const StrategyNarrativeEngine defaultNarrativeEngine =
+    StrategyNarrativeEngine();

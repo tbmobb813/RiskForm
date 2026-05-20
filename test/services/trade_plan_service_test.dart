@@ -18,8 +18,18 @@ void main() {
         strategyId: 's1',
         strategyName: 'S',
         inputs: TradeInputs(strike: 10.0),
-        payoff: PayoffResult(maxGain: 1, maxLoss: 2, breakeven: 3, capitalRequired: 4),
-        risk: RiskResult(riskPercentOfAccount: 1.0, assignmentExposure: false, capitalLocked: 2.0, warnings: []),
+        payoff: PayoffResult(
+          maxGain: 1,
+          maxLoss: 2,
+          breakeven: 3,
+          capitalRequired: 4,
+        ),
+        risk: RiskResult(
+          riskPercentOfAccount: 1.0,
+          assignmentExposure: false,
+          capitalLocked: 2.0,
+          warnings: [],
+        ),
         notes: 'n',
         tags: ['a'],
         createdAt: DateTime.utc(2000),
@@ -46,19 +56,29 @@ void main() {
         'strategyId': 'a',
         'strategyName': 'A',
         'inputs': {'strike': 1.0},
-        'payoff': {'maxGain': 0.0,'maxLoss':0.0,'breakeven':0.0,'capitalRequired':0.0},
-        'risk': {'riskPercentOfAccount':0.0,'assignmentExposure':false,'capitalLocked':0.0,'warnings':<String>[]},
+        'payoff': {
+          'maxGain': 0.0,
+          'maxLoss': 0.0,
+          'breakeven': 0.0,
+          'capitalRequired': 0.0,
+        },
+        'risk': {
+          'riskPercentOfAccount': 0.0,
+          'assignmentExposure': false,
+          'capitalLocked': 0.0,
+          'warnings': <String>[],
+        },
         'notes': '',
         'tags': <String>[],
-        'createdAt': Timestamp.fromDate(DateTime.utc(2020,1,1)),
-        'updatedAt': Timestamp.fromDate(DateTime.utc(2020,1,1)),
+        'createdAt': Timestamp.fromDate(DateTime.utc(2020, 1, 1)),
+        'updatedAt': Timestamp.fromDate(DateTime.utc(2020, 1, 1)),
       };
       final data2 = Map<String, dynamic>.from(data1)
-        ..['createdAt'] = Timestamp.fromDate(DateTime.utc(2021,1,1))
-        ..['updatedAt'] = Timestamp.fromDate(DateTime.utc(2021,1,1));
+        ..['createdAt'] = Timestamp.fromDate(DateTime.utc(2021, 1, 1))
+        ..['updatedAt'] = Timestamp.fromDate(DateTime.utc(2021, 1, 1));
       final data3 = Map<String, dynamic>.from(data1)
-        ..['createdAt'] = Timestamp.fromDate(DateTime.utc(2019,1,1))
-        ..['updatedAt'] = Timestamp.fromDate(DateTime.utc(2019,1,1));
+        ..['createdAt'] = Timestamp.fromDate(DateTime.utc(2019, 1, 1))
+        ..['updatedAt'] = Timestamp.fromDate(DateTime.utc(2019, 1, 1));
 
       fake.store['users/u1/trade_plans/p1'] = InMemoryDoc(data1);
       fake.store['users/u1/trade_plans/p2'] = InMemoryDoc(data2);

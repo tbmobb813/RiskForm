@@ -22,6 +22,9 @@ void main() {
 
     final res = await svc.executeStrategyTrade(req);
     expect(res.success, isFalse);
-    expect(res.errorMessage, 'Authentication required: missing userId in execution payload.');
+    expect(
+      res.errorMessage,
+      'Authentication required: missing userId in execution payload.',
+    );
   });
 }

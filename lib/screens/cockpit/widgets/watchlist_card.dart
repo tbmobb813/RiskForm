@@ -75,7 +75,11 @@ class WatchlistCard extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, size: 16, color: Colors.orange.shade700),
+                    Icon(
+                      Icons.info_outline,
+                      size: 16,
+                      color: Colors.orange.shade700,
+                    ),
                     const SizedBox(width: 8),
                     const Expanded(
                       child: Text(
@@ -130,10 +134,7 @@ class WatchlistCard extends StatelessWidget {
             width: 60,
             child: Text(
               item.ticker,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
 
@@ -143,10 +144,7 @@ class WatchlistCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  item.priceDisplay,
-                  style: const TextStyle(fontSize: 14),
-                ),
+                Text(item.priceDisplay, style: const TextStyle(fontSize: 14)),
                 if (!item.hasLiveData)
                   const Text(
                     'No data',
@@ -176,8 +174,8 @@ class WatchlistCard extends StatelessWidget {
                 color: item.isPositive
                     ? Colors.green
                     : item.isNegative
-                        ? Colors.red
-                        : Colors.black54,
+                    ? Colors.red
+                    : Colors.black54,
               ),
             ),
           ),
@@ -190,7 +188,10 @@ class WatchlistCard extends StatelessWidget {
               TextButton(
                 onPressed: () => onScanTap(item.ticker),
                 style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   minimumSize: const Size(0, 32),
                 ),
                 child: const Text('Scan', style: TextStyle(fontSize: 12)),

@@ -6,9 +6,7 @@ class WheelCycleController {
     required WheelCycle previous,
     required List<Position> positions,
   }) {
-    final hasCsp = positions.any(
-      (p) => p.type == PositionType.csp && p.isOpen,
-    );
+    final hasCsp = positions.any((p) => p.type == PositionType.csp && p.isOpen);
 
     final hasShares = positions.any(
       (p) => p.type == PositionType.shares && p.quantity >= 100,

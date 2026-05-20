@@ -75,7 +75,9 @@ class CycleStats {
         s = dynRegime.toString();
       }
       try {
-        regime = MarketRegime.values.firstWhere((e) => e.toString().split('.').last == s);
+        regime = MarketRegime.values.firstWhere(
+          (e) => e.toString().split('.').last == s,
+        );
       } catch (_) {
         regime = null;
       }
@@ -93,7 +95,9 @@ class CycleStats {
         s = dynOutcome.toString();
       }
       try {
-        outcome = CycleOutcome.values.firstWhere((e) => e.toString().split('.').last == s);
+        outcome = CycleOutcome.values.firstWhere(
+          (e) => e.toString().split('.').last == s,
+        );
       } catch (_) {
         outcome = null;
       }
@@ -182,13 +186,17 @@ class BacktestResult {
       'downtrendAssignmentRate': downtrendAssignmentRate,
       'sidewaysAssignmentRate': sidewaysAssignmentRate,
       'engineVersion': engineVersion,
-      'regimeSegments': regimeSegments.map((s) => {
-            'regime': s.regime.toString(),
-            'startDate': s.startDate.toIso8601String(),
-            'endDate': s.endDate.toIso8601String(),
-            'startIndex': s.startIndex,
-            'endIndex': s.endIndex,
-          }).toList(),
+      'regimeSegments': regimeSegments
+          .map(
+            (s) => {
+              'regime': s.regime.toString(),
+              'startDate': s.startDate.toIso8601String(),
+              'endDate': s.endDate.toIso8601String(),
+              'startIndex': s.startIndex,
+              'endIndex': s.endIndex,
+            },
+          )
+          .toList(),
     };
   }
 
@@ -200,13 +208,19 @@ class BacktestResult {
 
   factory BacktestResult.fromMap(Map<String, dynamic> m) {
     return BacktestResult(
-      configUsed: BacktestConfig.fromMap(Map<String, dynamic>.from(m['configUsed'] as Map)),
-      equityCurve: List<double>.from((m['equityCurve'] as List).map((e) => (e as num).toDouble())),
+      configUsed: BacktestConfig.fromMap(
+        Map<String, dynamic>.from(m['configUsed'] as Map),
+      ),
+      equityCurve: List<double>.from(
+        (m['equityCurve'] as List).map((e) => (e as num).toDouble()),
+      ),
       maxDrawdown: (m['maxDrawdown'] as num).toDouble(),
       totalReturn: (m['totalReturn'] as num).toDouble(),
       cyclesCompleted: (m['cyclesCompleted'] as num).toInt(),
       notes: List<String>.from(m['notes'] as List<dynamic>),
-      cycles: List<Map<String, dynamic>>.from(m['cycles'] as List<dynamic>).map((c) => CycleStats.fromMap(c)).toList(),
+      cycles: List<Map<String, dynamic>>.from(
+        m['cycles'] as List<dynamic>,
+      ).map((c) => CycleStats.fromMap(c)).toList(),
       avgCycleReturn: (m['avgCycleReturn'] as num).toDouble(),
       avgCycleDurationDays: (m['avgCycleDurationDays'] as num).toDouble(),
       assignmentRate: (m['assignmentRate'] as num).toDouble(),
@@ -218,14 +232,19 @@ class BacktestResult {
       sidewaysAssignmentRate: (m['sidewaysAssignmentRate'] as num).toDouble(),
       engineVersion: m['engineVersion'] as String? ?? '1.0.0',
       regimeSegments: (m['regimeSegments'] as List<dynamic>?)
-              ?.map((s) => RegimeSegment(
-                    regime: MarketRegime.values.firstWhere((e) => e.toString() == (s['regime'] as String)),
-                    startDate: _parseDate(s['startDate']),
-                    endDate: _parseDate(s['endDate']),
-                    startIndex: (s['startIndex'] as num).toInt(),
-                    endIndex: (s['endIndex'] as num).toInt(),
-                  ))
-              .toList() ?? [],
+              ?.map(
+                (s) => RegimeSegment(
+                  regime: MarketRegime.values.firstWhere(
+                    (e) => e.toString() == (s['regime'] as String),
+                  ),
+                  startDate: _parseDate(s['startDate']),
+                  endDate: _parseDate(s['endDate']),
+                  startIndex: (s['startIndex'] as num).toInt(),
+                  endIndex: (s['endIndex'] as num).toInt(),
+                ),
+              )
+              .toList() ??
+          [],
     );
   }
 }

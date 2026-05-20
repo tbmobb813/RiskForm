@@ -55,7 +55,9 @@ class PayoffChartCard extends StatelessWidget {
           rangePercent: 0.5,
           steps: 80,
         );
-        curve = pts.map((p) => Offset(p.underlyingPrice, p.profitLoss)).toList();
+        curve = pts
+            .map((p) => Offset(p.underlyingPrice, p.profitLoss))
+            .toList();
       } else {
         final engine = container.read(payoffEngineProvider);
 
@@ -78,10 +80,7 @@ class PayoffChartCard extends StatelessWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
-              PayoffChart(
-                curve: curve,
-                breakeven: payoff.breakeven,
-              ),
+              PayoffChart(curve: curve, breakeven: payoff.breakeven),
             ],
           ),
         ),

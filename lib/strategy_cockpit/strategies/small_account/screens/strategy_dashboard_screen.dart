@@ -15,7 +15,11 @@ class StrategyDashboardScreen extends ConsumerWidget {
   final double currentPrice;
   final double accountBalance;
 
-  const StrategyDashboardScreen({super.key, this.currentPrice = 100.0, this.accountBalance = 500.0});
+  const StrategyDashboardScreen({
+    super.key,
+    this.currentPrice = 100.0,
+    this.accountBalance = 500.0,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,12 +38,24 @@ class StrategyDashboardScreen extends ConsumerWidget {
     final maxProfit = controller.maxProfit ?? double.nan;
     final breakeven = controller.breakeven ?? double.nan;
 
-    final curve = controller.payoffCurve(underlyingPrice: currentPrice, rangePercent: 0.3, steps: 60) ?? <PayoffPoint>[];
+    final curve =
+        controller.payoffCurve(
+          underlyingPrice: currentPrice,
+          rangePercent: 0.3,
+          steps: 60,
+        ) ??
+        <PayoffPoint>[];
 
     double? profitAt(double price) {
       if (curve.isEmpty) return null;
       // find nearest point
-      PayoffPoint nearest = curve.reduce((a, b) => ( (a.underlyingPrice - price).abs() < (b.underlyingPrice - price).abs()) ? a : b);
+      PayoffPoint nearest = curve.reduce(
+        (a, b) =>
+            ((a.underlyingPrice - price).abs() <
+                (b.underlyingPrice - price).abs())
+            ? a
+            : b,
+      );
       return nearest.profitLoss;
     }
 
@@ -55,19 +71,33 @@ class StrategyDashboardScreen extends ConsumerWidget {
             StrategyHeaderCard(strategyLabel: strategy.label),
             const SizedBox(height: 12),
 
-            RiskRewardCard(maxRisk: maxRisk, maxProfit: maxProfit, breakeven: breakeven),
+            RiskRewardCard(
+              maxRisk: maxRisk,
+              maxProfit: maxProfit,
+              breakeven: breakeven,
+            ),
             const SizedBox(height: 12),
 
-            SizedBox(height: 220, child: PayoffChart(curve: curve, currentPrice: currentPrice)),
+            SizedBox(
+              height: 220,
+              child: PayoffChart(curve: curve, currentPrice: currentPrice),
+            ),
             const SizedBox(height: 12),
 
             GreeksCard(currentPrice: currentPrice),
             const SizedBox(height: 12),
 
-            ScenarioAnalysisCard(currentPrice: currentPrice, scenarios: scenarios, profitAt: profitAt),
+            ScenarioAnalysisCard(
+              currentPrice: currentPrice,
+              scenarios: scenarios,
+              profitAt: profitAt,
+            ),
             const SizedBox(height: 12),
 
-            PositionSizingCard(accountBalance: accountBalance, costPerContract: maxRisk),
+            PositionSizingCard(
+              accountBalance: accountBalance,
+              costPerContract: maxRisk,
+            ),
             const SizedBox(height: 12),
 
             LearningModeCard(explanation: strategy.explain()),
@@ -93,11 +123,26 @@ class StrategyHeaderCard extends ConsumerWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(strategyLabel, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), const SizedBox(height: 4), const Text('Small Account Mode')]),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  strategyLabel,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text('Small Account Mode'),
+              ],
+            ),
             ElevatedButton(
               onPressed: () async {
                 if (strategy == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No active strategy')));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('No active strategy')),
+                  );
                   return;
                 }
 
@@ -115,23 +160,36 @@ class StrategyHeaderCard extends ConsumerWidget {
                   id: now.millisecondsSinceEpoch.toString(),
                   timestamp: now,
                   type: 'execution',
-                  data: {'strategy': strategy.toJson(), 'execution': payload, 'smallAccount': true},
+                  data: {
+                    'strategy': strategy.toJson(),
+                    'execution': payload,
+                    'smallAccount': true,
+                  },
                 );
 
                 await journal.addEntry(entry);
 
                 // Run a small local backtest (cheap simulated run) and attach summary
                 try {
-                  final bengine = BacktestEngine(optionPricing: OptionPricingEngine());
-                  final currentPrice = 100.0; // best-effort default when none available in UI
+                  final bengine = BacktestEngine(
+                    optionPricing: OptionPricingEngine(),
+                  );
+                  final currentPrice =
+                      100.0; // best-effort default when none available in UI
                   final config = BacktestConfig(
                     startingCapital: 500.0,
                     maxCycles: 1,
-                    pricePath: [currentPrice * 0.95, currentPrice, currentPrice * 1.05],
+                    pricePath: [
+                      currentPrice * 0.95,
+                      currentPrice,
+                      currentPrice * 1.05,
+                    ],
                     strategyId: strategy.typeId,
                     label: strategy.label,
                     symbol: strategy.label,
-                    startDate: DateTime.now().subtract(const Duration(days: 30)),
+                    startDate: DateTime.now().subtract(
+                      const Duration(days: 30),
+                    ),
                     endDate: DateTime.now(),
                   );
                   final result = bengine.run(config);
@@ -152,10 +210,16 @@ class StrategyHeaderCard extends ConsumerWidget {
                   // ignore backtest errors; journal entry is already created.
                 }
 
-                if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Trade journaled (small-account)')));
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Trade journaled (small-account)'),
+                    ),
+                  );
+                }
               },
               child: const Text('Take Trade'),
-            )
+            ),
           ],
         ),
       ),
@@ -168,7 +232,12 @@ class RiskRewardCard extends StatelessWidget {
   final double maxProfit;
   final double breakeven;
 
-  const RiskRewardCard({super.key, required this.maxRisk, required this.maxProfit, required this.breakeven});
+  const RiskRewardCard({
+    super.key,
+    required this.maxRisk,
+    required this.maxProfit,
+    required this.breakeven,
+  });
 
   String _fmt(double v) => v.isNaN ? '—' : '\$${v.toStringAsFixed(2)}';
 
@@ -181,8 +250,16 @@ class RiskRewardCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _metric('Max Risk', _fmt(maxRisk), Colors.redAccent),
-            _metric('Max Profit', maxProfit.isFinite ? _fmt(maxProfit) : 'Unlimited', Colors.green),
-            _metric('Breakeven', breakeven.isNaN ? '—' : _fmt(breakeven), Colors.blueGrey),
+            _metric(
+              'Max Profit',
+              maxProfit.isFinite ? _fmt(maxProfit) : 'Unlimited',
+              Colors.green,
+            ),
+            _metric(
+              'Breakeven',
+              breakeven.isNaN ? '—' : _fmt(breakeven),
+              Colors.blueGrey,
+            ),
           ],
         ),
       ),
@@ -190,7 +267,20 @@ class RiskRewardCard extends StatelessWidget {
   }
 
   Widget _metric(String label, String value, Color color) {
-    return Column(children: [Text(label, style: const TextStyle(fontSize: 12)), const SizedBox(height: 6), Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color))]);
+    return Column(
+      children: [
+        Text(label, style: const TextStyle(fontSize: 12)),
+        const SizedBox(height: 6),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -198,7 +288,11 @@ class PayoffChart extends StatelessWidget {
   final List<PayoffPoint> curve;
   final double currentPrice;
 
-  const PayoffChart({super.key, required this.curve, required this.currentPrice});
+  const PayoffChart({
+    super.key,
+    required this.curve,
+    required this.currentPrice,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -223,7 +317,10 @@ class _PayoffPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.blue..strokeWidth = 2..style = PaintingStyle.stroke;
+    final paint = Paint()
+      ..color = Colors.blue
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
 
     final prices = curve.map((c) => c.underlyingPrice).toList();
     final profits = curve.map((c) => c.profitLoss).toList();
@@ -234,7 +331,8 @@ class _PayoffPainter extends CustomPainter {
     final maxY = profits.reduce((a, b) => a > b ? a : b);
 
     double xFor(double p) => ((p - minP) / (maxP - minP)) * size.width;
-    double yFor(double v) => size.height - ((v - minY) / (maxY - minY)) * size.height;
+    double yFor(double v) =>
+        size.height - ((v - minY) / (maxY - minY)) * size.height;
 
     final path = Path();
     for (var i = 0; i < curve.length; i++) {
@@ -252,7 +350,9 @@ class _PayoffPainter extends CustomPainter {
     // draw current price line
     final cp = currentPrice.clamp(minP, maxP);
     final cpX = xFor(cp);
-    final dash = Paint()..color = Colors.grey..strokeWidth = 1;
+    final dash = Paint()
+      ..color = Colors.grey
+      ..strokeWidth = 1;
     canvas.drawLine(Offset(cpX, 0), Offset(cpX, size.height), dash);
   }
 
@@ -271,7 +371,19 @@ class GreeksCard extends ConsumerWidget {
     final optionPricing = ref.read(optionPricingEngineProvider);
 
     if (strategy == null) {
-      return Card(child: Padding(padding: const EdgeInsets.all(12.0), child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [_greek('Delta', '—'), _greek('Theta', '—'), _greek('Vega', '—')])));
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _greek('Delta', '—'),
+              _greek('Theta', '—'),
+              _greek('Vega', '—'),
+            ],
+          ),
+        ),
+      );
     }
 
     // Use a conservative default IV if none available
@@ -295,31 +407,58 @@ class GreeksCard extends ConsumerWidget {
 
       final isCall = c.type.toLowerCase() == 'call';
 
-      final d = optionPricing.delta(isCall: isCall, spot: currentPrice, strike: c.strike, volatility: vol, timeToExpiryYears: t);
-      final v = optionPricing.vega(spot: currentPrice, strike: c.strike, volatility: vol, timeToExpiryYears: t);
-      final th = optionPricing.theta(isCall: isCall, spot: currentPrice, strike: c.strike, volatility: vol, timeToExpiryYears: t);
+      final d = optionPricing.delta(
+        isCall: isCall,
+        spot: currentPrice,
+        strike: c.strike,
+        volatility: vol,
+        timeToExpiryYears: t,
+      );
+      final v = optionPricing.vega(
+        spot: currentPrice,
+        strike: c.strike,
+        volatility: vol,
+        timeToExpiryYears: t,
+      );
+      final th = optionPricing.theta(
+        isCall: isCall,
+        spot: currentPrice,
+        strike: c.strike,
+        volatility: vol,
+        timeToExpiryYears: t,
+      );
 
       netDelta += d * leg.quantity;
       netVega += v * leg.quantity;
       netTheta += th * leg.quantity;
     }
 
-    String fmtD(double v) => v.abs() < 0.01 ? v.toStringAsFixed(4) : v.toStringAsFixed(2);
+    String fmtD(double v) =>
+        v.abs() < 0.01 ? v.toStringAsFixed(4) : v.toStringAsFixed(2);
     String fmtSmall(double v) => v.isNaN ? '—' : v.toStringAsFixed(2);
 
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12.0),
-        child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-          _greek('Delta', fmtD(netDelta)),
-          _greek('Theta (per day)', fmtSmall(netTheta)),
-          _greek('Vega', fmtSmall(netVega)),
-        ]),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _greek('Delta', fmtD(netDelta)),
+            _greek('Theta (per day)', fmtSmall(netTheta)),
+            _greek('Vega', fmtSmall(netVega)),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _greek(String label, String value) => Column(children: [Text(label, style: const TextStyle(fontSize: 12)), const SizedBox(height: 6), Text(value, style: const TextStyle(fontWeight: FontWeight.bold))]);
+  Widget _greek(String label, String value) => Column(
+    children: [
+      Text(label, style: const TextStyle(fontSize: 12)),
+      const SizedBox(height: 6),
+      Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+    ],
+  );
 }
 
 class ScenarioAnalysisCard extends StatelessWidget {
@@ -327,24 +466,46 @@ class ScenarioAnalysisCard extends StatelessWidget {
   final List<double> scenarios;
   final double? Function(double price) profitAt;
 
-  const ScenarioAnalysisCard({super.key, required this.currentPrice, required this.scenarios, required this.profitAt});
+  const ScenarioAnalysisCard({
+    super.key,
+    required this.currentPrice,
+    required this.scenarios,
+    required this.profitAt,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12.0),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Scenario Analysis', style: TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          ...scenarios.map((s) {
-            final price = currentPrice * (1 + s);
-            final profit = profitAt(price) ?? double.nan;
-            final label = '${(s * 100).toStringAsFixed(0)}%';
-            final profitText = profit.isNaN ? 'n/a' : '\$${profit.toStringAsFixed(2)}';
-            return Padding(padding: const EdgeInsets.symmetric(vertical: 6.0), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(label), Text('$profitText at ${price.toStringAsFixed(2)}')]));
-          })
-        ]),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Scenario Analysis',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            ...scenarios.map((s) {
+              final price = currentPrice * (1 + s);
+              final profit = profitAt(price) ?? double.nan;
+              final label = '${(s * 100).toStringAsFixed(0)}%';
+              final profitText = profit.isNaN
+                  ? 'n/a'
+                  : '\$${profit.toStringAsFixed(2)}';
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(label),
+                    Text('$profitText at ${price.toStringAsFixed(2)}'),
+                  ],
+                ),
+              );
+            }),
+          ],
+        ),
       ),
     );
   }
@@ -354,30 +515,57 @@ class PositionSizingCard extends ConsumerWidget {
   final double accountBalance;
   final double costPerContract;
 
-  const PositionSizingCard({super.key, required this.accountBalance, required this.costPerContract});
+  const PositionSizingCard({
+    super.key,
+    required this.accountBalance,
+    required this.costPerContract,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sizer = ref.read(smallAccountSizerProvider);
 
     final per = costPerContract > 0 ? costPerContract : 0.0;
-    final recommended5 = sizer.recommendedContractsByRisk(accountBalance: accountBalance, costPerContract: per, riskPct: 0.05);
-    final recommended10 = sizer.recommendedContractsByRisk(accountBalance: accountBalance, costPerContract: per, riskPct: 0.10);
-    final allocs = sizer.sizeRecommendations(accountBalance: accountBalance, costPerContract: per)['allocations'] as Map<String, int>? ?? {};
+    final recommended5 = sizer.recommendedContractsByRisk(
+      accountBalance: accountBalance,
+      costPerContract: per,
+      riskPct: 0.05,
+    );
+    final recommended10 = sizer.recommendedContractsByRisk(
+      accountBalance: accountBalance,
+      costPerContract: per,
+      riskPct: 0.10,
+    );
+    final allocs =
+        sizer.sizeRecommendations(
+              accountBalance: accountBalance,
+              costPerContract: per,
+            )['allocations']
+            as Map<String, int>? ??
+        {};
 
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12.0),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Position Sizing', style: TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          Text('Cost per contract: \$${per.toStringAsFixed(2)}'),
-          const SizedBox(height: 6),
-          Text('Recommended (5% risk): $recommended5 contracts'),
-          Text('Recommended (10% risk): $recommended10 contracts'),
-          const SizedBox(height: 6),
-          if (allocs.isNotEmpty) Text('Allocations: ${allocs.entries.map((e) => '${e.key}: ${e.value}').join(', ')}'),
-        ]),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Position Sizing',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text('Cost per contract: \$${per.toStringAsFixed(2)}'),
+            const SizedBox(height: 6),
+            Text('Recommended (5% risk): $recommended5 contracts'),
+            Text('Recommended (10% risk): $recommended10 contracts'),
+            const SizedBox(height: 6),
+            if (allocs.isNotEmpty)
+              Text(
+                'Allocations: ${allocs.entries.map((e) => '${e.key}: ${e.value}').join(', ')}',
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -396,14 +584,20 @@ class LearningModeCard extends StatelessWidget {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12.0),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Learning Mode', style: TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          Text(summary),
-          const SizedBox(height: 8),
-          if (pros.isNotEmpty) Text('Pros: ${pros.join(', ')}'),
-          if (cons.isNotEmpty) Text('Cons: ${cons.join(', ')}'),
-        ]),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Learning Mode',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(summary),
+            const SizedBox(height: 8),
+            if (pros.isNotEmpty) Text('Pros: ${pros.join(', ')}'),
+            if (cons.isNotEmpty) Text('Cons: ${cons.join(', ')}'),
+          ],
+        ),
       ),
     );
   }

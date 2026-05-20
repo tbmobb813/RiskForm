@@ -7,7 +7,8 @@ import '../models/strategy_cycle.dart';
 class StrategyHealthService {
   final FirebaseFirestore? _firestore;
 
-  StrategyHealthService({FirebaseFirestore? firestore}) : _firestore = firestore;
+  StrategyHealthService({FirebaseFirestore? firestore})
+    : _firestore = firestore;
 
   FirebaseFirestore get _db => _firestore ?? FirebaseFirestore.instance;
 
@@ -29,8 +30,7 @@ class StrategyHealthService {
   // ------------------------------------------------------------
   // Fetch latest health snapshot once
   // ------------------------------------------------------------
-  Future<StrategyHealthSnapshot?> fetchLatestHealth(
-      String strategyId) async {
+  Future<StrategyHealthSnapshot?> fetchLatestHealth(String strategyId) async {
     final doc = await _health.doc(strategyId).get();
     if (!doc.exists) return null;
     return StrategyHealthSnapshot.fromFirestore(doc);
@@ -39,13 +39,10 @@ class StrategyHealthService {
   // ------------------------------------------------------------
   // Upsert health snapshot (for Cloud worker / batch jobs)
   // ------------------------------------------------------------
-  Future<void> saveHealthSnapshot(
-    StrategyHealthSnapshot snapshot,
-  ) async {
-    await _health.doc(snapshot.strategyId).set(
-          snapshot.toFirestore(),
-          SetOptions(merge: true),
-        );
+  Future<void> saveHealthSnapshot(StrategyHealthSnapshot snapshot) async {
+    await _health
+        .doc(snapshot.strategyId)
+        .set(snapshot.toFirestore(), SetOptions(merge: true));
   }
 
   // ------------------------------------------------------------
@@ -83,7 +80,7 @@ class StrategyHealthService {
   Future<void> recomputeHealth(String strategyId) async {
     // 1) Load all cycles for the strategy ordered by start time
     final query = await _db
-      .collection('strategyCycles')
+        .collection('strategyCycles')
         .where('strategyId', isEqualTo: strategyId)
         .orderBy('startedAt')
         .get();
@@ -96,10 +93,9 @@ class StrategyHealthService {
     final snapshot = _computeSnapshot(strategyId, cycles);
 
     // 3) Persist snapshot (replace)
-    await _health.doc(strategyId).set(
-      snapshot.toFirestore(),
-      SetOptions(merge: false),
-    );
+    await _health
+        .doc(strategyId)
+        .set(snapshot.toFirestore(), SetOptions(merge: false));
   }
 
   // ------------------------------------------------------------
@@ -112,7 +108,9 @@ class StrategyHealthService {
     if (cycles.isEmpty) return StrategyHealthSnapshot.empty(strategyId);
 
     // 1. Existing aggregates
-    final pnlTrend = cycles.map((c) => c.realizedPnl + c.unrealizedPnl).toList();
+    final pnlTrend = cycles
+        .map((c) => c.realizedPnl + c.unrealizedPnl)
+        .toList();
 
     final disciplineTrend = cycles.map((c) => c.disciplineScore).toList();
 
@@ -130,7 +128,9 @@ class StrategyHealthService {
     final regimePerformance = <String, Map<String, dynamic>>{};
     regimeStats.forEach((regime, stats) {
       final winRate = stats.count == 0 ? 0.0 : stats.wins / stats.count;
-      final avgDiscipline = stats.count == 0 ? 0.0 : stats.totalDiscipline / stats.count;
+      final avgDiscipline = stats.count == 0
+          ? 0.0
+          : stats.totalDiscipline / stats.count;
       regimePerformance[regime] = {
         'pnl': stats.totalPnl,
         'winRate': winRate,
@@ -184,8 +184,8 @@ class StrategyHealthService {
     final healthLabel = clampedHealth >= 80
         ? 'Stable'
         : clampedHealth >= 60
-            ? 'Fragile'
-            : 'At Risk';
+        ? 'Fragile'
+        : 'At Risk';
 
     // If you want to persist a trend, you'd load previous snapshot here.
     final healthTrend = <double>[clampedHealth];
@@ -277,8 +277,12 @@ class StrategyHealthService {
       int count = 0;
       regimePerformance.forEach((_, v) {
         totalPnl += (v['pnl'] ?? 0) is num ? (v['pnl'] as num).toDouble() : 0.0;
-        totalWinRate += (v['winRate'] ?? 0) is num ? (v['winRate'] as num).toDouble() : 0.0;
-        totalDisc += (v['avgDiscipline'] ?? 0) is num ? (v['avgDiscipline'] as num).toDouble() : 0.0;
+        totalWinRate += (v['winRate'] ?? 0) is num
+            ? (v['winRate'] as num).toDouble()
+            : 0.0;
+        totalDisc += (v['avgDiscipline'] ?? 0) is num
+            ? (v['avgDiscipline'] as num).toDouble()
+            : 0.0;
         count++;
       });
       if (count == 0) return 50;
@@ -290,8 +294,12 @@ class StrategyHealthService {
     }
 
     final pnl = (rp?['pnl'] ?? 0) is num ? (rp?['pnl'] as num).toDouble() : 0.0;
-    final winRate = (rp?['winRate'] ?? 0) is num ? (rp?['winRate'] as num).toDouble() : 0.0;
-    final avgDisc = (rp?['avgDiscipline'] ?? 0) is num ? (rp?['avgDiscipline'] as num).toDouble() : 0.0;
+    final winRate = (rp?['winRate'] ?? 0) is num
+        ? (rp?['winRate'] as num).toDouble()
+        : 0.0;
+    final avgDisc = (rp?['avgDiscipline'] ?? 0) is num
+        ? (rp?['avgDiscipline'] as num).toDouble()
+        : 0.0;
 
     final pnlComponent = (pnl / (pnl.abs() + 1)) * 40 + 50; // ~10–90
     final winComponent = (winRate * 100).clamp(0, 100) * 0.4;
@@ -309,7 +317,9 @@ class StrategyHealthService {
         : List<double>.from(pnlTrend);
 
     final mean = window.reduce((a, b) => a + b) / window.length;
-    final variance = window.map((v) => (v - mean) * (v - mean)).reduce((a, b) => a + b) / window.length;
+    final variance =
+        window.map((v) => (v - mean) * (v - mean)).reduce((a, b) => a + b) /
+        window.length;
     final stdDev = math.sqrt(variance);
 
     // Normalize stdDev into 0–100, then invert

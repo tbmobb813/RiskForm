@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:riskform_core/models/backtest/backtest_result.dart' show BacktestResult, CycleStats;
+import 'package:riskform_core/models/backtest/backtest_result.dart'
+    show BacktestResult, CycleStats;
 import 'package:riskform_core/models/backtest/backtest_config.dart';
 
 import 'package:riskform/screens/backtest/components/backtest_metrics_card.dart';
@@ -61,7 +62,11 @@ void main() {
 
   testWidgets('BacktestMetricsCard displays metrics', (tester) async {
     final result = makeResult();
-    await tester.pumpWidget(MaterialApp(home: Scaffold(body: BacktestMetricsCard(result: result))));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: BacktestMetricsCard(result: result)),
+      ),
+    );
 
     expect(find.text('Performance Summary'), findsOneWidget);
     expect(find.textContaining('%'), findsWidgets);
@@ -70,14 +75,22 @@ void main() {
 
   testWidgets('BacktestEquityChart builds', (tester) async {
     final result = makeResult();
-    await tester.pumpWidget(MaterialApp(home: Scaffold(body: BacktestEquityChart(result: result))));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: BacktestEquityChart(result: result)),
+      ),
+    );
 
     expect(find.text('Equity Curve'), findsOneWidget);
   });
 
   testWidgets('CycleBreakdownCard shows cycles', (tester) async {
     final result = makeResult();
-    await tester.pumpWidget(MaterialApp(home: Scaffold(body: CycleBreakdownCard(cycles: result.cycles))));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: CycleBreakdownCard(cycles: result.cycles)),
+      ),
+    );
 
     expect(find.text('Cycle Breakdown'), findsOneWidget);
     expect(find.byType(ListTile), findsNWidgets(result.cycles.length));
@@ -85,7 +98,11 @@ void main() {
 
   testWidgets('BacktestLogList shows steps', (tester) async {
     final result = makeResult();
-    await tester.pumpWidget(MaterialApp(home: Scaffold(body: BacktestLogList(steps: result.notes))));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: BacktestLogList(steps: result.notes)),
+      ),
+    );
 
     expect(find.text('Backtest Log'), findsOneWidget);
     expect(find.text('1.'), findsOneWidget);

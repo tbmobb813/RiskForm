@@ -20,13 +20,13 @@ void main() {
         'maxGain': 100.0,
         'maxLoss': 0.0,
         'breakeven': 50.0,
-        'capitalRequired': 5000.0
+        'capitalRequired': 5000.0,
       },
       'risk': {
         'riskPercentOfAccount': 1.0,
         'assignmentExposure': false,
         'capitalLocked': 10.0,
-        'warnings': []
+        'warnings': [],
       },
       'notes': 'n',
       'tags': ['t'],
@@ -41,4 +41,3 @@ void main() {
     expect(plan.tags, ['t']);
   });
 }
-

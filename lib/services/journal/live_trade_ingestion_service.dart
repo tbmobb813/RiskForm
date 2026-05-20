@@ -9,7 +9,8 @@ class LiveTradeIngestionService {
 
   LiveTradeIngestionService({required this.repo});
 
-  String _id() => '${DateTime.now().microsecondsSinceEpoch}-${Random().nextInt(100000)}';
+  String _id() =>
+      '${DateTime.now().microsecondsSinceEpoch}-${Random().nextInt(100000)}';
 
   Future<void> ingest(LiveTradeEvent event) async {
     final entry = JournalEntry(

@@ -35,16 +35,18 @@ void main() {
         // Create prices where lookback return is exactly 3%
         final prices = <HistoricalPrice>[];
         final baseDate = DateTime(2024, 1, 1);
-        
+
         for (int i = 0; i < 15; i++) {
-          prices.add(HistoricalPrice(
-            date: baseDate.add(Duration(days: i)),
-            open: 100.0,
-            high: 100.0,
-            low: 100.0,
-            close: i < 10 ? 100.0 : 103.0, // 3% increase starting at day 10
-            volume: 1000000,
-          ));
+          prices.add(
+            HistoricalPrice(
+              date: baseDate.add(Duration(days: i)),
+              open: 100.0,
+              high: 100.0,
+              low: 100.0,
+              close: i < 10 ? 100.0 : 103.0, // 3% increase starting at day 10
+              volume: 1000000,
+            ),
+          );
         }
 
         final segments = classifier.classify(prices);
@@ -85,16 +87,18 @@ void main() {
         // Create prices where lookback return is exactly -3%
         final prices = <HistoricalPrice>[];
         final baseDate = DateTime(2024, 1, 1);
-        
+
         for (int i = 0; i < 15; i++) {
-          prices.add(HistoricalPrice(
-            date: baseDate.add(Duration(days: i)),
-            open: 100.0,
-            high: 100.0,
-            low: 100.0,
-            close: i < 10 ? 100.0 : 97.0, // -3% decrease starting at day 10
-            volume: 1000000,
-          ));
+          prices.add(
+            HistoricalPrice(
+              date: baseDate.add(Duration(days: i)),
+              open: 100.0,
+              high: 100.0,
+              low: 100.0,
+              close: i < 10 ? 100.0 : 97.0, // -3% decrease starting at day 10
+              volume: 1000000,
+            ),
+          );
         }
 
         final segments = classifier.classify(prices);
@@ -160,16 +164,18 @@ void main() {
       test('identifies sideways just below uptrend threshold', () {
         final prices = <HistoricalPrice>[];
         final baseDate = DateTime(2024, 1, 1);
-        
+
         for (int i = 0; i < 15; i++) {
-          prices.add(HistoricalPrice(
-            date: baseDate.add(Duration(days: i)),
-            open: 100.0,
-            high: 100.0,
-            low: 100.0,
-            close: i < 10 ? 100.0 : 102.9, // 2.9% increase - just below 3%
-            volume: 1000000,
-          ));
+          prices.add(
+            HistoricalPrice(
+              date: baseDate.add(Duration(days: i)),
+              open: 100.0,
+              high: 100.0,
+              low: 100.0,
+              close: i < 10 ? 100.0 : 102.9, // 2.9% increase - just below 3%
+              volume: 1000000,
+            ),
+          );
         }
 
         final segments = classifier.classify(prices);
@@ -181,16 +187,18 @@ void main() {
       test('identifies sideways just above downtrend threshold', () {
         final prices = <HistoricalPrice>[];
         final baseDate = DateTime(2024, 1, 1);
-        
+
         for (int i = 0; i < 15; i++) {
-          prices.add(HistoricalPrice(
-            date: baseDate.add(Duration(days: i)),
-            open: 100.0,
-            high: 100.0,
-            low: 100.0,
-            close: i < 10 ? 100.0 : 97.1, // -2.9% decrease - just above -3%
-            volume: 1000000,
-          ));
+          prices.add(
+            HistoricalPrice(
+              date: baseDate.add(Duration(days: i)),
+              open: 100.0,
+              high: 100.0,
+              low: 100.0,
+              close: i < 10 ? 100.0 : 97.1, // -2.9% decrease - just above -3%
+              volume: 1000000,
+            ),
+          );
         }
 
         final segments = classifier.classify(prices);
@@ -204,29 +212,33 @@ void main() {
       test('correctly transitions from uptrend to downtrend', () {
         final prices = <HistoricalPrice>[];
         final baseDate = DateTime(2024, 1, 1);
-        
+
         // First 15 days: uptrend (price goes from 100 to 105)
         for (int i = 0; i < 15; i++) {
-          prices.add(HistoricalPrice(
-            date: baseDate.add(Duration(days: i)),
-            open: 100.0 + (i * 0.5),
-            high: 100.0 + (i * 0.5),
-            low: 100.0 + (i * 0.5),
-            close: 100.0 + (i * 0.5),
-            volume: 1000000,
-          ));
+          prices.add(
+            HistoricalPrice(
+              date: baseDate.add(Duration(days: i)),
+              open: 100.0 + (i * 0.5),
+              high: 100.0 + (i * 0.5),
+              low: 100.0 + (i * 0.5),
+              close: 100.0 + (i * 0.5),
+              volume: 1000000,
+            ),
+          );
         }
-        
+
         // Next 15 days: downtrend (price goes from 105 to 95)
         for (int i = 15; i < 30; i++) {
-          prices.add(HistoricalPrice(
-            date: baseDate.add(Duration(days: i)),
-            open: 105.0 - ((i - 15) * 0.67),
-            high: 105.0 - ((i - 15) * 0.67),
-            low: 105.0 - ((i - 15) * 0.67),
-            close: 105.0 - ((i - 15) * 0.67),
-            volume: 1000000,
-          ));
+          prices.add(
+            HistoricalPrice(
+              date: baseDate.add(Duration(days: i)),
+              open: 105.0 - ((i - 15) * 0.67),
+              high: 105.0 - ((i - 15) * 0.67),
+              low: 105.0 - ((i - 15) * 0.67),
+              close: 105.0 - ((i - 15) * 0.67),
+              volume: 1000000,
+            ),
+          );
         }
 
         final segments = classifier.classify(prices);
@@ -239,29 +251,33 @@ void main() {
       test('correctly transitions from downtrend to uptrend', () {
         final prices = <HistoricalPrice>[];
         final baseDate = DateTime(2024, 1, 1);
-        
+
         // First 15 days: downtrend
         for (int i = 0; i < 15; i++) {
-          prices.add(HistoricalPrice(
-            date: baseDate.add(Duration(days: i)),
-            open: 100.0 - (i * 0.5),
-            high: 100.0 - (i * 0.5),
-            low: 100.0 - (i * 0.5),
-            close: 100.0 - (i * 0.5),
-            volume: 1000000,
-          ));
+          prices.add(
+            HistoricalPrice(
+              date: baseDate.add(Duration(days: i)),
+              open: 100.0 - (i * 0.5),
+              high: 100.0 - (i * 0.5),
+              low: 100.0 - (i * 0.5),
+              close: 100.0 - (i * 0.5),
+              volume: 1000000,
+            ),
+          );
         }
-        
+
         // Next 15 days: uptrend
         for (int i = 15; i < 30; i++) {
-          prices.add(HistoricalPrice(
-            date: baseDate.add(Duration(days: i)),
-            open: 93.0 + ((i - 15) * 0.67),
-            high: 93.0 + ((i - 15) * 0.67),
-            low: 93.0 + ((i - 15) * 0.67),
-            close: 93.0 + ((i - 15) * 0.67),
-            volume: 1000000,
-          ));
+          prices.add(
+            HistoricalPrice(
+              date: baseDate.add(Duration(days: i)),
+              open: 93.0 + ((i - 15) * 0.67),
+              high: 93.0 + ((i - 15) * 0.67),
+              low: 93.0 + ((i - 15) * 0.67),
+              close: 93.0 + ((i - 15) * 0.67),
+              volume: 1000000,
+            ),
+          );
         }
 
         final segments = classifier.classify(prices);
@@ -274,38 +290,45 @@ void main() {
       test('segments have correct date ranges and indices', () {
         final prices = <HistoricalPrice>[];
         final baseDate = DateTime(2024, 1, 1);
-        
+
         // Uptrend for 15 days
         for (int i = 0; i < 15; i++) {
-          prices.add(HistoricalPrice(
-            date: baseDate.add(Duration(days: i)),
-            open: 100.0 + (i * 0.5),
-            high: 100.0 + (i * 0.5),
-            low: 100.0 + (i * 0.5),
-            close: 100.0 + (i * 0.5),
-            volume: 1000000,
-          ));
+          prices.add(
+            HistoricalPrice(
+              date: baseDate.add(Duration(days: i)),
+              open: 100.0 + (i * 0.5),
+              high: 100.0 + (i * 0.5),
+              low: 100.0 + (i * 0.5),
+              close: 100.0 + (i * 0.5),
+              volume: 1000000,
+            ),
+          );
         }
-        
+
         // Sideways for 15 days
         for (int i = 15; i < 30; i++) {
-          prices.add(HistoricalPrice(
-            date: baseDate.add(Duration(days: i)),
-            open: 107.0,
-            high: 107.0,
-            low: 107.0,
-            close: 107.0,
-            volume: 1000000,
-          ));
+          prices.add(
+            HistoricalPrice(
+              date: baseDate.add(Duration(days: i)),
+              open: 107.0,
+              high: 107.0,
+              low: 107.0,
+              close: 107.0,
+              volume: 1000000,
+            ),
+          );
         }
 
         final segments = classifier.classify(prices);
 
         for (final segment in segments) {
           // Verify date ranges are valid
-          expect(segment.endDate.isAfter(segment.startDate) || 
-                 segment.endDate.isAtSameMomentAs(segment.startDate), true);
-          
+          expect(
+            segment.endDate.isAfter(segment.startDate) ||
+                segment.endDate.isAtSameMomentAs(segment.startDate),
+            true,
+          );
+
           // Verify indices are valid
           expect(segment.endIndex, greaterThanOrEqualTo(segment.startIndex));
           expect(segment.startIndex, greaterThanOrEqualTo(0));
@@ -315,17 +338,20 @@ void main() {
     });
 
     group('Edge cases', () {
-      test('returns empty list for insufficient data (less than lookbackDays + 1)', () {
-        final prices = _generatePrices(
-          startPrice: 100.0,
-          count: 10, // Exactly lookbackDays, need lookbackDays + 1
-          dailyReturn: 0.005,
-        );
+      test(
+        'returns empty list for insufficient data (less than lookbackDays + 1)',
+        () {
+          final prices = _generatePrices(
+            startPrice: 100.0,
+            count: 10, // Exactly lookbackDays, need lookbackDays + 1
+            dailyReturn: 0.005,
+          );
 
-        final segments = classifier.classify(prices);
+          final segments = classifier.classify(prices);
 
-        expect(segments.isEmpty, true);
-      });
+          expect(segments.isEmpty, true);
+        },
+      );
 
       test('returns empty list for empty price list', () {
         final segments = classifier.classify([]);
@@ -375,16 +401,18 @@ void main() {
         // 3% return should be sideways with these thresholds
         final prices = <HistoricalPrice>[];
         final baseDate = DateTime(2024, 1, 1);
-        
+
         for (int i = 0; i < 15; i++) {
-          prices.add(HistoricalPrice(
-            date: baseDate.add(Duration(days: i)),
-            open: 100.0,
-            high: 100.0,
-            low: 100.0,
-            close: i < 10 ? 100.0 : 103.0, // 3% increase
-            volume: 1000000,
-          ));
+          prices.add(
+            HistoricalPrice(
+              date: baseDate.add(Duration(days: i)),
+              open: 100.0,
+              high: 100.0,
+              low: 100.0,
+              close: i < 10 ? 100.0 : 103.0, // 3% increase
+              volume: 1000000,
+            ),
+          );
         }
 
         final segments = customClassifier.classify(prices);
@@ -412,25 +440,28 @@ void main() {
       test('handles price oscillations creating multiple segments', () {
         final prices = <HistoricalPrice>[];
         final baseDate = DateTime(2024, 1, 1);
-        
+
         for (int i = 0; i < 50; i++) {
           // Alternate between up and down every 10 days
           final phase = (i ~/ 10) % 2;
           final priceInPhase = i % 10;
           final basePrice = 100.0;
-          
+
           final price = phase == 0
-              ? basePrice + (priceInPhase * 0.5) // Uptrend
+              ? basePrice +
+                    (priceInPhase * 0.5) // Uptrend
               : basePrice - (priceInPhase * 0.5); // Downtrend
-          
-          prices.add(HistoricalPrice(
-            date: baseDate.add(Duration(days: i)),
-            open: price,
-            high: price,
-            low: price,
-            close: price,
-            volume: 1000000,
-          ));
+
+          prices.add(
+            HistoricalPrice(
+              date: baseDate.add(Duration(days: i)),
+              open: price,
+              high: price,
+              low: price,
+              close: price,
+              volume: 1000000,
+            ),
+          );
         }
 
         final segments = classifier.classify(prices);
@@ -451,10 +482,10 @@ void main() {
 
         // First segment should start at lookbackDays
         expect(segments.first.startIndex, 10);
-        
+
         // Last segment should end at last price
         expect(segments.last.endIndex, prices.length - 1);
-        
+
         // No gaps between segments
         for (int i = 0; i < segments.length - 1; i++) {
           expect(segments[i].endIndex + 1, segments[i + 1].startIndex);
@@ -487,18 +518,20 @@ List<HistoricalPrice> _generatePrices({
 }) {
   final prices = <HistoricalPrice>[];
   final baseDate = DateTime(2024, 1, 1);
-  
+
   for (int i = 0; i < count; i++) {
     final price = startPrice * math.pow(1 + dailyReturn, i);
-    prices.add(HistoricalPrice(
-      date: baseDate.add(Duration(days: i)),
-      open: price,
-      high: price,
-      low: price,
-      close: price,
-      volume: 1000000,
-    ));
+    prices.add(
+      HistoricalPrice(
+        date: baseDate.add(Duration(days: i)),
+        open: price,
+        high: price,
+        low: price,
+        close: price,
+        volume: 1000000,
+      ),
+    );
   }
-  
+
   return prices;
 }

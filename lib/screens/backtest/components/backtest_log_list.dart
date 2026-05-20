@@ -13,20 +13,28 @@ class BacktestLogList extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Backtest Log', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text(
+              'Backtest Log',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             if (steps.isEmpty) const Text('No log entries'),
-            ...steps.asMap().entries.map((e) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('${e.key + 1}.', style: const TextStyle(color: Colors.black54)),
-                      const SizedBox(width: 8),
-                      Expanded(child: Text(e.value)),
-                    ],
-                  ),
-                )),
+            ...steps.asMap().entries.map(
+              (e) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${e.key + 1}.',
+                      style: const TextStyle(color: Colors.black54),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(e.value)),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),

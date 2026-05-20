@@ -1,4 +1,5 @@
-int deterministicHash(String s) => s.codeUnits.fold(0, (a, b) => (a * 31 + b) & 0x7FFFFFFF);
+int deterministicHash(String s) =>
+    s.codeUnits.fold(0, (a, b) => (a * 31 + b) & 0x7FFFFFFF);
 
 bool shouldEarlyAssign({
   required String symbol,

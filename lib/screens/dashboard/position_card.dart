@@ -55,8 +55,11 @@ class PositionCard extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 4),
                       child: Row(
                         children: [
-                          const Icon(Icons.warning_amber_rounded,
-                              color: Colors.amber, size: 18),
+                          const Icon(
+                            Icons.warning_amber_rounded,
+                            color: Colors.amber,
+                            size: 18,
+                          ),
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
@@ -93,10 +96,7 @@ class _StrategyTag extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color),
       ),
-      child: Text(
-        strategy,
-        style: TextStyle(color: color, fontSize: 12),
-      ),
+      child: Text(strategy, style: TextStyle(color: color, fontSize: 12)),
     );
   }
 

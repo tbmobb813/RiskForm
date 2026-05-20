@@ -46,10 +46,18 @@ class _JournalEntryDetailState extends ConsumerState<JournalEntryDetail> {
                 context: context,
                 builder: (ctx) => AlertDialog(
                   title: const Text('Delete entry'),
-                  content: const Text('Are you sure you want to delete this journal entry? This action cannot be undone.'),
+                  content: const Text(
+                    'Are you sure you want to delete this journal entry? This action cannot be undone.',
+                  ),
                   actions: [
-                    TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel')),
-                    TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Delete')),
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(false),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(true),
+                      child: const Text('Delete'),
+                    ),
                   ],
                 ),
               );
@@ -66,16 +74,18 @@ class _JournalEntryDetailState extends ConsumerState<JournalEntryDetail> {
                 await repo.deleteEntry(_entry.id);
 
                 // Show undo SnackBar on parent scaffold. Restore if user taps Undo.
-                messenger.showSnackBar(SnackBar(
-                  content: const Text('Journal entry deleted'),
-                  action: SnackBarAction(
-                    label: 'Undo',
-                    onPressed: () async {
-                      await repo.addEntry(deleted);
-                    },
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: const Text('Journal entry deleted'),
+                    action: SnackBarAction(
+                      label: 'Undo',
+                      onPressed: () async {
+                        await repo.addEntry(deleted);
+                      },
+                    ),
+                    duration: const Duration(seconds: 6),
                   ),
-                  duration: const Duration(seconds: 6),
-                ));
+                );
 
                 if (!mounted) return;
                 navigator.pop(true);
@@ -87,7 +97,9 @@ class _JournalEntryDetailState extends ConsumerState<JournalEntryDetail> {
             onPressed: () async {
               final res = await Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => JournalEntryEditor(existing: _entry)),
+                MaterialPageRoute(
+                  builder: (_) => JournalEntryEditor(existing: _entry),
+                ),
               );
               if (res == true) {
                 await _refresh();

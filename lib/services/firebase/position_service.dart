@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/position.dart';
 import '../../exceptions/app_exceptions.dart';
 
-final positionServiceProvider = Provider<PositionService>((ref) => PositionService());
+final positionServiceProvider = Provider<PositionService>(
+  (ref) => PositionService(),
+);
 
 class PositionService {
   FirebaseFirestore? _db;
@@ -19,9 +21,9 @@ class PositionService {
   /// Fetches all positions for a user.
   Future<List<Position>> fetchPositions(String uid) async {
     try {
-      final snapshot = await _positionsCollection(uid)
-          .orderBy('expiration')
-          .get();
+      final snapshot = await _positionsCollection(
+        uid,
+      ).orderBy('expiration').get();
 
       return snapshot.docs.map((doc) {
         // make a new map that includes the Firestore document ID so the model can capture it
@@ -36,10 +38,9 @@ class PositionService {
   /// Fetches only open positions for a user.
   Future<List<Position>> fetchOpenPositions(String uid) async {
     try {
-      final snapshot = await _positionsCollection(uid)
-          .where('isOpen', isEqualTo: true)
-          .orderBy('expiration')
-          .get();
+      final snapshot = await _positionsCollection(
+        uid,
+      ).where('isOpen', isEqualTo: true).orderBy('expiration').get();
 
       return snapshot.docs.map((doc) {
         final data = doc.data();
@@ -131,11 +132,13 @@ class PositionService {
     return _positionsCollection(uid)
         .orderBy('expiration')
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) {
-              final data = doc.data();
-              data['id'] = doc.id;
-              return Position.fromJson(data);
-            }).toList());
+        .map(
+          (snapshot) => snapshot.docs.map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id;
+            return Position.fromJson(data);
+          }).toList(),
+        );
   }
 
   /// Streams only open positions for a user.
@@ -144,10 +147,12 @@ class PositionService {
         .where('isOpen', isEqualTo: true)
         .orderBy('expiration')
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) {
-              final data = doc.data();
-              data['id'] = doc.id;
-              return Position.fromJson(data);
-            }).toList());
+        .map(
+          (snapshot) => snapshot.docs.map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id;
+            return Position.fromJson(data);
+          }).toList(),
+        );
   }
 }

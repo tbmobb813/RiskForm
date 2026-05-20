@@ -14,11 +14,11 @@ class FakeHistoricalDataSource implements HistoricalDataSource {
     required DateTime end,
   }) async {
     fetchCallCount++;
-    
+
     if (mockError != null) {
       throw mockError!;
     }
-    
+
     return mockResponse ?? [];
   }
 }

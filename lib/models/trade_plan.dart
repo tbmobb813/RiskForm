@@ -107,7 +107,8 @@ class TradePlan {
         capitalRequired: (data["payoff"]["capitalRequired"] as num).toDouble(),
       ),
       risk: RiskResult(
-        riskPercentOfAccount: (data["risk"]["riskPercentOfAccount"] as num).toDouble(),
+        riskPercentOfAccount: (data["risk"]["riskPercentOfAccount"] as num)
+            .toDouble(),
         assignmentExposure: data["risk"]["assignmentExposure"],
         capitalLocked: (data["risk"]["capitalLocked"] as num).toDouble(),
         warnings: List<String>.from(data["risk"]["warnings"]),

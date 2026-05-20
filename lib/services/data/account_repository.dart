@@ -22,4 +22,3 @@ class AccountRepository {
     return _service.fetchAccount(uid);
   }
 }
-

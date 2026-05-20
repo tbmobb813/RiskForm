@@ -12,4 +12,5 @@ Map<String, dynamic> _runBacktestInIsolate(Map<String, dynamic> configMap) {
 }
 
 // Expose a top-level function compatible with `compute`.
-Map<String, dynamic> backtestCompute(Map<String, dynamic> input) => _runBacktestInIsolate(input);
+Map<String, dynamic> backtestCompute(Map<String, dynamic> input) =>
+    _runBacktestInIsolate(input);

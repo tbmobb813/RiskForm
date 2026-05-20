@@ -10,7 +10,8 @@ import 'account_snapshot_card.dart';
 import 'tools_and_strategy_library.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riskform/state/strategy_controller.dart';
-import 'package:riskform/strategy_cockpit/strategies/small_account/screens/small_account_dashboard.dart' show SmallAccountDashboardBody;
+import 'package:riskform/strategy_cockpit/strategies/small_account/screens/small_account_dashboard.dart'
+    show SmallAccountDashboardBody;
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -20,10 +21,7 @@ class DashboardScreen extends ConsumerWidget {
     final state = ref.watch(strategyControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Dashboard"),
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text("Dashboard"), elevation: 0),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -84,9 +82,14 @@ class _BehaviorTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Behavior Dashboard', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(
+                    'Behavior Dashboard',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                   SizedBox(height: 6),
-                  Text('Track your discipline trend, streaks, and recent trades.'),
+                  Text(
+                    'Track your discipline trend, streaks, and recent trades.',
+                  ),
                 ],
               ),
             ),

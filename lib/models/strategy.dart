@@ -1,11 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-enum StrategyState {
-  active,
-  paused,
-  retired,
-  experimental,
-}
+enum StrategyState { active, paused, retired, experimental }
 
 extension StrategyStateString on StrategyState {
   String get stringValue => toString().split('.').last;
@@ -55,27 +50,27 @@ class Strategy {
     );
   }
 
-    /// Factory: Map (id + data) -> Strategy
-    factory Strategy.fromMap(String id, Map<String, dynamic> data) {
-      DateTime parseTs(Object? v) {
-        if (v == null) return DateTime.now();
-        if (v is DateTime) return v;
-        if (v is Timestamp) return v.toDate();
-        return DateTime.now();
-      }
-
-      return Strategy(
-        id: id,
-        name: data['name'] as String,
-        description: data['description'] as String?,
-        state: _parseState(data['state'] as String),
-        createdAt: parseTs(data['createdAt']),
-        updatedAt: parseTs(data['updatedAt']),
-        retiredAt: data['retiredAt'] != null ? parseTs(data['retiredAt']) : null,
-        tags: List<String>.from(data['tags'] ?? []),
-        constraints: Map<String, dynamic>.from(data['constraints'] ?? {}),
-      );
+  /// Factory: Map (id + data) -> Strategy
+  factory Strategy.fromMap(String id, Map<String, dynamic> data) {
+    DateTime parseTs(Object? v) {
+      if (v == null) return DateTime.now();
+      if (v is DateTime) return v;
+      if (v is Timestamp) return v.toDate();
+      return DateTime.now();
     }
+
+    return Strategy(
+      id: id,
+      name: data['name'] as String,
+      description: data['description'] as String?,
+      state: _parseState(data['state'] as String),
+      createdAt: parseTs(data['createdAt']),
+      updatedAt: parseTs(data['updatedAt']),
+      retiredAt: data['retiredAt'] != null ? parseTs(data['retiredAt']) : null,
+      tags: List<String>.from(data['tags'] ?? []),
+      constraints: Map<String, dynamic>.from(data['constraints'] ?? {}),
+    );
+  }
 
   // -----------------------------
   // Convert to Firestore

@@ -17,7 +17,9 @@ class PayoffChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final axisColor = theme.colorScheme.onSurface.withAlpha((0.6 * 255).round());
+    final axisColor = theme.colorScheme.onSurface.withAlpha(
+      (0.6 * 255).round(),
+    );
     return SizedBox(
       height: 240,
       child: Card(
@@ -63,8 +65,12 @@ class _PayoffPainter extends CustomPainter {
     double minY = curve.first.dy;
     double maxY = curve.first.dy;
     for (final p in curve) {
-      if (p.dy < minY) { minY = p.dy; }
-      if (p.dy > maxY) { maxY = p.dy; }
+      if (p.dy < minY) {
+        minY = p.dy;
+      }
+      if (p.dy > maxY) {
+        maxY = p.dy;
+      }
     }
     if (minY == maxY) {
       minY -= 1;
@@ -75,7 +81,7 @@ class _PayoffPainter extends CustomPainter {
 
     // draw regime background bands first (if provided)
     if (regimes != null && regimes!.isNotEmpty) {
-          for (final seg in regimes!) {
+      for (final seg in regimes!) {
         final start = seg.startIndex.toDouble();
         final end = seg.endIndex.toDouble();
         final left = _mapX(start, minX, maxX, size.width);
@@ -83,13 +89,13 @@ class _PayoffPainter extends CustomPainter {
         Color bandColor;
         switch (seg.regime) {
           case MarketRegime.uptrend:
-            	bandColor = Colors.green.withAlpha((0.08 * 255).round());
+            bandColor = Colors.green.withAlpha((0.08 * 255).round());
             break;
           case MarketRegime.downtrend:
-            	bandColor = Colors.red.withAlpha((0.08 * 255).round());
+            bandColor = Colors.red.withAlpha((0.08 * 255).round());
             break;
           case MarketRegime.sideways:
-            	bandColor = Colors.yellow.withAlpha((0.06 * 255).round());
+            bandColor = Colors.yellow.withAlpha((0.06 * 255).round());
             break;
         }
         final rect = Rect.fromLTRB(left, 0, right, size.height);
@@ -125,8 +131,11 @@ class _PayoffPainter extends CustomPainter {
       final p = curve[i];
       final dx = _mapX(p.dx, minX, maxX, size.width);
       final dy = _mapY(p.dy, minY, maxY, size.height);
-      if (i == 0) { path.moveTo(dx, dy); }
-      else { path.lineTo(dx, dy); }
+      if (i == 0) {
+        path.moveTo(dx, dy);
+      } else {
+        path.lineTo(dx, dy);
+      }
     }
 
     final paintLine = Paint()
@@ -148,7 +157,13 @@ class _PayoffPainter extends CustomPainter {
     return height - ((y - minY) / (maxY - minY)) * height;
   }
 
-  void _drawXTicks(Canvas canvas, Size size, double minX, double maxX, TextStyle style) {
+  void _drawXTicks(
+    Canvas canvas,
+    Size size,
+    double minX,
+    double maxX,
+    TextStyle style,
+  ) {
     final tickCount = 4;
     final interval = (maxX - minX) / tickCount;
     for (int i = 0; i <= tickCount; i++) {
@@ -163,7 +178,13 @@ class _PayoffPainter extends CustomPainter {
     }
   }
 
-  void _drawYTicks(Canvas canvas, Size size, double minY, double maxY, TextStyle style) {
+  void _drawYTicks(
+    Canvas canvas,
+    Size size,
+    double minY,
+    double maxY,
+    TextStyle style,
+  ) {
     final tickCount = 4;
     final interval = (maxY - minY) / tickCount;
     for (int i = 0; i <= tickCount; i++) {
@@ -188,4 +209,3 @@ class _PayoffPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
-

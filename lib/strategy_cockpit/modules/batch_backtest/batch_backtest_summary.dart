@@ -9,7 +9,9 @@ class BatchBacktestSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final best = summary['bestConfig'];
     final worst = summary['worstConfig'];
-    final regimeWeaknesses = Map<String, dynamic>.from(summary['regimeWeaknesses'] ?? {});
+    final regimeWeaknesses = Map<String, dynamic>.from(
+      summary['regimeWeaknesses'] ?? {},
+    );
     final note = summary['summaryNote'] ?? "";
 
     return Column(
@@ -35,10 +37,7 @@ class BatchBacktestSummary extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        _CockpitCard(
-          title: "Summary",
-          child: Text(note),
-        ),
+        _CockpitCard(title: "Summary", child: Text(note)),
       ],
     );
   }

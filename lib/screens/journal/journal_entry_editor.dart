@@ -23,8 +23,16 @@ class _JournalEntryEditorState extends ConsumerState<JournalEntryEditor> {
     super.initState();
     final e = widget.existing;
     final notes = (e?.data['notes'] as String?) ?? '';
-    final tags = (e?.data['tags'] as List<dynamic>?)?.map((t) => t.toString()).join(', ') ?? '';
-    final shots = (e?.data['screenshots'] as List<dynamic>?)?.map((s) => s.toString()).toList() ?? [];
+    final tags =
+        (e?.data['tags'] as List<dynamic>?)
+            ?.map((t) => t.toString())
+            .join(', ') ??
+        '';
+    final shots =
+        (e?.data['screenshots'] as List<dynamic>?)
+            ?.map((s) => s.toString())
+            .toList() ??
+        [];
     _screenshots = shots;
     _notesController = TextEditingController(text: notes);
     _tagsController = TextEditingController(text: tags);
@@ -93,12 +101,14 @@ class _JournalEntryEditorState extends ConsumerState<JournalEntryEditor> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.existing == null ? 'New Journal Entry' : 'Edit Journal Entry'),
+        title: Text(
+          widget.existing == null ? 'New Journal Entry' : 'Edit Journal Entry',
+        ),
         actions: [
           TextButton(
             onPressed: _save,
             child: const Text('Save', style: TextStyle(color: Colors.white)),
-          )
+          ),
         ],
       ),
       body: Padding(
@@ -140,7 +150,10 @@ class _JournalEntryEditorState extends ConsumerState<JournalEntryEditor> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                ElevatedButton(onPressed: _addScreenshot, child: const Text('Add')),
+                ElevatedButton(
+                  onPressed: _addScreenshot,
+                  child: const Text('Add'),
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -150,7 +163,8 @@ class _JournalEntryEditorState extends ConsumerState<JournalEntryEditor> {
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: _screenshots.length,
-                  separatorBuilder: (context, index) => const SizedBox(width: 8),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(width: 8),
                   itemBuilder: (context, i) {
                     final url = _screenshots[i];
                     return Card(
@@ -159,10 +173,14 @@ class _JournalEntryEditorState extends ConsumerState<JournalEntryEditor> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            SizedBox(width: 120, child: Text(url, overflow: TextOverflow.ellipsis)),
+                            SizedBox(
+                              width: 120,
+                              child: Text(url, overflow: TextOverflow.ellipsis),
+                            ),
                             IconButton(
                               icon: const Icon(Icons.delete, size: 18),
-                              onPressed: () => setState(() => _screenshots.removeAt(i)),
+                              onPressed: () =>
+                                  setState(() => _screenshots.removeAt(i)),
                             ),
                           ],
                         ),

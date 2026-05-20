@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 class StrategyFlagChip extends StatelessWidget {
   final String label;
 
-  const StrategyFlagChip({
-    super.key,
-    required this.label,
-  });
+  const StrategyFlagChip({super.key, required this.label});
 
   @override
   Widget build(BuildContext context) {

@@ -11,7 +11,7 @@ class YahooDataSource implements HistoricalDataSource {
   static const int _maxRetries = 3;
   static const Duration _initialRetryDelay = Duration(seconds: 1);
   static const Duration _minRequestInterval = Duration(milliseconds: 200);
-  
+
   DateTime? _lastRequestTime;
 
   @override
@@ -38,19 +38,23 @@ class YahooDataSource implements HistoricalDataSource {
         // `headers` in the mock invocation; call the simple `get(Uri)`
         // overload so Mockito stubs that use `any` match reliably.
         response = await _client.get(Uri.parse(url));
-        
+
         if (response.statusCode == 200) {
           break;
         } else if (response.statusCode == 429 || response.statusCode >= 500) {
           // Rate limited or server error - retry
           if (retryCount >= _maxRetries) {
-            throw Exception('Failed to fetch historical data after $_maxRetries retries: ${response.statusCode}');
+            throw Exception(
+              'Failed to fetch historical data after $_maxRetries retries: ${response.statusCode}',
+            );
           }
           retryCount++;
           await Future.delayed(_calculateRetryDelay(retryCount));
         } else {
           // Other error - don't retry
-          throw Exception('Failed to fetch historical data: ${response.statusCode}');
+          throw Exception(
+            'Failed to fetch historical data: ${response.statusCode}',
+          );
         }
       } catch (e) {
         if (retryCount >= _maxRetries) {
@@ -65,7 +69,9 @@ class YahooDataSource implements HistoricalDataSource {
     final result = json['chart']?['result'];
     if (result == null) return [];
     if (result is! List) {
-      throw Exception('Unexpected Yahoo Finance API response format: result is not a List');
+      throw Exception(
+        'Unexpected Yahoo Finance API response format: result is not a List',
+      );
     }
     if (result.isEmpty) return [];
 
@@ -85,42 +91,45 @@ class YahooDataSource implements HistoricalDataSource {
 
     for (int i = 0; i < timestamps.length; i++) {
       final ts = timestamps[i];
-      
-        // Extract price data for this timestamp. Tests expect nulls and missing
-        // array entries to default to 0.0 rather than synthesizing values.
-        final open = (opens != null && i < opens.length && opens[i] != null)
+
+      // Extract price data for this timestamp. Tests expect nulls and missing
+      // array entries to default to 0.0 rather than synthesizing values.
+      final open = (opens != null && i < opens.length && opens[i] != null)
           ? (opens[i] as num).toDouble()
           : 0.0;
-        final high = (highs != null && i < highs.length && highs[i] != null)
+      final high = (highs != null && i < highs.length && highs[i] != null)
           ? (highs[i] as num).toDouble()
           : 0.0;
-        final low = (lows != null && i < lows.length && lows[i] != null)
+      final low = (lows != null && i < lows.length && lows[i] != null)
           ? (lows[i] as num).toDouble()
           : 0.0;
-        final close = (closes != null && i < closes.length && closes[i] != null)
+      final close = (closes != null && i < closes.length && closes[i] != null)
           ? (closes[i] as num).toDouble()
           : 0.0;
-        final volume = (volumes != null && i < volumes.length && volumes[i] != null)
+      final volume =
+          (volumes != null && i < volumes.length && volumes[i] != null)
           ? (volumes[i] as num).toDouble()
           : 0.0;
 
-        // Skip data points with missing critical price data (close == 0 indicates missing)
-        if (close == 0.0) {
+      // Skip data points with missing critical price data (close == 0 indicates missing)
+      if (close == 0.0) {
         continue;
-        }
-      
-        final openPrice = open;
-        final highPrice = high;
-        final lowPrice = low;
-      
-      prices.add(HistoricalPrice(
-        date: DateTime.fromMillisecondsSinceEpoch((ts as int) * 1000),
-        open: openPrice,
-        high: highPrice,
-        low: lowPrice,
-        close: close,
-        volume: volume,
-      ));
+      }
+
+      final openPrice = open;
+      final highPrice = high;
+      final lowPrice = low;
+
+      prices.add(
+        HistoricalPrice(
+          date: DateTime.fromMillisecondsSinceEpoch((ts as int) * 1000),
+          open: openPrice,
+          high: highPrice,
+          low: lowPrice,
+          close: close,
+          volume: volume,
+        ),
+      );
     }
 
     return prices;

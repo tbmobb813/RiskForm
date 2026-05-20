@@ -54,10 +54,7 @@ class StrategyPerformanceSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // PnL Sparkline
-          StrategySparkline(
-            title: 'PnL Trend',
-            values: vm.pnlTrend,
-          ),
+          StrategySparkline(title: 'PnL Trend', values: vm.pnlTrend),
           const SizedBox(height: 16),
 
           // Metrics row
@@ -92,17 +89,11 @@ class StrategyPerformanceSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: _CycleCard(
-                  title: 'Best Cycle',
-                  cycle: vm.bestCycle,
-                ),
+                child: _CycleCard(title: 'Best Cycle', cycle: vm.bestCycle),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: _CycleCard(
-                  title: 'Worst Cycle',
-                  cycle: vm.worstCycle,
-                ),
+                child: _CycleCard(title: 'Worst Cycle', cycle: vm.worstCycle),
               ),
             ],
           ),
@@ -127,10 +118,7 @@ class _CycleCard extends StatelessWidget {
   final String title;
   final Map<String, dynamic>? cycle;
 
-  const _CycleCard({
-    required this.title,
-    required this.cycle,
-  });
+  const _CycleCard({required this.title, required this.cycle});
 
   @override
   Widget build(BuildContext context) {
@@ -166,10 +154,7 @@ class _CycleCard extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 4),
-            Text(
-              _formatPnl(pnl),
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
+            Text(_formatPnl(pnl), style: Theme.of(context).textTheme.bodyLarge),
           ],
         ),
       ),

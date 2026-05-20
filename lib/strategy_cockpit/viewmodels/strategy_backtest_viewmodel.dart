@@ -38,28 +38,24 @@ class StrategyBacktestViewModel extends ChangeNotifier {
   // Latest Backtest
   // -----------------------------
   void _listenToLatest() {
-    _latestSub =
-        _backtestService.watchLatestBacktest(strategyId).listen(
-      (data) {
-        latestBacktest = data;
-        _setLoaded();
-      },
-      onError: (_) => _setError(),
-    );
+    _latestSub = _backtestService.watchLatestBacktest(strategyId).listen((
+      data,
+    ) {
+      latestBacktest = data;
+      _setLoaded();
+    }, onError: (_) => _setError());
   }
 
   // -----------------------------
   // Backtest History
   // -----------------------------
   void _listenToHistory() {
-    _historySub =
-        _backtestService.watchBacktestHistory(strategyId).listen(
-      (list) {
-        backtestHistory = list;
-        _setLoaded();
-      },
-      onError: (_) => _setError(),
-    );
+    _historySub = _backtestService.watchBacktestHistory(strategyId).listen((
+      list,
+    ) {
+      backtestHistory = list;
+      _setLoaded();
+    }, onError: (_) => _setError());
   }
 
   // -----------------------------

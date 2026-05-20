@@ -14,15 +14,28 @@ class WheelPerformanceSummaryCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Performance Summary', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Performance Summary',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 12),
-            Text('Total Return: ${(result.totalReturn * 100).toStringAsFixed(1)}%'),
-            Text('Max Drawdown: ${(result.maxDrawdown * 100).toStringAsFixed(1)}%'),
+            Text(
+              'Total Return: ${(result.totalReturn * 100).toStringAsFixed(1)}%',
+            ),
+            Text(
+              'Max Drawdown: ${(result.maxDrawdown * 100).toStringAsFixed(1)}%',
+            ),
             Text('Cycles Completed: ${result.cyclesCompleted}'),
             const SizedBox(height: 12),
-            Text('Avg Cycle Return: ${(result.avgCycleReturn * 100).toStringAsFixed(2)}%'),
-            Text('Avg Cycle Duration: ${result.avgCycleDurationDays.toStringAsFixed(1)} days'),
-            Text('Assignment Rate: ${(result.assignmentRate * 100).toStringAsFixed(1)}%'),
+            Text(
+              'Avg Cycle Return: ${(result.avgCycleReturn * 100).toStringAsFixed(2)}%',
+            ),
+            Text(
+              'Avg Cycle Duration: ${result.avgCycleDurationDays.toStringAsFixed(1)} days',
+            ),
+            Text(
+              'Assignment Rate: ${(result.assignmentRate * 100).toStringAsFixed(1)}%',
+            ),
           ],
         ),
       ),

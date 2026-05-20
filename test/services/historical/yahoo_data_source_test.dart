@@ -17,12 +17,14 @@ void main() {
       dataSource = YahooDataSource(client: mockClient);
     });
 
-    test('fetchDailyPrices returns parsed data on successful response', () async {
-      final symbol = 'AAPL';
-      final start = DateTime(2024, 1, 1);
-      final end = DateTime(2024, 1, 5);
+    test(
+      'fetchDailyPrices returns parsed data on successful response',
+      () async {
+        final symbol = 'AAPL';
+        final start = DateTime(2024, 1, 1);
+        final end = DateTime(2024, 1, 5);
 
-      final mockResponse = '''
+        final mockResponse = '''
       {
         "chart": {
           "result": [
@@ -45,44 +47,46 @@ void main() {
       }
       ''';
 
-      when(mockClient.get(any))
-          .thenAnswer((_) async => http.Response(mockResponse, 200));
+        when(
+          mockClient.get(any),
+        ).thenAnswer((_) async => http.Response(mockResponse, 200));
 
-      final prices = await dataSource.fetchDailyPrices(
-        symbol: symbol,
-        start: start,
-        end: end,
-      );
+        final prices = await dataSource.fetchDailyPrices(
+          symbol: symbol,
+          start: start,
+          end: end,
+        );
 
-      expect(prices.length, equals(3));
-      expect(prices[0].open, equals(150.0));
-      expect(prices[0].high, equals(155.0));
-      expect(prices[0].low, equals(149.0));
-      expect(prices[0].close, equals(154.0));
-      expect(prices[0].volume, equals(1000000.0));
-      expect(prices[1].open, equals(151.0));
-      expect(prices[2].close, equals(156.0));
-    });
+        expect(prices.length, equals(3));
+        expect(prices[0].open, equals(150.0));
+        expect(prices[0].high, equals(155.0));
+        expect(prices[0].low, equals(149.0));
+        expect(prices[0].close, equals(154.0));
+        expect(prices[0].volume, equals(1000000.0));
+        expect(prices[1].open, equals(151.0));
+        expect(prices[2].close, equals(156.0));
+      },
+    );
 
     test('fetchDailyPrices throws exception on non-200 status code', () async {
       final symbol = 'AAPL';
       final start = DateTime(2024, 1, 1);
       final end = DateTime(2024, 1, 5);
 
-      when(mockClient.get(any))
-          .thenAnswer((_) async => http.Response('Not Found', 404));
+      when(
+        mockClient.get(any),
+      ).thenAnswer((_) async => http.Response('Not Found', 404));
 
       expect(
-        () => dataSource.fetchDailyPrices(
-          symbol: symbol,
-          start: start,
-          end: end,
+        () =>
+            dataSource.fetchDailyPrices(symbol: symbol, start: start, end: end),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains('Failed to fetch historical data: 404'),
+          ),
         ),
-        throwsA(isA<Exception>().having(
-          (e) => e.toString(),
-          'message',
-          contains('Failed to fetch historical data: 404'),
-        )),
       );
     });
 
@@ -97,8 +101,9 @@ void main() {
       }
       ''';
 
-      when(mockClient.get(any))
-          .thenAnswer((_) async => http.Response(mockResponse, 200));
+      when(
+        mockClient.get(any),
+      ).thenAnswer((_) async => http.Response(mockResponse, 200));
 
       final prices = await dataSource.fetchDailyPrices(
         symbol: symbol,
@@ -109,12 +114,14 @@ void main() {
       expect(prices, isEmpty);
     });
 
-    test('fetchDailyPrices returns empty list when result is empty array', () async {
-      final symbol = 'AAPL';
-      final start = DateTime(2024, 1, 1);
-      final end = DateTime(2024, 1, 5);
+    test(
+      'fetchDailyPrices returns empty list when result is empty array',
+      () async {
+        final symbol = 'AAPL';
+        final start = DateTime(2024, 1, 1);
+        final end = DateTime(2024, 1, 5);
 
-      final mockResponse = '''
+        final mockResponse = '''
       {
         "chart": {
           "result": []
@@ -122,24 +129,28 @@ void main() {
       }
       ''';
 
-      when(mockClient.get(any))
-          .thenAnswer((_) async => http.Response(mockResponse, 200));
+        when(
+          mockClient.get(any),
+        ).thenAnswer((_) async => http.Response(mockResponse, 200));
 
-      final prices = await dataSource.fetchDailyPrices(
-        symbol: symbol,
-        start: start,
-        end: end,
-      );
+        final prices = await dataSource.fetchDailyPrices(
+          symbol: symbol,
+          start: start,
+          end: end,
+        );
 
-      expect(prices, isEmpty);
-    });
+        expect(prices, isEmpty);
+      },
+    );
 
-    test('fetchDailyPrices throws exception when result is not a List', () async {
-      final symbol = 'AAPL';
-      final start = DateTime(2024, 1, 1);
-      final end = DateTime(2024, 1, 5);
+    test(
+      'fetchDailyPrices throws exception when result is not a List',
+      () async {
+        final symbol = 'AAPL';
+        final start = DateTime(2024, 1, 1);
+        final end = DateTime(2024, 1, 5);
 
-      final mockResponse = '''
+        final mockResponse = '''
       {
         "chart": {
           "result": "invalid"
@@ -147,29 +158,35 @@ void main() {
       }
       ''';
 
-      when(mockClient.get(any))
-          .thenAnswer((_) async => http.Response(mockResponse, 200));
+        when(
+          mockClient.get(any),
+        ).thenAnswer((_) async => http.Response(mockResponse, 200));
 
-      expect(
-        () => dataSource.fetchDailyPrices(
-          symbol: symbol,
-          start: start,
-          end: end,
-        ),
-        throwsA(isA<Exception>().having(
-          (e) => e.toString(),
-          'message',
-          contains('Unexpected Yahoo Finance API response format'),
-        )),
-      );
-    });
+        expect(
+          () => dataSource.fetchDailyPrices(
+            symbol: symbol,
+            start: start,
+            end: end,
+          ),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'message',
+              contains('Unexpected Yahoo Finance API response format'),
+            ),
+          ),
+        );
+      },
+    );
 
-    test('fetchDailyPrices returns empty list when indicators are missing', () async {
-      final symbol = 'AAPL';
-      final start = DateTime(2024, 1, 1);
-      final end = DateTime(2024, 1, 5);
+    test(
+      'fetchDailyPrices returns empty list when indicators are missing',
+      () async {
+        final symbol = 'AAPL';
+        final start = DateTime(2024, 1, 1);
+        final end = DateTime(2024, 1, 5);
 
-      final mockResponse = '''
+        final mockResponse = '''
       {
         "chart": {
           "result": [
@@ -181,17 +198,19 @@ void main() {
       }
       ''';
 
-      when(mockClient.get(any))
-          .thenAnswer((_) async => http.Response(mockResponse, 200));
+        when(
+          mockClient.get(any),
+        ).thenAnswer((_) async => http.Response(mockResponse, 200));
 
-      final prices = await dataSource.fetchDailyPrices(
-        symbol: symbol,
-        start: start,
-        end: end,
-      );
+        final prices = await dataSource.fetchDailyPrices(
+          symbol: symbol,
+          start: start,
+          end: end,
+        );
 
-      expect(prices, isEmpty);
-    });
+        expect(prices, isEmpty);
+      },
+    );
 
     test('fetchDailyPrices handles null values in price arrays', () async {
       final symbol = 'AAPL';
@@ -221,8 +240,9 @@ void main() {
       }
       ''';
 
-      when(mockClient.get(any))
-          .thenAnswer((_) async => http.Response(mockResponse, 200));
+      when(
+        mockClient.get(any),
+      ).thenAnswer((_) async => http.Response(mockResponse, 200));
 
       final prices = await dataSource.fetchDailyPrices(
         symbol: symbol,
@@ -263,8 +283,9 @@ void main() {
       }
       ''';
 
-      when(mockClient.get(any))
-          .thenAnswer((_) async => http.Response(mockResponse, 200));
+      when(
+        mockClient.get(any),
+      ).thenAnswer((_) async => http.Response(mockResponse, 200));
 
       final prices = await dataSource.fetchDailyPrices(
         symbol: symbol,
@@ -285,15 +306,13 @@ void main() {
       final start = DateTime(2024, 1, 1);
       final end = DateTime(2024, 1, 5);
 
-      when(mockClient.get(any))
-          .thenAnswer((_) async => http.Response('not valid json', 200));
+      when(
+        mockClient.get(any),
+      ).thenAnswer((_) async => http.Response('not valid json', 200));
 
       expect(
-        () => dataSource.fetchDailyPrices(
-          symbol: symbol,
-          start: start,
-          end: end,
-        ),
+        () =>
+            dataSource.fetchDailyPrices(symbol: symbol, start: start, end: end),
         throwsA(isA<FormatException>()),
       );
     });

@@ -35,9 +35,16 @@ class _SmallAccountScreenState extends ConsumerState<SmallAccountScreen> {
               const SizedBox(height: 8),
               TextFormField(
                 initialValue: s.startingCapital.toStringAsFixed(2),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(labelText: 'Starting Capital', errorText: state.errors['startingCapital']),
-                onSaved: (v) => notifier.updateStartingCapital(double.tryParse(v ?? '') ?? s.startingCapital),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Starting Capital',
+                  errorText: state.errors['startingCapital'],
+                ),
+                onSaved: (v) => notifier.updateStartingCapital(
+                  double.tryParse(v ?? '') ?? s.startingCapital,
+                ),
                 validator: (v) {
                   final num = double.tryParse(v ?? '');
                   if (num == null || num <= 0) return 'Enter a positive number';
@@ -47,21 +54,38 @@ class _SmallAccountScreenState extends ConsumerState<SmallAccountScreen> {
               const SizedBox(height: 8),
               TextFormField(
                 initialValue: (s.maxAllocationPct * 100).toStringAsFixed(1),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(labelText: 'Max Allocation (%)', errorText: state.errors['maxAllocationPct']),
-                onSaved: (v) => notifier.updateMaxAllocationPct((double.tryParse(v ?? '') ?? (s.maxAllocationPct * 100)) / 100.0),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Max Allocation (%)',
+                  errorText: state.errors['maxAllocationPct'],
+                ),
+                onSaved: (v) => notifier.updateMaxAllocationPct(
+                  (double.tryParse(v ?? '') ?? (s.maxAllocationPct * 100)) /
+                      100.0,
+                ),
                 validator: (v) {
                   final num = double.tryParse(v ?? '');
-                  if (num == null || num <= 0 || num > 100) return 'Enter % between 0-100';
+                  if (num == null || num <= 0 || num > 100) {
+                    return 'Enter % between 0-100';
+                  }
                   return null;
                 },
               ),
               const SizedBox(height: 8),
               TextFormField(
                 initialValue: s.minTradeSize.toStringAsFixed(2),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(labelText: 'Min Trade Size', errorText: state.errors['minTradeSize']),
-                onSaved: (v) => notifier.updateMinTradeSize(double.tryParse(v ?? '') ?? s.minTradeSize),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Min Trade Size',
+                  errorText: state.errors['minTradeSize'],
+                ),
+                onSaved: (v) => notifier.updateMinTradeSize(
+                  double.tryParse(v ?? '') ?? s.minTradeSize,
+                ),
                 validator: (v) {
                   final num = double.tryParse(v ?? '');
                   if (num == null || num <= 0) return 'Enter a positive number';
@@ -71,9 +95,16 @@ class _SmallAccountScreenState extends ConsumerState<SmallAccountScreen> {
               const SizedBox(height: 8),
               TextFormField(
                 initialValue: s.maxOpenPositions.toString(),
-                keyboardType: const TextInputType.numberWithOptions(decimal: false),
-                decoration: InputDecoration(labelText: 'Max Open Positions', errorText: state.errors['maxOpenPositions']),
-                onSaved: (v) => notifier.updateMaxOpenPositions(int.tryParse(v ?? '') ?? s.maxOpenPositions),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: false,
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Max Open Positions',
+                  errorText: state.errors['maxOpenPositions'],
+                ),
+                onSaved: (v) => notifier.updateMaxOpenPositions(
+                  int.tryParse(v ?? '') ?? s.maxOpenPositions,
+                ),
                 validator: (v) {
                   final num = int.tryParse(v ?? '');
                   if (num == null || num <= 0) return 'Enter an integer >= 1';
@@ -90,12 +121,24 @@ class _SmallAccountScreenState extends ConsumerState<SmallAccountScreen> {
                   final ok = await notifier.save();
                   if (!mounted) return;
                   if (ok) {
-                    messenger.showSnackBar(const SnackBar(content: Text('Small account settings saved')));
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('Small account settings saved'),
+                      ),
+                    );
                   } else {
-                    messenger.showSnackBar(const SnackBar(content: Text('Fix validation errors')));
+                    messenger.showSnackBar(
+                      const SnackBar(content: Text('Fix validation errors')),
+                    );
                   }
                 },
-                child: state.saving ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Save'),
+                child: state.saving
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Save'),
               ),
             ],
           ),

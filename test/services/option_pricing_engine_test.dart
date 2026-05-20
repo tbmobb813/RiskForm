@@ -87,7 +87,8 @@ void main() {
       );
 
       final parityLeft = callPrice - putPrice;
-      final parityRight = spot - strike * exp(-riskFreeRate * timeToExpiryYears);
+      final parityRight =
+          spot - strike * exp(-riskFreeRate * timeToExpiryYears);
 
       expect(parityLeft, closeTo(parityRight, 0.01));
     });
@@ -273,7 +274,7 @@ void main() {
         volatility: 0.20,
         timeToExpiryYears: -0.1,
       );
-      
+
       // Returns max(S - K, 0) = max(110 - 100, 0) = 10
       expect(price, closeTo(10.0, 0.01));
     });

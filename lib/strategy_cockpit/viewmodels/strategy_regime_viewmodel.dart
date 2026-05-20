@@ -29,8 +29,8 @@ class StrategyRegimeViewModel extends ChangeNotifier {
     required this.strategyId,
     StrategyHealthService? healthService,
     RegimeService? regimeService,
-  })  : _healthService = healthService ?? StrategyHealthService(),
-        _regimeService = regimeService ?? RegimeService() {
+  }) : _healthService = healthService ?? StrategyHealthService(),
+       _regimeService = regimeService ?? RegimeService() {
     _init();
   }
 
@@ -46,39 +46,33 @@ class StrategyRegimeViewModel extends ChangeNotifier {
   // Strategy Health Snapshot
   // -----------------------------
   void _listenToHealth() {
-    _healthSub = _healthService.watchHealth(strategyId).listen(
-      (snapshot) {
-        if (snapshot != null) {
-          _computeRegimeAnalytics(snapshot);
-        }
-        _setLoaded();
-      },
-      onError: (_) => _setError(),
-    );
+    _healthSub = _healthService.watchHealth(strategyId).listen((snapshot) {
+      if (snapshot != null) {
+        _computeRegimeAnalytics(snapshot);
+      }
+      _setLoaded();
+    }, onError: (_) => _setError());
   }
 
   // -----------------------------
   // Current Regime
   // -----------------------------
   void _listenToRegime() {
-    _regimeSub = _regimeService.watchCurrentRegime().listen(
-      (regime) {
-        currentRegime = regime ?? "";
-        _setLoaded();
-      },
-      onError: (_) => _setError(),
-    );
+    _regimeSub = _regimeService.watchCurrentRegime().listen((regime) {
+      currentRegime = regime ?? "";
+      _setLoaded();
+    }, onError: (_) => _setError());
   }
 
   // -----------------------------
   // Compute Regime Analytics
   // -----------------------------
   void _computeRegimeAnalytics(StrategyHealthSnapshot snapshot) {
-    regimePerformance =
-        StrategyRegimeAnalyzer.computeRegimePerformance(snapshot);
+    regimePerformance = StrategyRegimeAnalyzer.computeRegimePerformance(
+      snapshot,
+    );
 
-    regimeWeaknesses =
-        StrategyRegimeAnalyzer.computeRegimeWeaknesses(snapshot);
+    regimeWeaknesses = StrategyRegimeAnalyzer.computeRegimeWeaknesses(snapshot);
 
     currentRegimeHint = StrategyRegimeAnalyzer.computeCurrentRegimeHint(
       snapshot: snapshot,

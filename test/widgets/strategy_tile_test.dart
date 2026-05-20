@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:riskform/screens/dashboard/strategy_tile.dart';
 
 void main() {
-  testWidgets('StrategyTile displays texts and reacts to tap', (WidgetTester tester) async {
+  testWidgets('StrategyTile displays texts and reacts to tap', (
+    WidgetTester tester,
+  ) async {
     var tapped = false;
 
     await tester.pumpWidget(

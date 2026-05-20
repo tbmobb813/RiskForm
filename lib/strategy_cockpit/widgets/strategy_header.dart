@@ -10,10 +10,7 @@ import '../viewmodels/strategy_cockpit_viewmodel.dart';
 class StrategyHeader extends StatelessWidget {
   final String strategyId;
 
-  const StrategyHeader({
-    super.key,
-    required this.strategyId,
-  });
+  const StrategyHeader({super.key, required this.strategyId});
 
   @override
   Widget build(BuildContext context) {
@@ -50,8 +47,9 @@ class StrategyHeader extends StatelessWidget {
 
           final strategy = vm.strategy!;
           final stateName = strategy.state.toString().split('.').last;
-          final constraintsSummary =
-              (strategy.constraints.isNotEmpty) ? strategy.constraints.toString() : null;
+          final constraintsSummary = (strategy.constraints.isNotEmpty)
+              ? strategy.constraints.toString()
+              : null;
 
           return Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -81,7 +79,9 @@ class StrategyHeader extends StatelessWidget {
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: strategy.tags.map((t) => Chip(label: Text(t))).toList(),
+                    children: strategy.tags
+                        .map((t) => Chip(label: Text(t)))
+                        .toList(),
                   ),
                 if (strategy.tags.isNotEmpty) const SizedBox(height: 12),
 
@@ -164,7 +164,8 @@ class _HeaderActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final stateName = vm.strategy?.state.toString().split('.').last ?? 'unknown';
+    final stateName =
+        vm.strategy?.state.toString().split('.').last ?? 'unknown';
 
     return Row(
       children: [
@@ -207,10 +208,9 @@ class _HeaderActions extends StatelessWidget {
         Expanded(
           child: OutlinedButton(
             onPressed: () {
-              Navigator.of(context).pushNamed(
-                '/editStrategy',
-                arguments: vm.strategy?.id,
-              );
+              Navigator.of(
+                context,
+              ).pushNamed('/editStrategy', arguments: vm.strategy?.id);
             },
             child: const Text('Edit'),
           ),
@@ -220,8 +220,6 @@ class _HeaderActions extends StatelessWidget {
   }
 
   void _notify(BuildContext context, String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg)),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 }

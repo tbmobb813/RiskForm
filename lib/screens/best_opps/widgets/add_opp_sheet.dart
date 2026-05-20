@@ -122,7 +122,7 @@ class _AddOppSheetState extends State<AddOppSheet> {
                 Expanded(
                   flex: 3,
                   child: DropdownButtonFormField<String>(
-                    value: _setup,
+                    initialValue: _setup,
                     decoration: const InputDecoration(
                       labelText: 'Setup',
                       border: OutlineInputBorder(),

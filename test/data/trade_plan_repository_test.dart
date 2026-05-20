@@ -10,7 +10,9 @@ import 'package:riskform/models/payoff_result.dart';
 import 'package:riskform/models/risk_result.dart';
 
 class FakeService extends Mock implements TradePlanService {}
+
 class FakeAuth extends Mock implements AuthService {}
+
 class FakeWheel extends Mock implements WheelCycleService {}
 
 void main() {
@@ -25,8 +27,18 @@ void main() {
       strategyId: 'csp',
       strategyName: 'S',
       inputs: const TradeInputs(),
-      payoff: PayoffResult(maxGain: 10, maxLoss: -5, breakeven: 1, capitalRequired: 100),
-      risk: RiskResult(riskPercentOfAccount: 1.0, assignmentExposure: false, capitalLocked: 0.0, warnings: []),
+      payoff: PayoffResult(
+        maxGain: 10,
+        maxLoss: -5,
+        breakeven: 1,
+        capitalRequired: 100,
+      ),
+      risk: RiskResult(
+        riskPercentOfAccount: 1.0,
+        assignmentExposure: false,
+        capitalLocked: 0.0,
+        warnings: [],
+      ),
       notes: '',
       tags: [],
       createdAt: DateTime.now(),

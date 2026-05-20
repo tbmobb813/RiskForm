@@ -18,7 +18,13 @@ void main() {
 
   test('validate rejects invalid settings', () {
     final notifier = SmallAccountNotifier();
-    final bad = SmallAccountSettings(enabled: true, startingCapital: 0.0, maxAllocationPct: 1.5, minTradeSize: 0.0, maxOpenPositions: 0);
+    final bad = SmallAccountSettings(
+      enabled: true,
+      startingCapital: 0.0,
+      maxAllocationPct: 1.5,
+      minTradeSize: 0.0,
+      maxOpenPositions: 0,
+    );
     final errs = notifier.validate(bad);
     expect(errs.isNotEmpty, true);
     expect(errs.containsKey('startingCapital'), true);

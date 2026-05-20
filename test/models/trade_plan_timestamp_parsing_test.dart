@@ -12,16 +12,16 @@ void main() {
         'maxGain': 0.0,
         'maxLoss': 0.0,
         'breakeven': 0.0,
-        'capitalRequired': 0.0
+        'capitalRequired': 0.0,
       },
       'risk': {
         'riskPercentOfAccount': 0.0,
         'assignmentExposure': false,
         'capitalLocked': 0.0,
-        'warnings': <String>[]
+        'warnings': <String>[],
       },
       'notes': 'x',
-      'tags': <String>['a']
+      'tags': <String>['a'],
     };
 
     test('parses Firestore Timestamp', () {
@@ -57,8 +57,14 @@ void main() {
         ..['updatedAt'] = {'_seconds': seconds, '_nanoseconds': ns};
 
       final p = TradePlan.fromMap(data, 'id3');
-      expect(p.createdAt.millisecondsSinceEpoch, expected.millisecondsSinceEpoch);
-      expect(p.updatedAt.millisecondsSinceEpoch, expected.millisecondsSinceEpoch);
+      expect(
+        p.createdAt.millisecondsSinceEpoch,
+        expected.millisecondsSinceEpoch,
+      );
+      expect(
+        p.updatedAt.millisecondsSinceEpoch,
+        expected.millisecondsSinceEpoch,
+      );
     });
 
     test('null timestamps become epoch', () {

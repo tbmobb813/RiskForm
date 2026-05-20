@@ -12,10 +12,7 @@ import '../models/weekly_summary.dart';
 class WeeklySummaryCard extends StatelessWidget {
   final WeeklySummary summary;
 
-  const WeeklySummaryCard({
-    super.key,
-    required this.summary,
-  });
+  const WeeklySummaryCard({super.key, required this.summary});
 
   @override
   Widget build(BuildContext context) {
@@ -38,12 +35,14 @@ class WeeklySummaryCard extends StatelessWidget {
                   child: _buildMetric(
                     'P/L',
                     '${summary.pnlDisplay} (${summary.pnlPercentDisplay})',
-                    color: summary.isPositive ? Colors.green : summary.isNegative ? Colors.red : null,
+                    color: summary.isPositive
+                        ? Colors.green
+                        : summary.isNegative
+                        ? Colors.red
+                        : null,
                   ),
                 ),
-                Expanded(
-                  child: _buildMetric('Trades', '${summary.trades}'),
-                ),
+                Expanded(child: _buildMetric('Trades', '${summary.trades}')),
                 Expanded(
                   child: _buildMetric('Win Rate', summary.winRateDisplay),
                 ),
@@ -53,7 +52,10 @@ class WeeklySummaryCard extends StatelessWidget {
             const SizedBox(height: 12),
 
             // Avg Discipline
-            _buildMetric('Avg Discipline', '${summary.avgDiscipline.toStringAsFixed(0)}/100'),
+            _buildMetric(
+              'Avg Discipline',
+              '${summary.avgDiscipline.toStringAsFixed(0)}/100',
+            ),
 
             const SizedBox(height: 16),
 

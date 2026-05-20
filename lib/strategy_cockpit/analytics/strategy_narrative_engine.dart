@@ -14,9 +14,17 @@ class StrategyNarrativeEngine {
   }) {
     final healthTone = _healthTone(context.healthScore);
     final regimePhrase = _regimePhrase(regime, vol, liq);
-    final summary = _buildSummary(healthTone, regimePhrase, context.recentCycles);
+    final summary = _buildSummary(
+      healthTone,
+      regimePhrase,
+      context.recentCycles,
+    );
 
-    final historyInsights = _historyBullets(context, context.recentCycles, context.backtestComparison);
+    final historyInsights = _historyBullets(
+      context,
+      context.recentCycles,
+      context.backtestComparison,
+    );
     final liveInsights = _liveBullets(regime, vol, liq);
     final recSummary = _summarizeTopRecommendations(recs);
 
@@ -26,10 +34,7 @@ class StrategyNarrativeEngine {
     return StrategyNarrative(
       title: 'Current Strategy Story',
       summary: summary,
-      bullets: [
-        ...historyInsights,
-        ...liveInsights,
-      ],
+      bullets: [...historyInsights, ...liveInsights],
       outlook: finalOutlook,
       generatedAt: DateTime.now().toUtc(),
     );
@@ -104,11 +109,16 @@ class StrategyNarrativeEngine {
     final bullets = <String>[];
 
     // Health trend (using disciplineTrend as a proxy for trend)
-    if (context.disciplineTrend.isNotEmpty && context.disciplineTrend.length >= 2) {
+    if (context.disciplineTrend.isNotEmpty &&
+        context.disciplineTrend.length >= 2) {
       final first = context.disciplineTrend.first;
       final last = context.disciplineTrend.last;
       final delta = (last - first).round();
-      final dir = delta > 0 ? 'improved' : delta < 0 ? 'declined' : 'remained stable';
+      final dir = delta > 0
+          ? 'improved'
+          : delta < 0
+          ? 'declined'
+          : 'remained stable';
       bullets.add('Health score has $dir from $first to $last.');
     }
 
@@ -116,7 +126,9 @@ class StrategyNarrativeEngine {
     if (cycles.isNotEmpty) {
       final last = cycles.last;
       final pnl = last.pnl;
-      bullets.add('Most recent cycle closed with PnL of ${pnl.toStringAsFixed(2)} and discipline score ${last.disciplineScore}.');
+      bullets.add(
+        'Most recent cycle closed with PnL of ${pnl.toStringAsFixed(2)} and discipline score ${last.disciplineScore}.',
+      );
     }
 
     // Backtest insights
@@ -124,10 +136,14 @@ class StrategyNarrativeEngine {
       final best = backtests.bestConfig;
       final worst = backtests.weakConfig;
       if (best != null && best.isNotEmpty) {
-        bullets.add('Backtests highlight strong performance around ${_configPhrase(best)}.');
+        bullets.add(
+          'Backtests highlight strong performance around ${_configPhrase(best)}.',
+        );
       }
       if (worst != null && worst.isNotEmpty) {
-        bullets.add('Weak configurations appear around ${_configPhrase(worst)}.');
+        bullets.add(
+          'Weak configurations appear around ${_configPhrase(worst)}.',
+        );
       }
     }
 
@@ -157,9 +173,15 @@ class StrategyNarrativeEngine {
   ) {
     final bullets = <String>[];
 
-    bullets.add('Current regime is ${regime.trend} with ${regime.volatility} volatility and ${regime.liquidity} liquidity.');
-    bullets.add('Current IV Rank is ${vol.ivRank.toStringAsFixed(0)}, indicating ${_ivRankPhrase(vol.ivRank)}.');
-    bullets.add('Bid/ask spread is ${liq.bidAskSpread.toStringAsFixed(2)}, with volume ${liq.volume} and open interest ${liq.openInterest}.');
+    bullets.add(
+      'Current regime is ${regime.trend} with ${regime.volatility} volatility and ${regime.liquidity} liquidity.',
+    );
+    bullets.add(
+      'Current IV Rank is ${vol.ivRank.toStringAsFixed(0)}, indicating ${_ivRankPhrase(vol.ivRank)}.',
+    );
+    bullets.add(
+      'Bid/ask spread is ${liq.bidAskSpread.toStringAsFixed(2)}, with volume ${liq.volume} and open interest ${liq.openInterest}.',
+    );
 
     return bullets;
   }
@@ -175,13 +197,16 @@ class StrategyNarrativeEngine {
       return 'No specific parameter or risk changes are currently suggested.';
     }
 
-    final sorted = [...recs.recommendations]..sort((a, b) => a.priority.compareTo(b.priority));
+    final sorted = [...recs.recommendations]
+      ..sort((a, b) => a.priority.compareTo(b.priority));
 
     final top = sorted.take(3).toList();
     final messages = top.map((r) => r.message).toList();
 
     if (messages.length == 1) return messages.first;
-    if (messages.length == 2) return "${messages[0]} Additionally, ${messages[1]}";
+    if (messages.length == 2) {
+      return "${messages[0]} Additionally, ${messages[1]}";
+    }
     return "${messages[0]} Additionally, ${messages[1]} Finally, ${messages[2]}";
   }
 
@@ -193,8 +218,8 @@ class StrategyNarrativeEngine {
     final tonePrefix = (healthTone == 'stable')
         ? 'Given the current stable condition of the strategy and'
         : (healthTone == 'fragile')
-            ? 'Given the fragile condition of the strategy and'
-            : 'Given the at‑risk condition of the strategy and';
+        ? 'Given the fragile condition of the strategy and'
+        : 'Given the at‑risk condition of the strategy and';
 
     return '$tonePrefix $regimePhrase, $recSummary';
   }
@@ -218,7 +243,10 @@ class StrategyNarrative {
 
 /// Pure, deterministic narrative generator.
 /// Accepts an optional `StrategyRecommendationsBundle` to enrich the narrative.
-StrategyNarrative generateNarrative(StrategyContext ctx, {StrategyRecommendationsBundle? recsBundle}) {
+StrategyNarrative generateNarrative(
+  StrategyContext ctx, {
+  StrategyRecommendationsBundle? recsBundle,
+}) {
   // Title
   final title = 'Strategy Story';
 
@@ -243,7 +271,8 @@ StrategyNarrative generateNarrative(StrategyContext ctx, {StrategyRecommendation
     final avgPnl = _mean(cycles.map((c) => c.pnl).toList());
     final positive = avgPnl >= 0;
     final trend = positive ? 'delivered gains' : 'underperformed';
-    cycleSentence = 'Over the last ${cycles.length} cycles the strategy has $trend (avg PnL ${avgPnl.toStringAsFixed(2)}).';
+    cycleSentence =
+        'Over the last ${cycles.length} cycles the strategy has $trend (avg PnL ${avgPnl.toStringAsFixed(2)}).';
   }
 
   // Summary sentences (2-3 sentences)
@@ -257,9 +286,11 @@ StrategyNarrative generateNarrative(StrategyContext ctx, {StrategyRecommendation
   final bullets = <String>[];
 
   // discipline trend
-    if (ctx.disciplineTrend.isNotEmpty) {
+  if (ctx.disciplineTrend.isNotEmpty) {
     final last = ctx.disciplineTrend.last;
-    final prev = ctx.disciplineTrend.length >= 2 ? ctx.disciplineTrend[ctx.disciplineTrend.length - 2] : last;
+    final prev = ctx.disciplineTrend.length >= 2
+        ? ctx.disciplineTrend[ctx.disciplineTrend.length - 2]
+        : last;
     bullets.add('Discipline: $prev → $last.');
   }
 
@@ -271,17 +302,27 @@ StrategyNarrative generateNarrative(StrategyContext ctx, {StrategyRecommendation
   if (bt != null) {
     if (bt.bestConfig != null && bt.bestConfig!.isNotEmpty) {
       final parts = <String>[];
-      if (bt.bestConfig!.containsKey('dte')) parts.add('DTE ${bt.bestConfig!['dte']}');
-      if (bt.bestConfig!.containsKey('delta')) parts.add('delta ${bt.bestConfig!['delta']}');
-      if (parts.isNotEmpty) bullets.add('Backtests favor: ${parts.join(', ')}.');
+      if (bt.bestConfig!.containsKey('dte')) {
+        parts.add('DTE ${bt.bestConfig!['dte']}');
+      }
+      if (bt.bestConfig!.containsKey('delta')) {
+        parts.add('delta ${bt.bestConfig!['delta']}');
+      }
+      if (parts.isNotEmpty) {
+        bullets.add('Backtests favor: ${parts.join(', ')}.');
+      }
     }
     if (bt.weakConfig != null && bt.weakConfig!.isNotEmpty) {
-      bullets.add('Backtests show weak configs that may underperform in some regimes.');
+      bullets.add(
+        'Backtests show weak configs that may underperform in some regimes.',
+      );
     }
   }
 
   // regime weaknesses
-  if (ctx.recentCycles.any((c) => c.regime != null && c.regime!.toLowerCase() == 'downtrend')) {
+  if (ctx.recentCycles.any(
+    (c) => c.regime != null && c.regime!.toLowerCase() == 'downtrend',
+  )) {
     bullets.add('Strategy shows degradation in downtrend cycles.');
   }
 
@@ -309,24 +350,37 @@ StrategyNarrative generateNarrative(StrategyContext ctx, {StrategyRecommendation
     final recs = <String>[];
     // Prefer recommendations that match rules in recommendations engine when present
     // (no direct recommendations here; user can extend to pass them in)
-    if (ctx.drawdown > 0.15) recs.add('Consider lowering trade frequency due to drawdown.');
+    if (ctx.drawdown > 0.15) {
+      recs.add('Consider lowering trade frequency due to drawdown.');
+    }
     if (recs.isNotEmpty) bullets.addAll(recs);
   }
 
   // Outlook: synthesize forward guidance
   final outlookParts = <String>[];
   if (health >= 75) {
-    outlookParts.add('Positioning is reasonable; maintain current approach with attention to risk limits.');
+    outlookParts.add(
+      'Positioning is reasonable; maintain current approach with attention to risk limits.',
+    );
   } else if (health >= 50) {
-    outlookParts.add('Be cautious: consider modest size reductions and tighter deltas.');
+    outlookParts.add(
+      'Be cautious: consider modest size reductions and tighter deltas.',
+    );
   } else {
-    outlookParts.add('Take defensive actions: reduce size and tighten risk parameters.');
+    outlookParts.add(
+      'Take defensive actions: reduce size and tighten risk parameters.',
+    );
   }
-  if (regime == 'downtrend') outlookParts.add('Prefer defensive structures while the downtrend persists.');
+  if (regime == 'downtrend') {
+    outlookParts.add(
+      'Prefer defensive structures while the downtrend persists.',
+    );
+  }
 
   // If we have recommendations, fold top recommendation into outlook
   if (recsBundle != null && recsBundle.recommendations.isNotEmpty) {
-    final top = List.of(recsBundle.recommendations)..sort((a, b) => a.priority.compareTo(b.priority));
+    final top = List.of(recsBundle.recommendations)
+      ..sort((a, b) => a.priority.compareTo(b.priority));
     final first = top.first;
     outlookParts.add('Top recommendation: ${first.message}');
   }
@@ -342,4 +396,5 @@ StrategyNarrative generateNarrative(StrategyContext ctx, {StrategyRecommendation
   );
 }
 
-double _mean(List<double> xs) => xs.isEmpty ? 0.0 : xs.reduce((a, b) => a + b) / xs.length;
+double _mean(List<double> xs) =>
+    xs.isEmpty ? 0.0 : xs.reduce((a, b) => a + b) / xs.length;

@@ -16,18 +16,42 @@ class ModeSelectorCard extends ConsumerWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('Account Mode', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 6),
-              Text(state.mode == AccountMode.smallAccount ? 'Small Account' : 'Wheel Strategy'),
-            ]),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Account Mode',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  state.mode == AccountMode.smallAccount
+                      ? 'Small Account'
+                      : 'Wheel Strategy',
+                ),
+              ],
+            ),
             ToggleButtons(
-              isSelected: [state.mode == AccountMode.smallAccount, state.mode == AccountMode.wheel],
+              isSelected: [
+                state.mode == AccountMode.smallAccount,
+                state.mode == AccountMode.wheel,
+              ],
               onPressed: (i) {
-                final m = (i == 0) ? AccountMode.smallAccount : AccountMode.wheel;
+                final m = (i == 0)
+                    ? AccountMode.smallAccount
+                    : AccountMode.wheel;
                 ctl.setMode(m);
               },
-              children: const [Padding(padding: EdgeInsets.symmetric(horizontal: 12.0), child: Text('Small')), Padding(padding: EdgeInsets.symmetric(horizontal: 12.0), child: Text('Wheel'))],
+              children: const [
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12.0),
+                  child: Text('Small'),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12.0),
+                  child: Text('Wheel'),
+                ),
+              ],
             ),
           ],
         ),

@@ -11,60 +11,65 @@ void main() {
       service = WheelCycleService();
     });
 
-    test('_incrementCycleCount increments on calledAway -> idle transition', () async {
-      final previous = WheelCycle(
-        state: WheelCycleState.calledAway,
-        cycleCount: 1,
-      );
+    test(
+      '_incrementCycleCount increments on calledAway -> idle transition',
+      () async {
+        final previous = WheelCycle(
+          state: WheelCycleState.calledAway,
+          cycleCount: 1,
+        );
 
-      // Test through updateCycle with persist: false to avoid Firebase calls
-      final positions = <Position>[]; // Empty positions leads to idle state
-      
-      final result = await service.updateCycle(
-        uid: 'test-uid',
-        previous: previous,
-        positions: positions,
-        persist: false,
-      );
+        // Test through updateCycle with persist: false to avoid Firebase calls
+        final positions = <Position>[]; // Empty positions leads to idle state
 
-      // Should transition from calledAway to idle and increment count
-      expect(result.state, equals(WheelCycleState.idle));
-      expect(result.cycleCount, equals(2));
-    });
+        final result = await service.updateCycle(
+          uid: 'test-uid',
+          previous: previous,
+          positions: positions,
+          persist: false,
+        );
 
-    test('_incrementCycleCount does not increment on other transitions', () async {
-      final previous = WheelCycle(
-        state: WheelCycleState.cspOpen,
-        cycleCount: 1,
-      );
+        // Should transition from calledAway to idle and increment count
+        expect(result.state, equals(WheelCycleState.idle));
+        expect(result.cycleCount, equals(2));
+      },
+    );
 
-      // Create positions that will trigger cspOpen -> assigned transition
-      final positions = [
-        Position(
-          type: PositionType.shares,
-          symbol: 'AAPL',
-          strategy: 'Shares',
-          quantity: 100,
-          expiration: DateTime.now().add(const Duration(days: 30)),
-          isOpen: true,
-        ),
-      ];
-      
-      final result = await service.updateCycle(
-        uid: 'test-uid',
-        previous: previous,
-        positions: positions,
-        persist: false,
-      );
+    test(
+      '_incrementCycleCount does not increment on other transitions',
+      () async {
+        final previous = WheelCycle(
+          state: WheelCycleState.cspOpen,
+          cycleCount: 1,
+        );
 
-      // Should transition to assigned but NOT increment count
-      expect(result.state, equals(WheelCycleState.assigned));
-      expect(result.cycleCount, equals(1));
-    });
+        // Create positions that will trigger cspOpen -> assigned transition
+        final positions = [
+          Position(
+            type: PositionType.shares,
+            symbol: 'AAPL',
+            strategy: 'Shares',
+            quantity: 100,
+            expiration: DateTime.now().add(const Duration(days: 30)),
+            isOpen: true,
+          ),
+        ];
+
+        final result = await service.updateCycle(
+          uid: 'test-uid',
+          previous: previous,
+          positions: positions,
+          persist: false,
+        );
+
+        // Should transition to assigned but NOT increment count
+        expect(result.state, equals(WheelCycleState.assigned));
+        expect(result.cycleCount, equals(1));
+      },
+    );
   });
 
   group('WheelCycleService - State Deserialization', () {
-
     test('_deserializeState handles string enum names', () {
       final testCases = {
         'idle': WheelCycleState.idle,
@@ -77,8 +82,11 @@ void main() {
 
       for (final entry in testCases.entries) {
         final result = WheelCycleService.deserializeStateForTesting(entry.key);
-        expect(result, equals(entry.value),
-        reason: 'String "${entry.key}" should deserialize to ${entry.value}');
+        expect(
+          result,
+          equals(entry.value),
+          reason: 'String "${entry.key}" should deserialize to ${entry.value}',
+        );
       }
     });
 
@@ -94,8 +102,11 @@ void main() {
 
       for (final entry in testCases.entries) {
         final result = WheelCycleService.deserializeStateForTesting(entry.key);
-        expect(result, equals(entry.value),
-        reason: 'Integer ${entry.key} should deserialize to ${entry.value}');
+        expect(
+          result,
+          equals(entry.value),
+          reason: 'Integer ${entry.key} should deserialize to ${entry.value}',
+        );
       }
     });
 
@@ -113,19 +124,27 @@ void main() {
 
       for (final invalid in invalidInputs) {
         final result = WheelCycleService.deserializeStateForTesting(invalid);
-        expect(result, equals(WheelCycleState.idle),
-        reason: 'Invalid input "$invalid" should default to idle');
+        expect(
+          result,
+          equals(WheelCycleState.idle),
+          reason: 'Invalid input "$invalid" should default to idle',
+        );
       }
     });
 
     test('_deserializeState handles out of bounds integer', () {
       // Test negative index
-      expect(WheelCycleService.deserializeStateForTesting(-1), equals(WheelCycleState.idle));
-      
+      expect(
+        WheelCycleService.deserializeStateForTesting(-1),
+        equals(WheelCycleState.idle),
+      );
+
       // Test index beyond enum length
       final tooLarge = WheelCycleState.values.length;
-      expect(WheelCycleService.deserializeStateForTesting(tooLarge), equals(WheelCycleState.idle));
+      expect(
+        WheelCycleService.deserializeStateForTesting(tooLarge),
+        equals(WheelCycleState.idle),
+      );
     });
   });
 }
-

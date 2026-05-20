@@ -33,6 +33,7 @@ class AuthService {
   /// available (desktop dev), the constructor will fall back to a noop
   /// mode so the app can run without a native Firebase implementation.
   AuthService([FirebaseAuth? auth]) : _auth = _tryResolve(auth);
+
   /// Explicit noop constructor for development where Firebase is not
   /// available. Methods will return empty/default values.
   AuthService.noop() : _auth = null;
@@ -47,7 +48,8 @@ class AuthService {
   bool get isAuthenticated => _auth?.currentUser != null;
 
   /// Stream of auth state changes.
-  Stream<User?> get authStateChanges => _auth?.authStateChanges() ?? Stream.value(null);
+  Stream<User?> get authStateChanges =>
+      _auth?.authStateChanges() ?? Stream.value(null);
 
   /// Signs in with email and password.
   Future<UserCredential> signInWithEmail({
@@ -55,7 +57,9 @@ class AuthService {
     required String password,
   }) async {
     try {
-      if (_auth == null) throw FirebaseAuthException(code: 'no-app', message: 'No Firebase');
+      if (_auth == null) {
+        throw FirebaseAuthException(code: 'no-app', message: 'No Firebase');
+      }
       return await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
@@ -71,7 +75,9 @@ class AuthService {
     required String password,
   }) async {
     try {
-      if (_auth == null) throw FirebaseAuthException(code: 'no-app', message: 'No Firebase');
+      if (_auth == null) {
+        throw FirebaseAuthException(code: 'no-app', message: 'No Firebase');
+      }
       return await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
@@ -90,7 +96,9 @@ class AuthService {
   /// Sends a password reset email.
   Future<void> sendPasswordResetEmail(String email) async {
     try {
-      if (_auth == null) throw FirebaseAuthException(code: 'no-app', message: 'No Firebase');
+      if (_auth == null) {
+        throw FirebaseAuthException(code: 'no-app', message: 'No Firebase');
+      }
       await _auth.sendPasswordResetEmail(email: email);
     } on FirebaseAuthException catch (e) {
       throw _mapFirebaseAuthException(e);
@@ -111,11 +119,15 @@ class AuthService {
   AuthenticationException _mapFirebaseAuthException(FirebaseAuthException e) {
     switch (e.code) {
       case 'user-not-found':
-        return const AuthenticationException('No account found with this email');
+        return const AuthenticationException(
+          'No account found with this email',
+        );
       case 'wrong-password':
         return const AuthenticationException('Incorrect password');
       case 'email-already-in-use':
-        return const AuthenticationException('An account already exists with this email');
+        return const AuthenticationException(
+          'An account already exists with this email',
+        );
       case 'weak-password':
         return const AuthenticationException('Password is too weak');
       case 'invalid-email':
@@ -123,9 +135,13 @@ class AuthService {
       case 'user-disabled':
         return const AuthenticationException('This account has been disabled');
       case 'too-many-requests':
-        return const AuthenticationException('Too many attempts. Please try again later');
+        return const AuthenticationException(
+          'Too many attempts. Please try again later',
+        );
       case 'network-request-failed':
-        return const AuthenticationException('Network error. Check your connection');
+        return const AuthenticationException(
+          'Network error. Check your connection',
+        );
       default:
         return AuthenticationException('Authentication failed: ${e.message}');
     }

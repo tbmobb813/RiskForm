@@ -21,7 +21,7 @@ class FakeCockpitDataClient implements CockpitDataClient {
         'pnl': 10.5,
         'closedAt': DateTime.now().toIso8601String(),
         'isPaper': true,
-      }
+      },
     ];
   }
 
@@ -30,12 +30,12 @@ class FakeCockpitDataClient implements CockpitDataClient {
     return [
       {
         'disciplineScore': 85,
-        'disciplineBreakdown': {'adherence': 35}
+        'disciplineBreakdown': {'adherence': 35},
       },
       {
         'disciplineScore': 90,
-        'disciplineBreakdown': {'adherence': 37}
-      }
+        'disciplineBreakdown': {'adherence': 37},
+      },
     ];
   }
 
@@ -49,7 +49,7 @@ class FakeCockpitDataClient implements CockpitDataClient {
         quantity: 1,
         expiration: DateTime.now().add(const Duration(days: 30)),
         isOpen: true,
-      )
+      ),
     ];
   }
 }
@@ -68,7 +68,11 @@ void main() {
     final fakeRef = FakeRef();
     final fakeClient = FakeCockpitDataClient();
 
-    final controller = CockpitController(fakeRef, dataClient: fakeClient, getUid: () => 'test-uid');
+    final controller = CockpitController(
+      fakeRef,
+      dataClient: fakeClient,
+      getUid: () => 'test-uid',
+    );
 
     // Initial state isLoading true by default
     expect(controller.state.isLoading, true);

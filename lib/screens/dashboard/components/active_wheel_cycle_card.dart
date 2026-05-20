@@ -39,15 +39,9 @@ class _WheelCycleCard extends StatelessWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            Text(
-              stateLabel,
-              style: const TextStyle(fontSize: 16),
-            ),
+            Text(stateLabel, style: const TextStyle(fontSize: 16)),
             const SizedBox(height: 8),
-            Text(
-              description,
-              style: const TextStyle(color: Colors.white70),
-            ),
+            Text(description, style: const TextStyle(color: Colors.white70)),
             const SizedBox(height: 12),
             Text("Cycle Count: ${wheel.cycleCount}"),
             if (wheel.lastTransition != null)

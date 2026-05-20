@@ -15,9 +15,7 @@ class LongPutStrategy extends TradingStrategy {
   String get typeId => 'long_put';
 
   @override
-  Map<String, dynamic> toJson() => {
-        'contract': contract.toJson(),
-      };
+  Map<String, dynamic> toJson() => {'contract': contract.toJson()};
 
   @override
   String get id => 'long_put_${contract.id}';
@@ -38,7 +36,11 @@ class LongPutStrategy extends TradingStrategy {
   double get breakeven => contract.strike - contract.premium;
 
   @override
-  List<PayoffPoint> payoffCurve({required double underlyingPrice, required double rangePercent, required int steps}) {
+  List<PayoffPoint> payoffCurve({
+    required double underlyingPrice,
+    required double rangePercent,
+    required int steps,
+  }) {
     final engine = PayoffEngine();
 
     final inputs = TradeInputs(
@@ -58,13 +60,16 @@ class LongPutStrategy extends TradingStrategy {
       points: steps,
     );
 
-    return offsets.map((o) => PayoffPoint(underlyingPrice: o.dx, profitLoss: o.dy)).toList();
+    return offsets
+        .map((o) => PayoffPoint(underlyingPrice: o.dx, profitLoss: o.dy))
+        .toList();
   }
 
   @override
   StrategyExplanation explain() {
     return StrategyExplanation(
-      summary: 'A bearish strategy with defined risk and substantial downside protection.',
+      summary:
+          'A bearish strategy with defined risk and substantial downside protection.',
       pros: ['Defined risk', 'Downside protection'],
       cons: ['Time decay', 'Limited upside (premium)'],
       idealConditions: ['Bearish markets', 'High IV environments'],

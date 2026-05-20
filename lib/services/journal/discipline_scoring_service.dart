@@ -68,40 +68,57 @@ class DisciplineScoringService {
     final avgCycleReturn = cycles.isEmpty
         ? 0.0
         : cycles
-                .map((e) => (e.data['cycleReturn'] is num) ? (e.data['cycleReturn'] as num).toDouble() : 0.0)
-                .fold(0.0, (a, b) => a + b) /
-            cycles.length;
+                  .map(
+                    (e) => (e.data['cycleReturn'] is num)
+                        ? (e.data['cycleReturn'] as num).toDouble()
+                        : 0.0,
+                  )
+                  .fold(0.0, (a, b) => a + b) /
+              cycles.length;
 
     // Normalize cycle return: -5% to +5% maps to 0-1
-    final cycleQuality = ((avgCycleReturn + ScoringConstants.expectedMonthlyReturn) /
-            ScoringConstants.returnNormalizationRange)
-        .clamp(0, 1)
-        .toDouble();
+    final cycleQuality =
+        ((avgCycleReturn + ScoringConstants.expectedMonthlyReturn) /
+                ScoringConstants.returnNormalizationRange)
+            .clamp(0, 1)
+            .toDouble();
 
     final assignments = entries.where((e) => e.type == 'assignment').length;
     final calledAway = entries.where((e) => e.type == 'calledAway').length;
 
-    final assignmentBehavior = assignments == 0 ? 1.0 : (calledAway / assignments).clamp(0, 1).toDouble();
+    final assignmentBehavior = assignments == 0
+        ? 1.0
+        : (calledAway / assignments).clamp(0, 1).toDouble();
 
-    final downCycles =
-        cycles.where((e) => e.data['dominantRegime'] == MarketRegime.downtrend.toString()).toList();
+    final downCycles = cycles
+        .where(
+          (e) => e.data['dominantRegime'] == MarketRegime.downtrend.toString(),
+        )
+        .toList();
 
     double regimeAwareness = 1.0;
     if (downCycles.isNotEmpty) {
-      final avgDownReturn = downCycles
-              .map((e) => (e.data['cycleReturn'] is num) ? (e.data['cycleReturn'] as num).toDouble() : 0.0)
+      final avgDownReturn =
+          downCycles
+              .map(
+                (e) => (e.data['cycleReturn'] is num)
+                    ? (e.data['cycleReturn'] as num).toDouble()
+                    : 0.0,
+              )
               .fold(0.0, (a, b) => a + b) /
           downCycles.length;
 
       // Normalize downtrend return: -10% to +10% maps to 0-1
-      regimeAwareness = ((avgDownReturn + ScoringConstants.downtrendReturnOffset) /
-              ScoringConstants.downtrendNormalizationRange)
-          .clamp(0, 1)
-          .toDouble();
+      regimeAwareness =
+          ((avgDownReturn + ScoringConstants.downtrendReturnOffset) /
+                  ScoringConstants.downtrendNormalizationRange)
+              .clamp(0, 1)
+              .toDouble();
     }
 
     // Weighted average of all components
-    final score = (planAdherence * ScoringConstants.planAdherenceWeight +
+    final score =
+        (planAdherence * ScoringConstants.planAdherenceWeight +
             cycleQuality * ScoringConstants.cycleQualityWeight +
             assignmentBehavior * ScoringConstants.assignmentBehaviorWeight +
             regimeAwareness * ScoringConstants.regimeAwarenessWeight) *

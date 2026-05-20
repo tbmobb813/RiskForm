@@ -10,17 +10,21 @@ class PMCCStrategy extends TradingStrategy {
   final int shareQuantity;
   final double costBasis;
 
-  PMCCStrategy({required this.callContract, this.shareQuantity = 100, this.costBasis = 0.0});
+  PMCCStrategy({
+    required this.callContract,
+    this.shareQuantity = 100,
+    this.costBasis = 0.0,
+  });
 
   @override
   String get typeId => 'pmcc';
 
   @override
   Map<String, dynamic> toJson() => {
-        'callContract': callContract.toJson(),
-        'shareQuantity': shareQuantity,
-        'costBasis': costBasis,
-      };
+    'callContract': callContract.toJson(),
+    'shareQuantity': shareQuantity,
+    'costBasis': costBasis,
+  };
 
   @override
   String get id => 'pmcc_${callContract.id}';
@@ -30,9 +34,13 @@ class PMCCStrategy extends TradingStrategy {
 
   @override
   List<Leg> get legs => [
-        Leg.shares(id: 'SHARES', shares: shareQuantity, costBasisPerShare: costBasis),
-        Leg.option(callContract, quantity: -1),
-      ];
+    Leg.shares(
+      id: 'SHARES',
+      shares: shareQuantity,
+      costBasisPerShare: costBasis,
+    ),
+    Leg.option(callContract, quantity: -1),
+  ];
 
   @override
   double get maxRisk {
@@ -49,7 +57,11 @@ class PMCCStrategy extends TradingStrategy {
   double get breakeven => costBasis - callContract.premium;
 
   @override
-  List<PayoffPoint> payoffCurve({required double underlyingPrice, required double rangePercent, required int steps}) {
+  List<PayoffPoint> payoffCurve({
+    required double underlyingPrice,
+    required double rangePercent,
+    required int steps,
+  }) {
     final engine = PayoffEngine();
 
     final legsList = legs;
@@ -67,14 +79,20 @@ class PMCCStrategy extends TradingStrategy {
       points: steps,
     );
 
-    return offsets.map((o) => PayoffPoint(underlyingPrice: o.dx, profitLoss: o.dy)).toList();
+    return offsets
+        .map((o) => PayoffPoint(underlyingPrice: o.dx, profitLoss: o.dy))
+        .toList();
   }
 
   @override
   StrategyExplanation explain() {
     return StrategyExplanation(
-      summary: 'Poor Man\'s Covered Call: long synthetic or financed long plus short call.',
-      pros: ['Lower capital requirement than owning 100 shares', 'Generates premium'],
+      summary:
+          'Poor Man\'s Covered Call: long synthetic or financed long plus short call.',
+      pros: [
+        'Lower capital requirement than owning 100 shares',
+        'Generates premium',
+      ],
       cons: ['Synthetic financing cost', 'Assignment exposure'],
       idealConditions: ['Mildly bullish to neutral markets'],
       risks: ['Volatility changes', 'Execution complexity'],

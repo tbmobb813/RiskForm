@@ -37,13 +37,18 @@ class _RiskCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text("Total Risk: ${risk.totalRiskPercent.toStringAsFixed(1)}%"),
-            Text("Assignment Exposure: ${risk.assignmentExposure ? "Yes" : "No"}"),
+            Text(
+              "Assignment Exposure: ${risk.assignmentExposure ? "Yes" : "No"}",
+            ),
             const SizedBox(height: 12),
             if (risk.warnings.isNotEmpty)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Warnings:", style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text(
+                    "Warnings:",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   ...risk.warnings.map((w) => Text("- $w")),
                 ],
               ),

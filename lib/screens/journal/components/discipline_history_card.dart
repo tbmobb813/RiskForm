@@ -19,7 +19,10 @@ class DisciplineHistoryCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Discipline History', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text(
+              'Discipline History',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -49,8 +52,12 @@ class DisciplineHistoryCard extends StatelessWidget {
                           final idx = t.x.toInt().clamp(0, history.length - 1);
                           final date = history[idx].date;
                           final value = t.y;
-                          final label = '${date.month}/${date.day}: ${value.toStringAsFixed(1)}';
-                          return LineTooltipItem(label, const TextStyle(color: Colors.white, fontSize: 12));
+                          final label =
+                              '${date.month}/${date.day}: ${value.toStringAsFixed(1)}';
+                          return LineTooltipItem(
+                            label,
+                            const TextStyle(color: Colors.white, fontSize: 12),
+                          );
                         }).toList();
                       },
                     ),
@@ -60,13 +67,19 @@ class DisciplineHistoryCard extends StatelessWidget {
                       spots: history
                           .asMap()
                           .entries
-                          .map((e) => FlSpot(e.key.toDouble(), e.value.score.score))
+                          .map(
+                            (e) =>
+                                FlSpot(e.key.toDouble(), e.value.score.score),
+                          )
                           .toList(),
                       isCurved: true,
                       color: Colors.blueAccent,
                       barWidth: 2,
                       dotData: FlDotData(show: false),
-                      belowBarData: BarAreaData(show: true, color: Colors.blueAccent.withAlpha(38)),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        color: Colors.blueAccent.withAlpha(38),
+                      ),
                     ),
                   ],
                   minY: 0,
@@ -99,12 +112,19 @@ class DisciplineHistoryCard extends StatelessWidget {
     final sum = slice.fold<double>(0.0, (a, d) => a + d.score.score);
     return sum / slice.length;
   }
+
   Widget _stat(String label, String value) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 12, color: Colors.black54)),
-        Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, color: Colors.black54),
+        ),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        ),
       ],
     );
   }

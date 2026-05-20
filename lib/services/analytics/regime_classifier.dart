@@ -34,13 +34,15 @@ class RegimeClassifier {
         segmentStart = prices[i].date;
         startIndex = i;
       } else if (regime != currentRegime) {
-        segments.add(RegimeSegment(
-          regime: currentRegime,
-          startDate: segmentStart!,
-          endDate: prices[i - 1].date,
-          startIndex: startIndex,
-          endIndex: i - 1,
-        ));
+        segments.add(
+          RegimeSegment(
+            regime: currentRegime,
+            startDate: segmentStart!,
+            endDate: prices[i - 1].date,
+            startIndex: startIndex,
+            endIndex: i - 1,
+          ),
+        );
         currentRegime = regime;
         segmentStart = prices[i].date;
         startIndex = i;
@@ -48,13 +50,15 @@ class RegimeClassifier {
     }
 
     if (currentRegime != null && segmentStart != null) {
-      segments.add(RegimeSegment(
-        regime: currentRegime,
-        startDate: segmentStart,
-        endDate: prices.last.date,
-        startIndex: startIndex,
-        endIndex: prices.length - 1,
-      ));
+      segments.add(
+        RegimeSegment(
+          regime: currentRegime,
+          startDate: segmentStart,
+          endDate: prices.last.date,
+          startIndex: startIndex,
+          endIndex: prices.length - 1,
+        ),
+      );
     }
 
     return segments;

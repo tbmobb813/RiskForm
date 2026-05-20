@@ -28,7 +28,9 @@ class SmallAccountSizer {
     required double costPerContract,
     required double allocationPct,
   }) {
-    if (accountBalance <= 0 || costPerContract <= 0 || allocationPct <= 0) return 0;
+    if (accountBalance <= 0 || costPerContract <= 0 || allocationPct <= 0) {
+      return 0;
+    }
     final allocCapital = accountBalance * allocationPct;
     return (allocCapital / costPerContract).floor();
   }
@@ -40,12 +42,24 @@ class SmallAccountSizer {
     List<double> allocationPercents = const [0.05, 0.10],
   }) {
     final Map<String, dynamic> out = {};
-    out['byRisk_5pct'] = recommendedContractsByRisk(accountBalance: accountBalance, costPerContract: costPerContract, riskPct: 0.05);
-    out['byRisk_10pct'] = recommendedContractsByRisk(accountBalance: accountBalance, costPerContract: costPerContract, riskPct: 0.10);
+    out['byRisk_5pct'] = recommendedContractsByRisk(
+      accountBalance: accountBalance,
+      costPerContract: costPerContract,
+      riskPct: 0.05,
+    );
+    out['byRisk_10pct'] = recommendedContractsByRisk(
+      accountBalance: accountBalance,
+      costPerContract: costPerContract,
+      riskPct: 0.10,
+    );
 
     final allocs = <String, int>{};
     for (final p in allocationPercents) {
-      allocs['${(p * 100).toInt()}%'] = recommendedContractsByAllocation(accountBalance: accountBalance, costPerContract: costPerContract, allocationPct: p);
+      allocs['${(p * 100).toInt()}%'] = recommendedContractsByAllocation(
+        accountBalance: accountBalance,
+        costPerContract: costPerContract,
+        allocationPct: p,
+      );
     }
     out['allocations'] = allocs;
     out['capitalPerContract'] = requiredCapitalPerContract(costPerContract);
@@ -59,4 +73,6 @@ class SmallAccountSizer {
   }
 }
 
-final smallAccountSizerProvider = Provider<SmallAccountSizer>((ref) => const SmallAccountSizer());
+final smallAccountSizerProvider = Provider<SmallAccountSizer>(
+  (ref) => const SmallAccountSizer(),
+);

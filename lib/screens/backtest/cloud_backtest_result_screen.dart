@@ -20,12 +20,16 @@ class CloudBacktestResultScreen extends ConsumerWidget {
   final String? jobId;
 
   /// Constructor for direct navigation with a result.
-  const CloudBacktestResultScreen({super.key, required CloudBacktestResult this.result})
-      : jobId = null;
+  const CloudBacktestResultScreen({
+    super.key,
+    required CloudBacktestResult this.result,
+  }) : jobId = null;
 
   /// Constructor for go_router navigation with a jobId.
-  const CloudBacktestResultScreen.fromJobId({super.key, required String this.jobId})
-      : result = null;
+  const CloudBacktestResultScreen.fromJobId({
+    super.key,
+    required String this.jobId,
+  }) : result = null;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -73,9 +77,7 @@ class _ResultContent extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Cloud Backtest Result'),
-        actions: [
-          _EngineVersionBadge(version: backtest.engineVersion),
-        ],
+        actions: [_EngineVersionBadge(version: backtest.engineVersion)],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -151,13 +153,16 @@ class _HeaderCard extends StatelessWidget {
                 Text(
                   'Cloud Backtest Completed',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            _InfoRow(label: 'Job ID', value: '${result.jobId.substring(0, 8)}...'),
+            _InfoRow(
+              label: 'Job ID',
+              value: '${result.jobId.substring(0, 8)}...',
+            ),
             _InfoRow(label: 'Symbol', value: config.symbol),
             _InfoRow(label: 'Strategy', value: config.strategyId),
             _InfoRow(
@@ -189,14 +194,8 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: TextStyle(color: Colors.grey.shade600),
-          ),
-          Text(
-            value,
-            style: const TextStyle(fontWeight: FontWeight.w500),
-          ),
+          Text(label, style: TextStyle(color: Colors.grey.shade600)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w500)),
         ],
       ),
     );

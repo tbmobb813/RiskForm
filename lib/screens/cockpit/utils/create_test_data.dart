@@ -20,16 +20,86 @@ class CockpitTestData {
 
     // Test entries with varying discipline scores
     final testEntries = [
-      {'score': 92, 'adherence': 38, 'timing': 32, 'risk': 22, 'strategy': 'CSP', 'notes': 'Excellent execution, followed plan perfectly'},
-      {'score': 85, 'adherence': 35, 'timing': 30, 'risk': 20, 'strategy': 'CSP', 'notes': 'Good trade, slight timing issue'},
-      {'score': 88, 'adherence': 36, 'timing': 30, 'risk': 22, 'strategy': 'Debit Spread', 'notes': 'Solid adherence to plan'},
-      {'score': 78, 'adherence': 32, 'timing': 26, 'risk': 20, 'strategy': 'CSP', 'notes': 'Timing was off, but stuck to risk limits'},
-      {'score': 90, 'adherence': 37, 'timing': 31, 'risk': 22, 'strategy': 'Covered Call', 'notes': 'Perfect execution'},
-      {'score': 82, 'adherence': 34, 'timing': 28, 'risk': 20, 'strategy': 'CSP', 'notes': 'Good discipline overall'},
-      {'score': 75, 'adherence': 31, 'timing': 24, 'risk': 20, 'strategy': 'Debit Spread', 'notes': 'Could improve timing'},
-      {'score': 88, 'adherence': 36, 'timing': 30, 'risk': 22, 'strategy': 'CSP', 'notes': 'Strong adherence'},
-      {'score': 91, 'adherence': 37, 'timing': 32, 'risk': 22, 'strategy': 'Iron Condor', 'notes': 'Excellent risk management'},
-      {'score': 86, 'adherence': 35, 'timing': 29, 'risk': 22, 'strategy': 'CSP', 'notes': 'Solid trade, minor timing delay'},
+      {
+        'score': 92,
+        'adherence': 38,
+        'timing': 32,
+        'risk': 22,
+        'strategy': 'CSP',
+        'notes': 'Excellent execution, followed plan perfectly',
+      },
+      {
+        'score': 85,
+        'adherence': 35,
+        'timing': 30,
+        'risk': 20,
+        'strategy': 'CSP',
+        'notes': 'Good trade, slight timing issue',
+      },
+      {
+        'score': 88,
+        'adherence': 36,
+        'timing': 30,
+        'risk': 22,
+        'strategy': 'Debit Spread',
+        'notes': 'Solid adherence to plan',
+      },
+      {
+        'score': 78,
+        'adherence': 32,
+        'timing': 26,
+        'risk': 20,
+        'strategy': 'CSP',
+        'notes': 'Timing was off, but stuck to risk limits',
+      },
+      {
+        'score': 90,
+        'adherence': 37,
+        'timing': 31,
+        'risk': 22,
+        'strategy': 'Covered Call',
+        'notes': 'Perfect execution',
+      },
+      {
+        'score': 82,
+        'adherence': 34,
+        'timing': 28,
+        'risk': 20,
+        'strategy': 'CSP',
+        'notes': 'Good discipline overall',
+      },
+      {
+        'score': 75,
+        'adherence': 31,
+        'timing': 24,
+        'risk': 20,
+        'strategy': 'Debit Spread',
+        'notes': 'Could improve timing',
+      },
+      {
+        'score': 88,
+        'adherence': 36,
+        'timing': 30,
+        'risk': 22,
+        'strategy': 'CSP',
+        'notes': 'Strong adherence',
+      },
+      {
+        'score': 91,
+        'adherence': 37,
+        'timing': 32,
+        'risk': 22,
+        'strategy': 'Iron Condor',
+        'notes': 'Excellent risk management',
+      },
+      {
+        'score': 86,
+        'adherence': 35,
+        'timing': 29,
+        'risk': 22,
+        'strategy': 'CSP',
+        'notes': 'Solid trade, minor timing delay',
+      },
     ];
 
     debugPrint('Creating ${testEntries.length} test journal entries...');
@@ -49,12 +119,16 @@ class CockpitTestData {
         ),
         'cycleState': 'closed',
         'notes': testEntries[i]['notes'],
-        'tags': i % 3 == 0 ? ['small-account', 'disciplined'] : ['small-account'],
+        'tags': i % 3 == 0
+            ? ['small-account', 'disciplined']
+            : ['small-account'],
       });
     }
 
     debugPrint('✅ Created ${testEntries.length} test journal entries');
-    debugPrint('Average discipline score: ${testEntries.map((e) => e['score'] as int).reduce((a, b) => a + b) ~/ testEntries.length}');
+    debugPrint(
+      'Average discipline score: ${testEntries.map((e) => e['score'] as int).reduce((a, b) => a + b) ~/ testEntries.length}',
+    );
     debugPrint('Expected clean streak: ${_countCleanStreak(testEntries)}');
   }
 
@@ -79,19 +153,24 @@ class CockpitTestData {
 
     final firestore = FirebaseFirestore.instance;
 
-    await firestore.collection('users').doc(uid).collection('cockpit').doc('pendingJournals').set({
-      'journals': [
-        {
-          'positionId': 'test-${DateTime.now().millisecondsSinceEpoch}',
-          'ticker': 'AAPL',
-          'strategy': 'CSP AAPL \$170',
-          'pnl': 42.50,
-          'closedAt': DateTime.now().toIso8601String(),
-          'isPaper': true,
-        },
-      ],
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
+    await firestore
+        .collection('users')
+        .doc(uid)
+        .collection('cockpit')
+        .doc('pendingJournals')
+        .set({
+          'journals': [
+            {
+              'positionId': 'test-${DateTime.now().millisecondsSinceEpoch}',
+              'ticker': 'AAPL',
+              'strategy': 'CSP AAPL \$170',
+              'pnl': 42.50,
+              'closedAt': DateTime.now().toIso8601String(),
+              'isPaper': true,
+            },
+          ],
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
 
     debugPrint('✅ Created test pending journal');
     debugPrint('You should now see "Required Action" card in cockpit');
@@ -106,10 +185,15 @@ class CockpitTestData {
 
     final firestore = FirebaseFirestore.instance;
 
-    await firestore.collection('users').doc(uid).collection('cockpit').doc('watchlist').set({
-      'tickers': ['SPY', 'QQQ', 'AAPL'],
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
+    await firestore
+        .collection('users')
+        .doc(uid)
+        .collection('cockpit')
+        .doc('watchlist')
+        .set({
+          'tickers': ['SPY', 'QQQ', 'AAPL'],
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
 
     debugPrint('✅ Created test watchlist with SPY, QQQ, AAPL');
   }
@@ -144,14 +228,27 @@ class CockpitTestData {
     final firestore = FirebaseFirestore.instance;
 
     // Delete journal entries
-    final journals = await firestore.collection('journalEntries').where('uid', isEqualTo: uid).get();
+    final journals = await firestore
+        .collection('journalEntries')
+        .where('uid', isEqualTo: uid)
+        .get();
     for (final doc in journals.docs) {
       await doc.reference.delete();
     }
 
     // Delete cockpit data
-    await firestore.collection('users').doc(uid).collection('cockpit').doc('watchlist').delete();
-    await firestore.collection('users').doc(uid).collection('cockpit').doc('pendingJournals').delete();
+    await firestore
+        .collection('users')
+        .doc(uid)
+        .collection('cockpit')
+        .doc('watchlist')
+        .delete();
+    await firestore
+        .collection('users')
+        .doc(uid)
+        .collection('cockpit')
+        .doc('pendingJournals')
+        .delete();
 
     debugPrint('✅ Cleared all test data');
   }

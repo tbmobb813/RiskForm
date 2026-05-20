@@ -42,7 +42,9 @@ class ComparisonMetricsTable extends StatelessWidget {
   }
 
   TableRow _resultRow(BacktestResult result, int index) {
-    final label = (result.notes.isNotEmpty) ? result.notes.first : 'Strategy ${index + 1}';
+    final label = (result.notes.isNotEmpty)
+        ? result.notes.first
+        : 'Strategy ${index + 1}';
     return TableRow(
       children: [
         Padding(

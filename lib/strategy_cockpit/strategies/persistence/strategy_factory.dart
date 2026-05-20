@@ -8,23 +8,37 @@ class StrategyFactory {
   static dynamic fromPersisted(PersistedStrategy p) {
     switch (p.type) {
       case 'long_call':
-        return LongCallStrategy(OptionContract.fromJson(Map<String, dynamic>.from(p.data['contract'])));
+        return LongCallStrategy(
+          OptionContract.fromJson(
+            Map<String, dynamic>.from(p.data['contract']),
+          ),
+        );
       case 'debit_spread':
         return DebitSpreadStrategy(
-          longLeg: OptionContract.fromJson(Map<String, dynamic>.from(p.data['longLeg'])),
-          shortLeg: OptionContract.fromJson(Map<String, dynamic>.from(p.data['shortLeg'])),
+          longLeg: OptionContract.fromJson(
+            Map<String, dynamic>.from(p.data['longLeg']),
+          ),
+          shortLeg: OptionContract.fromJson(
+            Map<String, dynamic>.from(p.data['shortLeg']),
+          ),
         );
       case 'wheel':
         return WheelStrategyAdapter(
           id: p.data['id'] as String,
           label: p.data['label'] as String,
-          putContract: OptionContract.fromJson(Map<String, dynamic>.from(p.data['putContract'])),
+          putContract: OptionContract.fromJson(
+            Map<String, dynamic>.from(p.data['putContract']),
+          ),
           callContract: p.data['callContract'] == null
               ? null
-              : OptionContract.fromJson(Map<String, dynamic>.from(p.data['callContract'])),
+              : OptionContract.fromJson(
+                  Map<String, dynamic>.from(p.data['callContract']),
+                ),
           shareQuantity: (p.data['shareQuantity'] as num?)?.toInt() ?? 100,
-          putPremiumReceived: (p.data['putPremiumReceived'] as num?)?.toDouble(),
-          callPremiumReceived: (p.data['callPremiumReceived'] as num?)?.toDouble(),
+          putPremiumReceived: (p.data['putPremiumReceived'] as num?)
+              ?.toDouble(),
+          callPremiumReceived: (p.data['callPremiumReceived'] as num?)
+              ?.toDouble(),
         );
       default:
         throw Exception('Unknown strategy type: ${p.type}');

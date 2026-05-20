@@ -25,7 +25,6 @@ class OppCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Header ──────────────────────────────────────────────
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -58,7 +57,6 @@ class OppCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                // Taken / Missed toggle
                 GestureDetector(
                   onTap: onToggleTaken,
                   child: _TakenBadge(taken: taken),
@@ -76,10 +74,7 @@ class OppCard extends StatelessWidget {
                 ),
               ],
             ),
-
             const SizedBox(height: 10),
-
-            // ── Screenshot ──────────────────────────────────────────
             if (opp.screenshotUrl != null && opp.screenshotUrl!.isNotEmpty) ...[
               ClipRRect(
                 borderRadius: BorderRadius.circular(6),
@@ -87,19 +82,12 @@ class OppCard extends StatelessWidget {
               ),
               const SizedBox(height: 10),
             ],
-
-            // ── Entry Trigger ───────────────────────────────────────
             _FieldBlock(label: 'Entry Trigger', value: opp.entryTrigger),
-
             const SizedBox(height: 8),
-
-            // ── What Made It Ideal ──────────────────────────────────
             _FieldBlock(
               label: 'What Made It Ideal',
               value: opp.whatMadeItIdeal,
             ),
-
-            // ── Notes ───────────────────────────────────────────────
             if (opp.notes != null && opp.notes!.isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(
@@ -117,9 +105,9 @@ class OppCard extends StatelessWidget {
     );
   }
 
-  String _formatDate(String yyyy_mm_dd) {
+  String _formatDate(String dateStr) {
     try {
-      final dt = DateTime.parse(yyyy_mm_dd);
+      final dt = DateTime.parse(dateStr);
       const months = [
         '',
         'Jan',
@@ -137,7 +125,7 @@ class OppCard extends StatelessWidget {
       ];
       return '${months[dt.month]} ${dt.day}, ${dt.year}';
     } catch (_) {
-      return yyyy_mm_dd;
+      return dateStr;
     }
   }
 
@@ -169,8 +157,6 @@ class OppCard extends StatelessWidget {
   }
 }
 
-// ── Sub-widgets ────────────────────────────────────────────────────────────────
-
 class _SetupChip extends StatelessWidget {
   final String label;
   const _SetupChip({required this.label});
@@ -198,27 +184,25 @@ class _TakenBadge extends StatelessWidget {
   const _TakenBadge({required this.taken});
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          taken ? Icons.check_circle : Icons.radio_button_unchecked,
-          size: 16,
+  Widget build(BuildContext context) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Icon(
+        taken ? Icons.check_circle : Icons.radio_button_unchecked,
+        size: 16,
+        color: taken ? Colors.green.shade400 : Colors.grey,
+      ),
+      const SizedBox(width: 4),
+      Text(
+        taken ? 'Taken' : 'Missed',
+        style: TextStyle(
+          fontSize: 11,
           color: taken ? Colors.green.shade400 : Colors.grey,
+          fontWeight: FontWeight.w600,
         ),
-        const SizedBox(width: 4),
-        Text(
-          taken ? 'Taken' : 'Missed',
-          style: TextStyle(
-            fontSize: 11,
-            color: taken ? Colors.green.shade400 : Colors.grey,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
 }
 
 class _FieldBlock extends StatelessWidget {
@@ -259,10 +243,9 @@ class _ScreenshotWidget extends StatelessWidget {
         height: 140,
         width: double.infinity,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => _placeholder(context),
+        errorBuilder: (_, _, _) => _placeholder(context),
       );
     }
-    // Local path — show a file icon placeholder
     return _placeholder(context);
   }
 

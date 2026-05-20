@@ -4,7 +4,11 @@ import 'parameter_range.dart';
 
 class ParameterGridViewModel extends ChangeNotifier {
   ParameterRange dte = const ParameterRange(start: 20, end: 45, step: 5);
-  ParameterRange delta = const ParameterRange(start: 0.10, end: 0.30, step: 0.05);
+  ParameterRange delta = const ParameterRange(
+    start: 0.10,
+    end: 0.30,
+    step: 0.05,
+  );
   ParameterRange width = const ParameterRange(start: 1, end: 5, step: 1);
 
   List<Map<String, dynamic>> grid = [];
@@ -45,11 +49,7 @@ class ParameterGridViewModel extends ChangeNotifier {
     for (final d in dtes) {
       for (final del in deltas) {
         for (final w in widths) {
-          newGrid.add({
-            'dte': d.round(),
-            'delta': del,
-            'width': w,
-          });
+          newGrid.add({'dte': d.round(), 'delta': del, 'width': w});
         }
       }
     }

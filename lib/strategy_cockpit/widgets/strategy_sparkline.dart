@@ -26,7 +26,9 @@ class StrategySparkline extends StatelessWidget {
           ),
           alignment: Alignment.center,
           child: Text(
-            values.isEmpty ? 'No data yet' : 'Sparkline (${values.length} points)',
+            values.isEmpty
+                ? 'No data yet'
+                : 'Sparkline (${values.length} points)',
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ),

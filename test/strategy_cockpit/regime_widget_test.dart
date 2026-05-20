@@ -9,35 +9,50 @@ import 'package:riskform/strategy_cockpit/services/strategy_health_service.dart'
 import 'package:riskform/models/strategy_health_snapshot.dart';
 
 class FakeRegimeHealthService implements StrategyHealthService {
-  final StreamController<StrategyHealthSnapshot?> _ctrl = StreamController.broadcast();
+  final StreamController<StrategyHealthSnapshot?> _ctrl =
+      StreamController.broadcast();
 
   @override
-  Stream<StrategyHealthSnapshot?> watchHealth(String strategyId) => _ctrl.stream;
+  Stream<StrategyHealthSnapshot?> watchHealth(String strategyId) =>
+      _ctrl.stream;
 
   void add(StrategyHealthSnapshot? s) => _ctrl.add(s);
 
   Future<void> close() async => await _ctrl.close();
 
   @override
-  Future<StrategyHealthSnapshot?> fetchLatestHealth(String strategyId) async => null;
+  Future<StrategyHealthSnapshot?> fetchLatestHealth(String strategyId) async =>
+      null;
   @override
   Future<void> saveHealthSnapshot(StrategyHealthSnapshot snapshot) async {}
   @override
-  Future<void> updateHealthFields({required String strategyId, Map<String, dynamic>? fields}) async {}
+  Future<void> updateHealthFields({
+    required String strategyId,
+    Map<String, dynamic>? fields,
+  }) async {}
   @override
-  Future<void> markHealthDirtyInTx({required dynamic tx, required String strategyId}) async {}
+  Future<void> markHealthDirtyInTx({
+    required dynamic tx,
+    required String strategyId,
+  }) async {}
   @override
   Future<void> recomputeHealth(String strategyId) async {}
 }
 
 void main() {
-  testWidgets('Regime section shows current regime and table', (WidgetTester tester) async {
+  testWidgets('Regime section shows current regime and table', (
+    WidgetTester tester,
+  ) async {
     final fake = FakeRegimeHealthService();
     final vm = StrategyRegimeViewModel(strategyId: 's1', healthService: fake);
 
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(body: StrategyRegimeSection(strategyId: 's1', viewModel: vm)),
-    ));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: StrategyRegimeSection(strategyId: 's1', viewModel: vm),
+        ),
+      ),
+    );
 
     final snapshot = StrategyHealthSnapshot(
       strategyId: 's1',
@@ -45,7 +60,12 @@ void main() {
       disciplineTrend: [],
       regimePerformance: {},
       cycleSummaries: [
-        {'cycleId': 'c1', 'pnl': -5.0, 'disciplineScore': 60.0, 'regime': 'uptrend'},
+        {
+          'cycleId': 'c1',
+          'pnl': -5.0,
+          'disciplineScore': 60.0,
+          'regime': 'uptrend',
+        },
       ],
       regimeWeaknesses: [],
       currentRegime: 'uptrend',

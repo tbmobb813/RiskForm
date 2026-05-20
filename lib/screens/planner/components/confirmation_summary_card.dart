@@ -28,8 +28,7 @@ class ConfirmationSummaryCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            if (strategyName != null)
-              _row("Strategy", strategyName!),
+            if (strategyName != null) _row("Strategy", strategyName!),
 
             if (payoff != null) ...[
               _row("Max Gain", payoff!.maxGainString),
@@ -38,9 +37,14 @@ class ConfirmationSummaryCard extends StatelessWidget {
             ],
 
             if (risk != null) ...[
-              _row("Risk % of Account",
-                  "${risk!.riskPercentOfAccount.toStringAsFixed(1)}%"),
-              _row("Assignment Exposure", risk!.assignmentExposure ? "Yes" : "No"),
+              _row(
+                "Risk % of Account",
+                "${risk!.riskPercentOfAccount.toStringAsFixed(1)}%",
+              ),
+              _row(
+                "Assignment Exposure",
+                risk!.assignmentExposure ? "Yes" : "No",
+              ),
             ],
           ],
         ),

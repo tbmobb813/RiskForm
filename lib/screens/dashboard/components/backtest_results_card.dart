@@ -32,8 +32,8 @@ class BacktestResultsCard extends ConsumerWidget {
                 Text(
                   'Backtest Results',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 if (userId != null)
                   TextButton(
@@ -65,10 +65,7 @@ class _DataSourceToggle extends StatelessWidget {
   final DashboardDataSource currentSource;
   final WidgetRef ref;
 
-  const _DataSourceToggle({
-    required this.currentSource,
-    required this.ref,
-  });
+  const _DataSourceToggle({required this.currentSource, required this.ref});
 
   @override
   Widget build(BuildContext context) {
@@ -124,10 +121,7 @@ class _ResultsList extends ConsumerWidget {
   final DashboardDataSource source;
   final String? userId;
 
-  const _ResultsList({
-    required this.source,
-    required this.userId,
-  });
+  const _ResultsList({required this.source, required this.userId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -195,10 +189,7 @@ class _CloudResultsList extends StatelessWidget {
   final List<CloudBacktestJob> jobs;
   final dynamic cloudService;
 
-  const _CloudResultsList({
-    required this.jobs,
-    required this.cloudService,
-  });
+  const _CloudResultsList({required this.jobs, required this.cloudService});
 
   @override
   Widget build(BuildContext context) {
@@ -211,8 +202,7 @@ class _CloudResultsList extends StatelessWidget {
 
     return Column(
       children: displayJobs
-          .map((job) =>
-              _CloudResultTile(job: job, cloudService: cloudService))
+          .map((job) => _CloudResultTile(job: job, cloudService: cloudService))
           .toList(),
     );
   }
@@ -239,19 +229,19 @@ class _CombinedResultsList extends StatelessWidget {
     final combined = <_CombinedEntry>[];
 
     for (final e in localEntries) {
-      combined.add(_CombinedEntry(
-        timestamp: e.timestamp,
-        isLocal: true,
-        localEntry: e,
-      ));
+      combined.add(
+        _CombinedEntry(timestamp: e.timestamp, isLocal: true, localEntry: e),
+      );
     }
 
     for (final job in cloudJobs) {
-      combined.add(_CombinedEntry(
-        timestamp: job.submittedAt,
-        isLocal: false,
-        cloudJob: job,
-      ));
+      combined.add(
+        _CombinedEntry(
+          timestamp: job.submittedAt,
+          isLocal: false,
+          cloudJob: job,
+        ),
+      );
     }
 
     combined.sort((a, b) => b.timestamp.compareTo(a.timestamp));
@@ -326,10 +316,7 @@ class _CloudResultTile extends StatelessWidget {
   final CloudBacktestJob job;
   final dynamic cloudService;
 
-  const _CloudResultTile({
-    required this.job,
-    required this.cloudService,
-  });
+  const _CloudResultTile({required this.job, required this.cloudService});
 
   @override
   Widget build(BuildContext context) {
@@ -441,10 +428,7 @@ class _EmptyState extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 24),
       child: Center(
-        child: Text(
-          message,
-          style: const TextStyle(color: Colors.grey),
-        ),
+        child: Text(message, style: const TextStyle(color: Colors.grey)),
       ),
     );
   }

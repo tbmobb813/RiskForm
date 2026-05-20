@@ -19,9 +19,15 @@ class HabitStatsCard extends StatelessWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            Text('Clean Cycle Rate: ${(habits.cleanCycleRate * 100).toStringAsFixed(1)}%'),
-            Text('Assignment Avoidance: ${(habits.assignmentAvoidanceRate * 100).toStringAsFixed(1)}%'),
-            Text('Plan Adherence: ${(habits.planAdherenceRate * 100).toStringAsFixed(1)}%'),
+            Text(
+              'Clean Cycle Rate: ${(habits.cleanCycleRate * 100).toStringAsFixed(1)}%',
+            ),
+            Text(
+              'Assignment Avoidance: ${(habits.assignmentAvoidanceRate * 100).toStringAsFixed(1)}%',
+            ),
+            Text(
+              'Plan Adherence: ${(habits.planAdherenceRate * 100).toStringAsFixed(1)}%',
+            ),
           ],
         ),
       ),

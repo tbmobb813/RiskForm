@@ -26,10 +26,7 @@ class NextStrategyCard extends ConsumerWidget {
               const SizedBox(height: 8),
               Text(
                 'Details: ${e.toString()}',
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.white70,
-                ),
+                style: const TextStyle(fontSize: 12, color: Colors.white70),
               ),
             ],
           ),
@@ -46,15 +43,9 @@ class NextStrategyCard extends ConsumerWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
-              Text(
-                rec.action,
-                style: const TextStyle(fontSize: 16),
-              ),
+              Text(rec.action, style: const TextStyle(fontSize: 16)),
               const SizedBox(height: 8),
-              Text(
-                rec.reason,
-                style: const TextStyle(color: Colors.white70),
-              ),
+              Text(rec.reason, style: const TextStyle(color: Colors.white70)),
             ],
           ),
         ),

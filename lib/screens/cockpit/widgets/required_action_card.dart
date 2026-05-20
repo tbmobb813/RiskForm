@@ -94,10 +94,7 @@ class RequiredActionCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   'Closed ${trade.timeAgo}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.black54,
-                  ),
+                  style: const TextStyle(fontSize: 12, color: Colors.black54),
                 ),
               ],
             ),

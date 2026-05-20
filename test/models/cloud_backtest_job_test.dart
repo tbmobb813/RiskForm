@@ -2,7 +2,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:riskform/models/cloud/cloud_backtest_job.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 
-Map<String, dynamic> _baseMap(dynamic submittedAt, {dynamic startedAt, dynamic completedAt}) {
+Map<String, dynamic> _baseMap(
+  dynamic submittedAt, {
+  dynamic startedAt,
+  dynamic completedAt,
+}) {
   return {
     'jobId': 'job-123',
     'userId': 'user-abc',
@@ -53,7 +57,9 @@ void main() {
   });
 
   test('returns null for unparsable optional dates', () {
-    final job = CloudBacktestJob.fromMap(_baseMap('2023-01-01T00:00:00Z', startedAt: 'not-a-date'));
+    final job = CloudBacktestJob.fromMap(
+      _baseMap('2023-01-01T00:00:00Z', startedAt: 'not-a-date'),
+    );
     expect(job.startedAt, isNull);
   });
 }

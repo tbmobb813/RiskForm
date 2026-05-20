@@ -52,7 +52,8 @@ class CockpitState {
   }
 
   /// Whether to show a discipline warning
-  bool get shouldShowDisciplineWarning => discipline.currentScore < 70 && discipline.currentScore > 0;
+  bool get shouldShowDisciplineWarning =>
+      discipline.currentScore < 70 && discipline.currentScore > 0;
 
   CockpitState copyWith({
     DisciplineSnapshot? discipline,
@@ -123,7 +124,8 @@ class AccountSnapshot {
   String get balanceDisplay => '\$${balance.toStringAsFixed(2)}';
   String get riskDeployedDisplay => '\$${riskDeployed.toStringAsFixed(2)}';
   String get availableRiskDisplay => '\$${availableRisk.toStringAsFixed(2)}';
-  String get buyingPowerDisplay => '${(buyingPowerPercent * 100).toStringAsFixed(1)}%';
+  String get buyingPowerDisplay =>
+      '${(buyingPowerPercent * 100).toStringAsFixed(1)}%';
 }
 
 /// Represents an open position in the cockpit
@@ -161,15 +163,15 @@ class OpenPosition {
   bool get isLoss => unrealizedPnL < 0;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'ticker': ticker,
-        'strategy': strategy,
-        'strike': strike,
-        'dte': dte,
-        'thetaPerDay': thetaPerDay,
-        'unrealizedPnL': unrealizedPnL,
-        'isPaper': isPaper,
-      };
+    'id': id,
+    'ticker': ticker,
+    'strategy': strategy,
+    'strike': strike,
+    'dte': dte,
+    'thetaPerDay': thetaPerDay,
+    'unrealizedPnL': unrealizedPnL,
+    'isPaper': isPaper,
+  };
 
   factory OpenPosition.fromJson(Map<String, dynamic> json) {
     return OpenPosition(

@@ -19,9 +19,7 @@ class CloudBacktestHistoryScreen extends ConsumerWidget {
     final cloud = ref.watch(cloudBacktestServiceProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Cloud Backtests'),
-      ),
+      appBar: AppBar(title: const Text('Cloud Backtests')),
       body: StreamBuilder<List<CloudBacktestJob>>(
         stream: cloud.watchUserJobs(userId),
         builder: (context, snapshot) {
@@ -30,9 +28,7 @@ class CloudBacktestHistoryScreen extends ConsumerWidget {
           }
 
           if (snapshot.hasError) {
-            return Center(
-              child: Text('Error loading jobs: ${snapshot.error}'),
-            );
+            return Center(child: Text('Error loading jobs: ${snapshot.error}'));
           }
 
           final jobs = snapshot.data ?? [];

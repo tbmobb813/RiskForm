@@ -34,13 +34,16 @@ class GuardrailsCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            if (critical.isNotEmpty) _section("Critical", critical, Colors.redAccent),
+            if (critical.isNotEmpty)
+              _section("Critical", critical, Colors.redAccent),
             if (caution.isNotEmpty) _section("Caution", caution, Colors.amber),
             if (info.isNotEmpty) _section("Info", info, Colors.white70),
 
             if (critical.isEmpty && caution.isEmpty && info.isEmpty)
-              const Text("No guardrail issues detected.",
-                  style: TextStyle(color: Colors.white70)),
+              const Text(
+                "No guardrail issues detected.",
+                style: TextStyle(color: Colors.white70),
+              ),
           ],
         ),
       ),
@@ -53,22 +56,23 @@ class GuardrailsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: color,
-              )),
+          Text(
+            title,
+            style: TextStyle(fontWeight: FontWeight.w600, color: color),
+          ),
           const SizedBox(height: 6),
-          ...items.map((msg) => Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Row(
-                  children: [
-                    Icon(Icons.warning_amber_rounded, color: color, size: 18),
-                    const SizedBox(width: 6),
-                    Expanded(child: Text(msg)),
-                  ],
-                ),
-              )),
+          ...items.map(
+            (msg) => Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Row(
+                children: [
+                  Icon(Icons.warning_amber_rounded, color: color, size: 18),
+                  const SizedBox(width: 6),
+                  Expanded(child: Text(msg)),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );

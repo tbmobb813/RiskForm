@@ -50,9 +50,7 @@ class StrategyCycle {
       disciplineScore: (data['disciplineScore'] ?? 0).toDouble(),
       tradeCount: (data['tradeCount'] ?? 0) as int,
       dominantRegime: data['dominantRegime'],
-      executions: List<Map<String, dynamic>>.from(
-        data['executions'] ?? [],
-      ),
+      executions: List<Map<String, dynamic>>.from(data['executions'] ?? []),
     );
   }
 

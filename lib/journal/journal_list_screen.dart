@@ -52,7 +52,8 @@ class JournalListScreen extends StatelessWidget {
               return ListTile(
                 title: Text(strategyName(entry.strategyId)),
                 subtitle: Text(
-                    '${entry.cycleState} • ${entry.createdAt.toLocal().toString().split('.').first}'),
+                  '${entry.cycleState} • ${entry.createdAt.toLocal().toString().split('.').first}',
+                ),
                 trailing: entry.disciplineScore != null
                     ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,

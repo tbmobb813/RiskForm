@@ -9,19 +9,19 @@ class CloudBacktestService {
   final bool _noop;
 
   CloudBacktestService({FirebaseFirestore? firestore})
-      : _fs = firestore ?? (() {
-          try {
-            return FirebaseFirestore.instance;
-          } catch (_) {
-            return null;
-          }
-        })(),
-        _noop = false;
+    : _fs =
+          firestore ??
+          (() {
+            try {
+              return FirebaseFirestore.instance;
+            } catch (_) {
+              return null;
+            }
+          })(),
+      _noop = false;
 
   /// No-op constructor used when Firestore isn't available (desktop dev).
-  CloudBacktestService.noop()
-      : _fs = null,
-        _noop = true;
+  CloudBacktestService.noop() : _fs = null, _noop = true;
 
   CollectionReference get _jobs {
     final fs = _fs;
@@ -106,15 +106,23 @@ class CloudBacktestService {
   Stream<List<CloudBacktestJob>> watchUserJobs(String userId) {
     if (_noop || _fs == null) return Stream.value(<CloudBacktestJob>[]);
     return _jobs
-      .where('userId', isEqualTo: userId)
-      .orderBy('submittedAt', descending: true)
-      .snapshots()
-      .map((snap) => snap.docs
-        .map((d) => CloudBacktestJob.fromMap(d.data() as Map<String, dynamic>))
-        .toList());
+        .where('userId', isEqualTo: userId)
+        .orderBy('submittedAt', descending: true)
+        .snapshots()
+        .map(
+          (snap) => snap.docs
+              .map(
+                (d) =>
+                    CloudBacktestJob.fromMap(d.data() as Map<String, dynamic>),
+              )
+              .toList(),
+        );
   }
 
-  Future<List<CloudBacktestJob>> listJobs({String? userId, int limit = 50}) async {
+  Future<List<CloudBacktestJob>> listJobs({
+    String? userId,
+    int limit = 50,
+  }) async {
     if (_noop || _fs == null) return <CloudBacktestJob>[];
     Query q = _jobs;
     if (userId != null) q = q.where('userId', isEqualTo: userId);

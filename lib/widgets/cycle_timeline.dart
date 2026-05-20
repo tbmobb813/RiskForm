@@ -15,7 +15,10 @@ class CycleTimeline extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Cycle Timeline', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              'Cycle Timeline',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             SizedBox(
               height: 60,
@@ -45,7 +48,10 @@ class CycleTimeline extends StatelessWidget {
                       children: [
                         Container(width: 40, height: 20, color: color),
                         const SizedBox(height: 6),
-                        Text('#${c.index}', style: const TextStyle(fontSize: 12)),
+                        Text(
+                          '#${c.index}',
+                          style: const TextStyle(fontSize: 12),
+                        ),
                       ],
                     ),
                   );

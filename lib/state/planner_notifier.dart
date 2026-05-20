@@ -1,12 +1,14 @@
 import 'package:flutter_riverpod/legacy.dart';
 import '../models/trade_inputs.dart';
-import 'package:riskform/strategy_cockpit/analytics/regime_aware_planner_hints.dart' as planner_hints;
+import 'package:riskform/strategy_cockpit/analytics/regime_aware_planner_hints.dart'
+    as planner_hints;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'journal_providers.dart';
 import '../models/journal/journal_entry.dart';
 import '../services/journal/journal_repository.dart';
-import 'package:riskform/strategy_cockpit/analytics/strategy_recommendations_engine.dart' as recs;
+import 'package:riskform/strategy_cockpit/analytics/strategy_recommendations_engine.dart'
+    as recs;
 import '../models/trade_plan.dart';
 import '../services/data/trade_plan_repository.dart';
 import '../services/engines/payoff_engine.dart';
@@ -29,49 +31,72 @@ import 'package:riskform/strategy_cockpit/sync_providers.dart';
 import 'package:riskform/strategy_cockpit/live_sync_manager.dart';
 
 final plannerNotifierProvider =
-    StateNotifierProvider<PlannerNotifier, PlannerState>(
-  (ref) {
-    final repository = ref.read(tradePlanRepositoryProvider);
-    final payoffEngine = ref.read(payoffEngineProvider);
-    final riskEngine = ref.read(riskEngineProvider);
-    final executionService = ExecutionService();
-    final regimeEngine = ref.read(regimeEngineProvider);
-    final hintsService = ref.read(regimeAwarePlannerHintsServiceProvider);
-    final liveSync = ref.read(liveSyncManagerProvider);
-    final journalRepo = ref.read(journalRepositoryProvider);
-    return PlannerNotifier(repository, payoffEngine, riskEngine, regimeEngine, hintsService, executionService, liveSync, journalRepo);
-  },
-);
+    StateNotifierProvider<PlannerNotifier, PlannerState>((ref) {
+      final repository = ref.read(tradePlanRepositoryProvider);
+      final payoffEngine = ref.read(payoffEngineProvider);
+      final riskEngine = ref.read(riskEngineProvider);
+      final executionService = ExecutionService();
+      final regimeEngine = ref.read(regimeEngineProvider);
+      final hintsService = ref.read(regimeAwarePlannerHintsServiceProvider);
+      final liveSync = ref.read(liveSyncManagerProvider);
+      final journalRepo = ref.read(journalRepositoryProvider);
+      return PlannerNotifier(
+        repository,
+        payoffEngine,
+        riskEngine,
+        regimeEngine,
+        hintsService,
+        executionService,
+        liveSync,
+        journalRepo,
+      );
+    });
 
 class PlannerNotifier extends StateNotifier<PlannerState> {
   final TradePlanRepository _repository;
   final PayoffEngine _payoffEngine;
   final RiskEngine _riskEngine;
   final RegimeEngine? _regimeEngine;
-    final RegimeAwarePlannerHintsService? _hintsService;
-    final LiveSyncManager? _liveSyncManager;
-    final ExecutionService? _executionService;
-    final JournalRepository? _journalRepo;
-    final void Function(String, JournalEntry)? _lifecycleHook;
-    // Optional test hooks / overrides
-    final String? Function()? _getUid;
-    final Future<Map<String, dynamic>?> Function()? _smallAccountSettingsProvider;
+  final RegimeAwarePlannerHintsService? _hintsService;
+  final LiveSyncManager? _liveSyncManager;
+  final ExecutionService? _executionService;
+  final JournalRepository? _journalRepo;
+  final void Function(String, JournalEntry)? _lifecycleHook;
+  // Optional test hooks / overrides
+  final String? Function()? _getUid;
+  final Future<Map<String, dynamic>?> Function()? _smallAccountSettingsProvider;
 
-    PlannerNotifier(this._repository, this._payoffEngine, this._riskEngine, [this._regimeEngine, this._hintsService, this._executionService, this._liveSyncManager, this._journalRepo, this._getUid, this._smallAccountSettingsProvider, this._lifecycleHook])
-      : super(PlannerState.initial());
+  PlannerNotifier(
+    this._repository,
+    this._payoffEngine,
+    this._riskEngine, [
+    this._regimeEngine,
+    this._hintsService,
+    this._executionService,
+    this._liveSyncManager,
+    this._journalRepo,
+    this._getUid,
+    this._smallAccountSettingsProvider,
+    this._lifecycleHook,
+  ]) : super(PlannerState.initial());
 
-    // Safely obtain the current user id for environments where Firebase
-    // isn't initialized (tests). Prefer injected `_getUid` when available.
-    String? _safeUid() {
-      try {
-        return _getUid?.call() ?? FirebaseAuth.instance.currentUser?.uid;
-      } catch (_) {
-        return _getUid?.call();
-      }
+  // Safely obtain the current user id for environments where Firebase
+  // isn't initialized (tests). Prefer injected `_getUid` when available.
+  String? _safeUid() {
+    try {
+      return _getUid?.call() ?? FirebaseAuth.instance.currentUser?.uid;
+    } catch (_) {
+      return _getUid?.call();
     }
+  }
 
   // Strategy selection
-  void setStrategy(String id, String name, String description, {String? symbol}) {
+  void setStrategy(
+    String id,
+    String name,
+    String description, {
+    String? symbol,
+  }) {
     final prevNotes = state.notes;
     final prevTags = state.tags;
 
@@ -86,8 +111,8 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
     // Auto-create a lightweight journal entry for the selected strategy
     try {
       final uid = _safeUid();
-    final repo = _journalRepo;
-    if (uid != null && repo != null) {
+      final repo = _journalRepo;
+      if (uid != null && repo != null) {
         final idNow = DateTime.now().millisecondsSinceEpoch.toString();
         final entry = JournalEntry(
           id: idNow,
@@ -111,7 +136,7 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
         (() async {
           try {
             final sa = await _getSmallAccountSettings();
-              if (sa != null) {
+            if (sa != null) {
               final enriched = JournalEntry(
                 id: idNow,
                 timestamp: entry.timestamp,
@@ -141,11 +166,13 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
     );
     // Compute planner hints with best-effort context derived from current planner state.
     try {
-        final exp = inputs.expiration;
-        final dte = exp != null ? exp.difference(DateTime.now()).inDays : 30;
-        final short = inputs.shortStrike;
-        final long = inputs.longStrike;
-        final width = (short != null && long != null) ? (short - long).abs() : 20.0;
+      final exp = inputs.expiration;
+      final dte = exp != null ? exp.difference(DateTime.now()).inDays : 30;
+      final short = inputs.shortStrike;
+      final long = inputs.longStrike;
+      final width = (short != null && long != null)
+          ? (short - long).abs()
+          : 20.0;
       final delta = 0.20; // placeholder: delta not captured by TradeInputs yet
       final size = inputs.sharesOwned ?? 1;
 
@@ -163,52 +190,64 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
       if (_liveSyncManager != null && symbol != null) {
         // Use LiveSyncManager to orchestrate regime + hints and return a coherent result.
         // We only care about hintsBundle here.
-        _liveSyncManager.refresh(symbol, recs.StrategyContext(
-          healthScore: 50,
-          pnlTrend: const [],
-          disciplineTrend: const [],
-          recentCycles: const [],
-          constraints: constraints,
-          currentRegime: 'sideways',
-          drawdown: 0.0,
-          backtestComparison: null,
-        )).then((res) {
-          state = state.copyWith(hintsBundle: res.hints);
-        }).catchError((_) {});
+        _liveSyncManager
+            .refresh(
+              symbol,
+              recs.StrategyContext(
+                healthScore: 50,
+                pnlTrend: const [],
+                disciplineTrend: const [],
+                recentCycles: const [],
+                constraints: constraints,
+                currentRegime: 'sideways',
+                drawdown: 0.0,
+                backtestComparison: null,
+              ),
+            )
+            .then((res) {
+              state = state.copyWith(hintsBundle: res.hints);
+            })
+            .catchError((_) {});
       } else if (_hintsService != null) {
         final symbol = state.strategySymbol;
-        _hintsService.generateHints(pstate, symbol: symbol).then((hints) {
-          state = state.copyWith(hintsBundle: hints);
-        }).catchError((_) {});
+        _hintsService
+            .generateHints(pstate, symbol: symbol)
+            .then((hints) {
+              state = state.copyWith(hintsBundle: hints);
+            })
+            .catchError((_) {});
       } else {
         if (symbol != null) {
-          _regimeEngine?.getRegime(symbol).then((regSnap) {
-            final ctx = recs.StrategyContext(
-              healthScore: 50,
-              pnlTrend: const [],
-              disciplineTrend: const [],
-              recentCycles: const [],
-              constraints: constraints,
-              currentRegime: regSnap.trend,
-              drawdown: 0.0,
-              backtestComparison: null,
-            );
-            final hints = planner_hints.generateHints(pstate, ctx);
-            state = state.copyWith(hintsBundle: hints);
-          }).catchError((_) {
-            final ctx = recs.StrategyContext(
-              healthScore: 50,
-              pnlTrend: const [],
-              disciplineTrend: const [],
-              recentCycles: const [],
-              constraints: constraints,
-              currentRegime: 'sideways',
-              drawdown: 0.0,
-              backtestComparison: null,
-            );
-            final hints = planner_hints.generateHints(pstate, ctx);
-            state = state.copyWith(hintsBundle: hints);
-          });
+          _regimeEngine
+              ?.getRegime(symbol)
+              .then((regSnap) {
+                final ctx = recs.StrategyContext(
+                  healthScore: 50,
+                  pnlTrend: const [],
+                  disciplineTrend: const [],
+                  recentCycles: const [],
+                  constraints: constraints,
+                  currentRegime: regSnap.trend,
+                  drawdown: 0.0,
+                  backtestComparison: null,
+                );
+                final hints = planner_hints.generateHints(pstate, ctx);
+                state = state.copyWith(hintsBundle: hints);
+              })
+              .catchError((_) {
+                final ctx = recs.StrategyContext(
+                  healthScore: 50,
+                  pnlTrend: const [],
+                  disciplineTrend: const [],
+                  recentCycles: const [],
+                  constraints: constraints,
+                  currentRegime: 'sideways',
+                  drawdown: 0.0,
+                  backtestComparison: null,
+                );
+                final hints = planner_hints.generateHints(pstate, ctx);
+                state = state.copyWith(hintsBundle: hints);
+              });
         } else {
           final ctx = recs.StrategyContext(
             healthScore: 50,
@@ -243,7 +282,9 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
   // Compute payoff (placeholder logic for now)
   Future<bool> computePayoff() async {
     if (state.inputs == null || state.strategyId == null) {
-      state = state.copyWith(errorMessage: "Missing trade inputs or strategy ID.");
+      state = state.copyWith(
+        errorMessage: "Missing trade inputs or strategy ID.",
+      );
       return false;
     }
 
@@ -257,10 +298,7 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
         inputs: inputsLocal,
       );
 
-      state = state.copyWith(
-        payoff: payoff,
-        isLoading: false,
-      );
+      state = state.copyWith(payoff: payoff, isLoading: false);
 
       return true;
     } catch (e) {
@@ -274,8 +312,12 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
 
   // Compute risk (placeholder logic for now)
   Future<bool> computeRisk() async {
-    if (state.payoff == null || state.inputs == null || state.strategyId == null) {
-      state = state.copyWith(errorMessage: "Missing inputs, payoff or strategy ID.");
+    if (state.payoff == null ||
+        state.inputs == null ||
+        state.strategyId == null) {
+      state = state.copyWith(
+        errorMessage: "Missing inputs, payoff or strategy ID.",
+      );
       return false;
     }
 
@@ -291,10 +333,7 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
         payoff: payoffLocal,
       );
 
-      state = state.copyWith(
-        risk: risk,
-        isLoading: false,
-      );
+      state = state.copyWith(risk: risk, isLoading: false);
 
       return true;
     } catch (e) {
@@ -385,7 +424,9 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
 
   // Execute trade via ExecutionService
   Future<bool> executeTrade() async {
-    if (state.inputs == null || state.strategyId == null || state.strategyName == null) {
+    if (state.inputs == null ||
+        state.strategyId == null ||
+        state.strategyName == null) {
       state = state.copyWith(errorMessage: 'Missing required execution data.');
       return false;
     }
@@ -418,7 +459,8 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
       // Determine canonical premium magnitude and explicit side. Prefer
       // explicit fields rather than inferring from sign to avoid
       // misclassifying buy-side orders where `premiumPaid` is positive.
-      final premium = premiumReceived ?? premiumPaid ?? netCredit ?? netDebit ?? 0.0;
+      final premium =
+          premiumReceived ?? premiumPaid ?? netCredit ?? netDebit ?? 0.0;
       final qty = (raw['sharesOwned'] as num?)?.toInt() ?? 1;
       final expiry = raw['expiration'] ?? raw['expiry'];
       final symbol = state.strategySymbol ?? ctx.strategyName;
@@ -445,7 +487,10 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
       // can scope per-user queries. Fail fast if not authenticated.
       final uid = _safeUid();
       if (uid == null) {
-        state = state.copyWith(isLoading: false, errorMessage: 'Authentication required to execute trades.');
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: 'Authentication required to execute trades.',
+        );
         return false;
       }
       executionPayload['userId'] = uid;
@@ -463,7 +508,7 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
             'cons': expl.cons,
             'idealConditions': expl.idealConditions,
             'risks': expl.risks,
-          }
+          },
         };
       }
 
@@ -474,7 +519,10 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
       );
 
       if (_executionService == null) {
-        state = state.copyWith(isLoading: false, errorMessage: 'Execution service not available.');
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: 'Execution service not available.',
+        );
         return false;
       }
 
@@ -482,7 +530,10 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
       final result = await exec.executeStrategyTrade(request);
 
       if (!result.success) {
-        state = state.copyWith(isLoading: false, errorMessage: result.errorMessage);
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: result.errorMessage,
+        );
         return false;
       }
 
@@ -524,7 +575,10 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
       reset();
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: 'Execution failed: $e');
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Execution failed: $e',
+      );
       return false;
     }
   }
@@ -536,24 +590,34 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
       final inputsLocal = state.inputs;
       if (id == null || inputsLocal == null) return null;
 
-      final expiry = inputsLocal.expiration ?? DateTime.now().add(const Duration(days: 30));
+      final expiry =
+          inputsLocal.expiration ??
+          DateTime.now().add(const Duration(days: 30));
 
       switch (id) {
         case 'wheel-cycle':
           final put = OptionContract(
             id: 'PUT1',
-            strike: inputsLocal.strike ?? inputsLocal.shortStrike ?? (inputsLocal.underlyingPrice ?? 0.0),
-            premium: inputsLocal.premiumReceived ?? inputsLocal.netCredit ?? 0.0,
+            strike:
+                inputsLocal.strike ??
+                inputsLocal.shortStrike ??
+                (inputsLocal.underlyingPrice ?? 0.0),
+            premium:
+                inputsLocal.premiumReceived ?? inputsLocal.netCredit ?? 0.0,
             expiry: expiry,
             type: 'put',
           );
 
           OptionContract? call;
-          if ((inputsLocal.sharesOwned ?? 0) >= 100 && (inputsLocal.shortStrike != null)) {
+          if ((inputsLocal.sharesOwned ?? 0) >= 100 &&
+              (inputsLocal.shortStrike != null)) {
             call = OptionContract(
               id: 'CALL1',
-              strike: inputsLocal.shortStrike ?? (inputsLocal.underlyingPrice ?? 0.0),
-              premium: inputsLocal.premiumReceived ?? inputsLocal.netCredit ?? 0.0,
+              strike:
+                  inputsLocal.shortStrike ??
+                  (inputsLocal.underlyingPrice ?? 0.0),
+              premium:
+                  inputsLocal.premiumReceived ?? inputsLocal.netCredit ?? 0.0,
               expiry: expiry,
               type: 'call',
             );
@@ -596,7 +660,8 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
           return DebitSpreadStrategy(longLeg: long, shortLeg: short);
 
         case 'calendar':
-          if (inputsLocal.longStrike != null && inputsLocal.shortStrike != null) {
+          if (inputsLocal.longStrike != null &&
+              inputsLocal.shortStrike != null) {
             final long = OptionContract(
               id: 'CAL_LONG',
               strike: inputsLocal.longStrike!,
@@ -624,7 +689,11 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
               expiry: expiry,
               type: 'call',
             );
-            return PMCCStrategy(callContract: call, shareQuantity: inputsLocal.sharesOwned ?? 100, costBasis: inputsLocal.costBasis ?? 0.0);
+            return PMCCStrategy(
+              callContract: call,
+              shareQuantity: inputsLocal.sharesOwned ?? 100,
+              costBasis: inputsLocal.costBasis ?? 0.0,
+            );
           }
           return null;
 
@@ -648,7 +717,9 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
       if (repo == null) return;
       final entry = await repo.getById(entryId);
       if (entry == null) return;
-      final updated = entry.copyWith(data: Map<String, dynamic>.from(entry.data)..['notes'] = note);
+      final updated = entry.copyWith(
+        data: Map<String, dynamic>.from(entry.data)..['notes'] = note,
+      );
       await repo.updateEntry(updated);
       _lifecycleHook?.call('note_added', updated);
     } catch (_) {}
@@ -660,23 +731,42 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
       if (repo == null) return;
       final entry = await repo.getById(entryId);
       if (entry == null) return;
-      final tags = (entry.data['tags'] as List?)?.map((e) => e.toString()).toList() ?? [];
+      final tags =
+          (entry.data['tags'] as List?)?.map((e) => e.toString()).toList() ??
+          [];
       if (!tags.contains(tag)) tags.insert(0, tag);
-      final updated = entry.copyWith(data: Map<String, dynamic>.from(entry.data)..['tags'] = tags);
+      final updated = entry.copyWith(
+        data: Map<String, dynamic>.from(entry.data)..['tags'] = tags,
+      );
       await repo.updateEntry(updated);
       _lifecycleHook?.call('tag_added', updated);
     } catch (_) {}
   }
 
-  Future<void> addJournalScreenshot(String entryId, String path, {String? caption}) async {
+  Future<void> addJournalScreenshot(
+    String entryId,
+    String path, {
+    String? caption,
+  }) async {
     try {
       final repo = _journalRepo;
       if (repo == null) return;
       final entry = await repo.getById(entryId);
       if (entry == null) return;
-      final attachments = ((entry.data['attachments'] as List?)?.cast<Map<String, dynamic>>().toList()) ?? [];
-      attachments.insert(0, {'type': 'screenshot', 'path': path, 'caption': caption});
-      final updated = entry.copyWith(data: Map<String, dynamic>.from(entry.data)..['attachments'] = attachments);
+      final attachments =
+          ((entry.data['attachments'] as List?)
+              ?.cast<Map<String, dynamic>>()
+              .toList()) ??
+          [];
+      attachments.insert(0, {
+        'type': 'screenshot',
+        'path': path,
+        'caption': caption,
+      });
+      final updated = entry.copyWith(
+        data: Map<String, dynamic>.from(entry.data)
+          ..['attachments'] = attachments,
+      );
       await repo.updateEntry(updated);
       _lifecycleHook?.call('screenshot_added', updated);
     } catch (_) {}
@@ -690,12 +780,15 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
     try {
       final inputs = state.inputs;
 
-        final exp = inputs?.expiration;
-        final computedDte = dte ?? (exp != null ? exp.difference(DateTime.now()).inDays : 30);
+      final exp = inputs?.expiration;
+      final computedDte =
+          dte ?? (exp != null ? exp.difference(DateTime.now()).inDays : 30);
 
-        final short = inputs?.shortStrike;
-        final long = inputs?.longStrike;
-        final computedWidth = width ?? ((short != null && long != null) ? (short - long).abs() : 20.0);
+      final short = inputs?.shortStrike;
+      final long = inputs?.longStrike;
+      final computedWidth =
+          width ??
+          ((short != null && long != null) ? (short - long).abs() : 20.0);
 
       final computedDelta = delta ?? 0.20;
 
@@ -711,53 +804,65 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
       final symbol = state.strategySymbol;
       final lsm = _liveSyncManager;
       if (lsm != null && symbol != null) {
-        lsm.refresh(symbol, recs.StrategyContext(
-          healthScore: 50,
-          pnlTrend: const [],
-          disciplineTrend: const [],
-          recentCycles: const [],
-          constraints: constraints,
-          currentRegime: 'sideways',
-          drawdown: 0.0,
-          backtestComparison: null,
-        )).then((res) {
-          state = state.copyWith(hintsBundle: res.hints);
-        }).catchError((_) {});
+        lsm
+            .refresh(
+              symbol,
+              recs.StrategyContext(
+                healthScore: 50,
+                pnlTrend: const [],
+                disciplineTrend: const [],
+                recentCycles: const [],
+                constraints: constraints,
+                currentRegime: 'sideways',
+                drawdown: 0.0,
+                backtestComparison: null,
+              ),
+            )
+            .then((res) {
+              state = state.copyWith(hintsBundle: res.hints);
+            })
+            .catchError((_) {});
       } else if (_hintsService != null) {
         final symbol = state.strategySymbol;
         final hs = _hintsService;
-        hs.generateHints(pstate, symbol: symbol).then((hints) {
-          state = state.copyWith(hintsBundle: hints);
-        }).catchError((_) {});
+        hs
+            .generateHints(pstate, symbol: symbol)
+            .then((hints) {
+              state = state.copyWith(hintsBundle: hints);
+            })
+            .catchError((_) {});
       } else {
         if (symbol != null) {
-          _regimeEngine?.getRegime(symbol).then((regSnap) {
-            final ctx = recs.StrategyContext(
-              healthScore: 50,
-              pnlTrend: const [],
-              disciplineTrend: const [],
-              recentCycles: const [],
-              constraints: constraints,
-              currentRegime: regSnap.trend,
-              drawdown: 0.0,
-              backtestComparison: null,
-            );
-            final hints = planner_hints.generateHints(pstate, ctx);
-            state = state.copyWith(hintsBundle: hints);
-          }).catchError((_) {
-            final ctx = recs.StrategyContext(
-              healthScore: 50,
-              pnlTrend: const [],
-              disciplineTrend: const [],
-              recentCycles: const [],
-              constraints: constraints,
-              currentRegime: 'sideways',
-              drawdown: 0.0,
-              backtestComparison: null,
-            );
-            final hints = planner_hints.generateHints(pstate, ctx);
-            state = state.copyWith(hintsBundle: hints);
-          });
+          _regimeEngine
+              ?.getRegime(symbol)
+              .then((regSnap) {
+                final ctx = recs.StrategyContext(
+                  healthScore: 50,
+                  pnlTrend: const [],
+                  disciplineTrend: const [],
+                  recentCycles: const [],
+                  constraints: constraints,
+                  currentRegime: regSnap.trend,
+                  drawdown: 0.0,
+                  backtestComparison: null,
+                );
+                final hints = planner_hints.generateHints(pstate, ctx);
+                state = state.copyWith(hintsBundle: hints);
+              })
+              .catchError((_) {
+                final ctx = recs.StrategyContext(
+                  healthScore: 50,
+                  pnlTrend: const [],
+                  disciplineTrend: const [],
+                  recentCycles: const [],
+                  constraints: constraints,
+                  currentRegime: 'sideways',
+                  drawdown: 0.0,
+                  backtestComparison: null,
+                );
+                final hints = planner_hints.generateHints(pstate, ctx);
+                state = state.copyWith(hintsBundle: hints);
+              });
         } else {
           final ctx = recs.StrategyContext(
             healthScore: 50,
@@ -811,7 +916,7 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
     // Recompute hints using the updated numeric values
     computeHintsFromSliders(delta: delta, width: width, dte: dte);
   }
-  
+
   /// Helper: read the current user's small-account settings doc if present.
   Future<Map<String, dynamic>?> _getSmallAccountSettings() async {
     try {
@@ -820,7 +925,9 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
       if (provider != null) return await provider();
       final uid = _getUid?.call() ?? FirebaseAuth.instance.currentUser?.uid;
       if (uid == null) return null;
-      final doc = await FirebaseFirestore.instance.doc('users/$uid/smallAccountSettings/settings').get();
+      final doc = await FirebaseFirestore.instance
+          .doc('users/$uid/smallAccountSettings/settings')
+          .get();
       if (!doc.exists) return null;
       final data = doc.data();
       if (data is Map<String, dynamic>) return data;

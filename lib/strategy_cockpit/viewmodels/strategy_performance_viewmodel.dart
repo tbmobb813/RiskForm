@@ -34,15 +34,12 @@ class StrategyPerformanceViewModel extends ChangeNotifier {
   // Initialization
   // -----------------------------
   void _init() {
-    _healthSub = _healthService.watchHealth(strategyId).listen(
-      (snapshot) {
-        if (snapshot != null) {
-          _computePerformance(snapshot);
-        }
-        _setLoaded();
-      },
-      onError: (_) => _setError(),
-    );
+    _healthSub = _healthService.watchHealth(strategyId).listen((snapshot) {
+      if (snapshot != null) {
+        _computePerformance(snapshot);
+      }
+      _setLoaded();
+    }, onError: (_) => _setError());
   }
 
   // -----------------------------

@@ -10,16 +10,25 @@ class WheelDrawdownChartCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ddCurve = _drawdownCurve(result.equityCurve);
-    final points = List<Offset>.generate(ddCurve.length, (i) => Offset(i.toDouble(), ddCurve[i]));
+    final points = List<Offset>.generate(
+      ddCurve.length,
+      (i) => Offset(i.toDouble(), ddCurve[i]),
+    );
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Drawdown Curve', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Drawdown Curve',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 12),
-            SizedBox(height: 240, child: PayoffChart(curve: points, breakeven: 0.0)),
+            SizedBox(
+              height: 240,
+              child: PayoffChart(curve: points, breakeven: 0.0),
+            ),
           ],
         ),
       ),

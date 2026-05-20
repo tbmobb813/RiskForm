@@ -17,9 +17,9 @@ class DiagonalStrategy extends TradingStrategy {
 
   @override
   Map<String, dynamic> toJson() => {
-        'longLeg': longLeg.toJson(),
-        'shortLeg': shortLeg.toJson(),
-      };
+    'longLeg': longLeg.toJson(),
+    'shortLeg': shortLeg.toJson(),
+  };
 
   @override
   String get id => 'diagonal_${longLeg.id}_${shortLeg.id}';
@@ -28,7 +28,10 @@ class DiagonalStrategy extends TradingStrategy {
   String get label => 'Diagonal Spread';
 
   @override
-  List<Leg> get legs => [Leg(contract: longLeg, quantity: 1), Leg(contract: shortLeg, quantity: -1)];
+  List<Leg> get legs => [
+    Leg(contract: longLeg, quantity: 1),
+    Leg(contract: shortLeg, quantity: -1),
+  ];
 
   @override
   double get maxRisk {
@@ -42,7 +45,11 @@ class DiagonalStrategy extends TradingStrategy {
   double get breakeven => longLeg.strike + (longLeg.premium - shortLeg.premium);
 
   @override
-  List<PayoffPoint> payoffCurve({required double underlyingPrice, required double rangePercent, required int steps}) {
+  List<PayoffPoint> payoffCurve({
+    required double underlyingPrice,
+    required double rangePercent,
+    required int steps,
+  }) {
     final engine = PayoffEngine();
 
     final inputs = TradeInputs(
@@ -63,16 +70,25 @@ class DiagonalStrategy extends TradingStrategy {
       points: steps,
     );
 
-    return offsets.map((o) => PayoffPoint(underlyingPrice: o.dx, profitLoss: o.dy)).toList();
+    return offsets
+        .map((o) => PayoffPoint(underlyingPrice: o.dx, profitLoss: o.dy))
+        .toList();
   }
 
   @override
   StrategyExplanation explain() {
     return StrategyExplanation(
-      summary: 'Diagonal spread: long option with longer expiry and short option near-dated at different strike.',
+      summary:
+          'Diagonal spread: long option with longer expiry and short option near-dated at different strike.',
       pros: ['Flexibility of strike + time', 'Potential time decay advantage'],
-      cons: ['Complex Greeks interaction', 'Requires monitoring of expiries and assignment risk'],
-      idealConditions: ['Neutral to slightly directional thesis', 'Moderate IV environment'],
+      cons: [
+        'Complex Greeks interaction',
+        'Requires monitoring of expiries and assignment risk',
+      ],
+      idealConditions: [
+        'Neutral to slightly directional thesis',
+        'Moderate IV environment',
+      ],
       risks: ['Volatility shifts', 'Assignment on short leg'],
     );
   }

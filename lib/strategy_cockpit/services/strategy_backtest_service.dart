@@ -4,7 +4,7 @@ class StrategyBacktestService {
   final FirebaseFirestore _firestore;
 
   StrategyBacktestService({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   // ------------------------------------------------------------
   // Collection references
@@ -25,51 +25,40 @@ class StrategyBacktestService {
         .limit(1)
         .snapshots()
         .map((snapshot) {
-      if (snapshot.docs.isEmpty) return null;
-      final doc = snapshot.docs.first;
-      return {
-        'id': doc.id,
-        ...doc.data() as Map<String, dynamic>,
-      };
-    });
+          if (snapshot.docs.isEmpty) return null;
+          final doc = snapshot.docs.first;
+          return {'id': doc.id, ...doc.data() as Map<String, dynamic>};
+        });
   }
 
   // ------------------------------------------------------------
   // Watch Backtest History (most recent first)
   // ------------------------------------------------------------
-  Stream<List<Map<String, dynamic>>> watchBacktestHistory(
-      String strategyId) {
+  Stream<List<Map<String, dynamic>>> watchBacktestHistory(String strategyId) {
     return _results
         .where('strategyId', isEqualTo: strategyId)
         .orderBy('completedAt', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return {
-          'id': doc.id,
-          ...doc.data() as Map<String, dynamic>,
-        };
-      }).toList();
-    });
+          return snapshot.docs.map((doc) {
+            return {'id': doc.id, ...doc.data() as Map<String, dynamic>};
+          }).toList();
+        });
   }
 
   // ------------------------------------------------------------
   // Watch Backtest Jobs (queued, running, completed)
   // ------------------------------------------------------------
-  Stream<List<Map<String, dynamic>>> watchBacktestJobs(
-      String strategyId) {
+  Stream<List<Map<String, dynamic>>> watchBacktestJobs(String strategyId) {
     return _jobs
         .where('strategyId', isEqualTo: strategyId)
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return {
-          'id': doc.id,
-          ...doc.data() as Map<String, dynamic>,
-        };
-      }).toList();
-    });
+          return snapshot.docs.map((doc) {
+            return {'id': doc.id, ...doc.data() as Map<String, dynamic>};
+          }).toList();
+        });
   }
 
   // ------------------------------------------------------------

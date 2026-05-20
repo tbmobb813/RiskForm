@@ -17,14 +17,16 @@ class HistoricalCache {
   }) async {
     final key = _key(symbol, start, end);
     final data = prices
-        .map((p) => {
-              'date': p.date.toIso8601String(),
-              'open': p.open,
-              'high': p.high,
-              'low': p.low,
-              'close': p.close,
-              'volume': p.volume,
-            })
+        .map(
+          (p) => {
+            'date': p.date.toIso8601String(),
+            'open': p.open,
+            'high': p.high,
+            'low': p.low,
+            'close': p.close,
+            'volume': p.volume,
+          },
+        )
         .toList();
 
     await box.put(key, data);
@@ -40,14 +42,16 @@ class HistoricalCache {
     if (data == null) return null;
 
     return (data as List)
-        .map((m) => HistoricalPrice(
-              date: DateTime.parse(m['date'] as String),
-              open: (m['open'] as num).toDouble(),
-              high: (m['high'] as num).toDouble(),
-              low: (m['low'] as num).toDouble(),
-              close: (m['close'] as num).toDouble(),
-              volume: (m['volume'] as num).toDouble(),
-            ))
+        .map(
+          (m) => HistoricalPrice(
+            date: DateTime.parse(m['date'] as String),
+            open: (m['open'] as num).toDouble(),
+            high: (m['high'] as num).toDouble(),
+            low: (m['low'] as num).toDouble(),
+            close: (m['close'] as num).toDouble(),
+            volume: (m['volume'] as num).toDouble(),
+          ),
+        )
         .toList();
   }
 }

@@ -4,10 +4,7 @@ class PersistedStrategy {
 
   PersistedStrategy({required this.type, required this.data});
 
-  Map<String, dynamic> toJson() => {
-        'type': type,
-        'data': data,
-      };
+  Map<String, dynamic> toJson() => {'type': type, 'data': data};
 
   static PersistedStrategy fromJson(Map<String, dynamic> json) {
     return PersistedStrategy(

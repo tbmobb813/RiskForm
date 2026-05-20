@@ -18,10 +18,7 @@ class WatchlistItem {
 
   /// Create a watchlist item without live data (Phase 1)
   factory WatchlistItem.placeholder(String ticker) {
-    return WatchlistItem(
-      ticker: ticker,
-      hasLiveData: false,
-    );
+    return WatchlistItem(ticker: ticker, hasLiveData: false);
   }
 
   /// Create a watchlist item with live data (Phase 2)
@@ -41,8 +38,11 @@ class WatchlistItem {
     );
   }
 
-  String get priceDisplay => hasLiveData && price != null ? '\$${price!.toStringAsFixed(2)}' : 'N/A';
-  String get ivDisplay => hasLiveData && ivPercentile != null ? '${ivPercentile!.toStringAsFixed(0)}%' : 'N/A';
+  String get priceDisplay =>
+      hasLiveData && price != null ? '\$${price!.toStringAsFixed(2)}' : 'N/A';
+  String get ivDisplay => hasLiveData && ivPercentile != null
+      ? '${ivPercentile!.toStringAsFixed(0)}%'
+      : 'N/A';
   String get changeDisplay {
     if (!hasLiveData || changePercent == null) return '—';
     final sign = changePercent! >= 0 ? '+' : '';
@@ -53,13 +53,13 @@ class WatchlistItem {
   bool get isNegative => changePercent != null && changePercent! < 0;
 
   Map<String, dynamic> toJson() => {
-        'ticker': ticker,
-        'price': price,
-        'ivPercentile': ivPercentile,
-        'changePercent': changePercent,
-        'hasLiveData': hasLiveData,
-        'lastUpdated': lastUpdated?.toIso8601String(),
-      };
+    'ticker': ticker,
+    'price': price,
+    'ivPercentile': ivPercentile,
+    'changePercent': changePercent,
+    'hasLiveData': hasLiveData,
+    'lastUpdated': lastUpdated?.toIso8601String(),
+  };
 
   factory WatchlistItem.fromJson(Map<String, dynamic> json) {
     return WatchlistItem(
@@ -68,7 +68,9 @@ class WatchlistItem {
       ivPercentile: json['ivPercentile'] as double?,
       changePercent: json['changePercent'] as double?,
       hasLiveData: json['hasLiveData'] as bool? ?? false,
-      lastUpdated: json['lastUpdated'] != null ? DateTime.parse(json['lastUpdated'] as String) : null,
+      lastUpdated: json['lastUpdated'] != null
+          ? DateTime.parse(json['lastUpdated'] as String)
+          : null,
     );
   }
 }

@@ -36,14 +36,23 @@ class JournalService {
     return docRef.id;
   }
 
-  Future<void> updateEntry(String userId, String entryId, Map<String, dynamic> fields) async {
+  Future<void> updateEntry(
+    String userId,
+    String entryId,
+    Map<String, dynamic> fields,
+  ) async {
     if (fields.isEmpty) return;
     fields['updatedAt'] = FieldValue.serverTimestamp();
     await _userJournals(userId).doc(entryId).update(fields);
   }
 
-  Future<List<JournalEntry>> listForUser(String userId, {int limit = 50}) async {
-    final snap = await _userJournals(userId).orderBy('createdAt', descending: true).limit(limit).get();
+  Future<List<JournalEntry>> listForUser(
+    String userId, {
+    int limit = 50,
+  }) async {
+    final snap = await _userJournals(
+      userId,
+    ).orderBy('createdAt', descending: true).limit(limit).get();
     return snap.docs.map((d) => JournalEntry.fromFirestore(d)).toList();
   }
 }
