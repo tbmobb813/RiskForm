@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../screens/signals/signal_engine_screen.dart';
 import '../screens/best_opps/best_opps_screen.dart';
 import '../screens/import/import_screen.dart';
+import '../models/signal_planner_preset.dart';
 import 'package:riskform/strategy_cockpit/strategies/small_account/services/cheap_options_scanner.dart';
 import 'package:riskform/strategy_cockpit/strategies/small_account/services/default_options_chain_service.dart';
 import 'package:riskform/strategy_cockpit/strategies/small_account/screens/scanner_screen.dart';
@@ -38,7 +39,11 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/planner',
       name: 'planner',
-      builder: (context, state) => const StrategySelectorScreen(),
+      builder: (context, state) => StrategySelectorScreen(
+        preset: state.extra is SignalPlannerPreset
+            ? state.extra as SignalPlannerPreset
+            : null,
+      ),
     ),
     GoRoute(
       path: '/trade-planner',

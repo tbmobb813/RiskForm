@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../models/signal_model.dart';
+import '../../../models/signal_planner_preset.dart';
 import 'score_bar_widget.dart';
 
 // ── Color helpers ──────────────────────────────────────────────────────────────
@@ -244,9 +245,12 @@ class SignalCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    // Tap to open strategy planner with this context
+                    // Tap to open strategy planner pre-filled from this signal
                     GestureDetector(
-                      onTap: () => context.pushNamed('planner'),
+                      onTap: () => context.pushNamed(
+                        'planner',
+                        extra: SignalPlannerPreset.fromSignal(signal),
+                      ),
                       child: const Text(
                         'Open in Planner →',
                         style: TextStyle(
