@@ -14,7 +14,6 @@ class TradeReviewItem extends StatelessWidget {
   });
 
   Color _actionColor(BuildContext context, TradeAction a) {
-    final cs = Theme.of(context).colorScheme;
     return switch (a) {
       TradeAction.sellToOpen || TradeAction.sell => Colors.green.shade400,
       TradeAction.buyToClose => Colors.green.shade300,
