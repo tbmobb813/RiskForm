@@ -12,12 +12,22 @@ void main() {
       strategyId: 's1',
       strategyName: 'S',
       inputs: TradeInputs(strike: 10.0),
-      payoff: PayoffResult(maxGain: 1, maxLoss: 2, breakeven: 3, capitalRequired: 4),
-      risk: RiskResult(riskPercentOfAccount: 1.0, assignmentExposure: false, capitalLocked: 2.0, warnings: []),
+      payoff: PayoffResult(
+        maxGain: 1,
+        maxLoss: 2,
+        breakeven: 3,
+        capitalRequired: 4,
+      ),
+      risk: RiskResult(
+        riskPercentOfAccount: 1.0,
+        assignmentExposure: false,
+        capitalLocked: 2.0,
+        warnings: [],
+      ),
       notes: 'n',
       tags: ['a'],
-      createdAt: DateTime.utc(2020,1,1),
-      updatedAt: DateTime.utc(2020,1,2),
+      createdAt: DateTime.utc(2020, 1, 1),
+      updatedAt: DateTime.utc(2020, 1, 2),
     );
 
     final json = tp.toJson();
@@ -27,7 +37,13 @@ void main() {
 
     // roundtrip via fromMap
     final tp2 = TradePlan.fromMap(json, tp.id);
-    expect(tp2.createdAt.millisecondsSinceEpoch, tp.createdAt.millisecondsSinceEpoch);
-    expect(tp2.updatedAt.millisecondsSinceEpoch, tp.updatedAt.millisecondsSinceEpoch);
+    expect(
+      tp2.createdAt.millisecondsSinceEpoch,
+      tp.createdAt.millisecondsSinceEpoch,
+    );
+    expect(
+      tp2.updatedAt.millisecondsSinceEpoch,
+      tp.updatedAt.millisecondsSinceEpoch,
+    );
   });
 }

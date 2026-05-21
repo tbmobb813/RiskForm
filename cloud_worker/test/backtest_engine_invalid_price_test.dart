@@ -24,8 +24,14 @@ void main() {
     final engine = CloudBacktestEngine();
 
     // Non-positive S or K should throw
-    expect(() => engine.priceCall(0.0, 100.0, 0.25, 0.1), throwsA(isA<StateError>()));
-    expect(() => engine.pricePut(-1.0, 100.0, 0.25, 0.1), throwsA(isA<StateError>()));
+    expect(
+      () => engine.priceCall(0.0, 100.0, 0.25, 0.1),
+      throwsA(isA<StateError>()),
+    );
+    expect(
+      () => engine.pricePut(-1.0, 100.0, 0.25, 0.1),
+      throwsA(isA<StateError>()),
+    );
 
     // Zero sigma or zero T should return intrinsic value (no NaN)
     final callIntrinsic = engine.priceCall(120.0, 100.0, 0.0, 0.1);

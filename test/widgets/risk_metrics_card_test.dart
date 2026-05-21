@@ -4,10 +4,21 @@ import 'package:riskform/screens/planner/risk_summary/risk_metrics_card.dart';
 import 'package:riskform/models/risk_result.dart';
 
 void main() {
-  testWidgets('RiskMetricsCard displays metrics correctly', (WidgetTester tester) async {
-    final risk = RiskResult(riskPercentOfAccount: 7.5, assignmentExposure: true, capitalLocked: 400.0, warnings: ['w']);
+  testWidgets('RiskMetricsCard displays metrics correctly', (
+    WidgetTester tester,
+  ) async {
+    final risk = RiskResult(
+      riskPercentOfAccount: 7.5,
+      assignmentExposure: true,
+      capitalLocked: 400.0,
+      warnings: ['w'],
+    );
 
-    await tester.pumpWidget(MaterialApp(home: Scaffold(body: RiskMetricsCard(risk: risk))));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: RiskMetricsCard(risk: risk)),
+      ),
+    );
 
     expect(find.text('Risk Metrics'), findsOneWidget);
     expect(find.text('7.5%'), findsOneWidget);
@@ -15,7 +26,9 @@ void main() {
     expect(find.text(r"$400.00"), findsOneWidget);
   });
 
-  testWidgets('RiskMetricsCard displays labels and values', (WidgetTester tester) async {
+  testWidgets('RiskMetricsCard displays labels and values', (
+    WidgetTester tester,
+  ) async {
     final risk = RiskResult(
       riskPercentOfAccount: 3.5,
       assignmentExposure: true,

@@ -21,7 +21,10 @@ class FakeTradePlanRepository implements TradePlanRepository {
   }
 
   @override
-  Future<void> savePlanAndUpdateWheel(TradePlan plan, {bool persistPlan = true}) async {
+  Future<void> savePlanAndUpdateWheel(
+    TradePlan plan, {
+    bool persistPlan = true,
+  }) async {
     // For tests, just behave like savePlan
     await savePlan(plan);
   }
@@ -32,7 +35,10 @@ class FakeTradePlanRepository implements TradePlanRepository {
 
 class FakePayoffEngine extends PayoffEngine {
   @override
-  Future<PayoffResult> compute({required String strategyId, required TradeInputs inputs}) async {
+  Future<PayoffResult> compute({
+    required String strategyId,
+    required TradeInputs inputs,
+  }) async {
     return PayoffResult(
       maxGain: 100.0,
       maxLoss: 50.0,
@@ -43,10 +49,15 @@ class FakePayoffEngine extends PayoffEngine {
 }
 
 class FakeRiskEngine extends RiskEngine {
-  FakeRiskEngine(): super(const AccountContext(accountSize:10000.0,buyingPower:10000.0));
+  FakeRiskEngine()
+    : super(const AccountContext(accountSize: 10000.0, buyingPower: 10000.0));
 
   @override
-  Future<RiskResult> compute({required String strategyId, required TradeInputs inputs, required PayoffResult payoff}) async {
+  Future<RiskResult> compute({
+    required String strategyId,
+    required TradeInputs inputs,
+    required PayoffResult payoff,
+  }) async {
     return RiskResult(
       riskPercentOfAccount: 5.0,
       assignmentExposure: false,

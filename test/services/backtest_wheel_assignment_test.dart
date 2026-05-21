@@ -8,7 +8,11 @@ void main() {
     test('CSP expires ITM -> assignment and capital decreases', () {
       final engine = BacktestEngine(optionPricing: OptionPricingEngine());
       // Build a price path long enough to let CSP expire (30 days) then CC expire
-      final path = List<double>.filled(30, 50.0) + [45.0] + List<double>.filled(31, 46.0) + [60.0];
+      final path =
+          List<double>.filled(30, 50.0) +
+          [45.0] +
+          List<double>.filled(31, 46.0) +
+          [60.0];
 
       final config = BacktestConfig(
         startingCapital: 100000,
@@ -50,7 +54,11 @@ void main() {
     test('CC expires ITM -> called away and cycle increments', () {
       final engine = BacktestEngine(optionPricing: OptionPricingEngine());
       // Use the same long path used earlier to get called-away on CC expiry
-      final path = List<double>.filled(30, 50.0) + [45.0] + List<double>.filled(31, 46.0) + [60.0];
+      final path =
+          List<double>.filled(30, 50.0) +
+          [45.0] +
+          List<double>.filled(31, 46.0) +
+          [60.0];
 
       final config = BacktestConfig(
         startingCapital: 100000,

@@ -48,7 +48,8 @@ class BacktestEngine {
     required List<RegimeSegment> segments,
   }) {
     final cycleStart = cycle.startIndex ?? 0;
-    final cycleEnd = cycle.endIndex ?? (cycle.startIndex ?? 0) + cycle.durationDays;
+    final cycleEnd =
+        cycle.endIndex ?? (cycle.startIndex ?? 0) + cycle.durationDays;
 
     MarketRegime? best;
     int bestOverlap = 0;
@@ -94,7 +95,11 @@ class BacktestEngine {
     }
   }
 
-  WheelSimState _handleIdle(double price, WheelSimState state, List<String> notes) {
+  WheelSimState _handleIdle(
+    double price,
+    WheelSimState state,
+    List<String> notes,
+  ) {
     // Sell CSP at ATM using Black-Scholes pricing
     final tYears = 30 / 365.0;
     final vol = 0.25;
@@ -108,7 +113,9 @@ class BacktestEngine {
     );
 
     // Validate the computed premium to guard against edge cases
-    if (premiumPerShare.isNaN || premiumPerShare.isInfinite || premiumPerShare < 0) {
+    if (premiumPerShare.isNaN ||
+        premiumPerShare.isInfinite ||
+        premiumPerShare < 0) {
       throw StateError(
         'Invalid option premium from pricing engine: $premiumPerShare '
         '(spot=$price, strike=$strike, vol=$vol, t=$tYears)',
@@ -120,19 +127,21 @@ class BacktestEngine {
 
     // create in-sim option to track DTE and strike
     final dte = 30;
-    state.csp = SimOption(
-      strike: strike,
-      dte: dte,
-      isPut: true,
-      isShort: true,
-    );
+    state.csp = SimOption(strike: strike, dte: dte, isPut: true, isShort: true);
 
-    notes.add('Sold CSP @ ${strike.toStringAsFixed(2)}, DTE $dte, premium ${premium.toStringAsFixed(2)}');
+    notes.add(
+      'Sold CSP @ ${strike.toStringAsFixed(2)}, DTE $dte, premium ${premium.toStringAsFixed(2)}',
+    );
     state.cycle = state.cycle.copyWith(state: WheelCycleState.cspOpen);
     return state;
   }
 
-  WheelSimState _handleCspOpen(double price, WheelSimState state, List<String> notes, String symbol) {
+  WheelSimState _handleCspOpen(
+    double price,
+    WheelSimState state,
+    List<String> notes,
+    String symbol,
+  ) {
     // Use the in-sim option if present
     final csp = state.csp;
     if (csp == null) {
@@ -183,13 +192,21 @@ class BacktestEngine {
     return state;
   }
 
-  WheelSimState _handleAssigned(double price, WheelSimState state, List<String> notes) {
+  WheelSimState _handleAssigned(
+    double price,
+    WheelSimState state,
+    List<String> notes,
+  ) {
     notes.add('Shares confirmed at cost basis ${state.costBasis}');
     state.cycle = state.cycle.copyWith(state: WheelCycleState.sharesOwned);
     return state;
   }
 
-  WheelSimState _handleSharesOwned(double price, WheelSimState state, List<String> notes) {
+  WheelSimState _handleSharesOwned(
+    double price,
+    WheelSimState state,
+    List<String> notes,
+  ) {
     // Sell covered call using Black-Scholes pricing
     final tYears = 30 / 365.0;
     final vol = 0.25;
@@ -203,7 +220,9 @@ class BacktestEngine {
     );
 
     // Validate the computed premium to guard against edge cases
-    if (premiumPerShare.isNaN || premiumPerShare.isInfinite || premiumPerShare < 0) {
+    if (premiumPerShare.isNaN ||
+        premiumPerShare.isInfinite ||
+        premiumPerShare < 0) {
       throw StateError(
         'Invalid option premium from pricing engine: $premiumPerShare '
         '(spot=$price, strike=$strike, vol=$vol, t=$tYears)',
@@ -222,12 +241,19 @@ class BacktestEngine {
       isShort: true,
     );
 
-    notes.add('Sold CC @ ${strikeForOption.toStringAsFixed(2)}, DTE $dte, premium ${premium.toStringAsFixed(2)}');
+    notes.add(
+      'Sold CC @ ${strikeForOption.toStringAsFixed(2)}, DTE $dte, premium ${premium.toStringAsFixed(2)}',
+    );
     state.cycle = state.cycle.copyWith(state: WheelCycleState.ccOpen);
     return state;
   }
 
-  WheelSimState _handleCcOpen(double price, WheelSimState state, List<String> notes, String symbol) {
+  WheelSimState _handleCcOpen(
+    double price,
+    WheelSimState state,
+    List<String> notes,
+    String symbol,
+  ) {
     final cc = state.cc;
     if (cc == null) {
       notes.add('CC open but option missing; keeping shares.');
@@ -250,7 +276,9 @@ class BacktestEngine {
       final gain = proceeds - (state.costBasis * 100);
       state.capital += proceeds;
       state.shares = 0;
-      notes.add('CC early-called-away @ ${strike.toStringAsFixed(2)}, gain ${gain.toStringAsFixed(2)}');
+      notes.add(
+        'CC early-called-away @ ${strike.toStringAsFixed(2)}, gain ${gain.toStringAsFixed(2)}',
+      );
       state.cycle = state.cycle.copyWith(
         state: WheelCycleState.calledAway,
         cycleCount: state.cycle.cycleCount + 1,
@@ -266,7 +294,9 @@ class BacktestEngine {
         state.capital += proceeds;
         state.shares = 0;
 
-        notes.add('CC expired ITM, called away @ ${cc.strike.toStringAsFixed(2)}, gain ${gain.toStringAsFixed(2)}');
+        notes.add(
+          'CC expired ITM, called away @ ${cc.strike.toStringAsFixed(2)}, gain ${gain.toStringAsFixed(2)}',
+        );
 
         state.cycle = state.cycle.copyWith(
           state: WheelCycleState.calledAway,
@@ -284,7 +314,11 @@ class BacktestEngine {
     return state;
   }
 
-  WheelSimState _handleCalledAway(double price, WheelSimState state, List<String> notes) {
+  WheelSimState _handleCalledAway(
+    double price,
+    WheelSimState state,
+    List<String> notes,
+  ) {
     notes.add('Cycle completed. Restarting wheel.');
     state.cycle = state.cycle.copyWith(state: WheelCycleState.idle);
     return state;
@@ -352,10 +386,7 @@ class BacktestEngine {
   WheelCycle _updateCycle(WheelCycle cycle, BacktestStep step) {
     // Placeholder: consumers should hook up `WheelCycleController` for
     // realistic lifecycle transitions. For now we keep cycle unchanged.
-    return cycle.copyWith(
-      state: cycle.state,
-      cycleCount: cycle.cycleCount,
-    );
+    return cycle.copyWith(state: cycle.state, cycleCount: cycle.cycleCount);
   }
 
   // ignore: unused_element
@@ -381,5 +412,8 @@ class BacktestEngine {
   // ignore: unused_element
   dynamic _defaultRiskProfile() => {'risk': 'default'};
   // ignore: unused_element
-  dynamic _mockInputs(double price, String action) => {'price': price, 'action': action};
+  dynamic _mockInputs(double price, String action) => {
+    'price': price,
+    'action': action,
+  };
 }

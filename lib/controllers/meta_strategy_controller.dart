@@ -38,8 +38,6 @@ class MetaStrategyController {
     );
   }
 
-  
-
   _NextActionResult _determineNextAction({
     required WheelCycleState cycleState,
     required AccountSnapshot account,
@@ -66,7 +64,8 @@ class MetaStrategyController {
     AccountSnapshot account,
     RiskProfile riskProfile,
   ) {
-    final minRequired = account.accountSize * (riskProfile.maxRiskPerTradePercent / 100);
+    final minRequired =
+        account.accountSize * (riskProfile.maxRiskPerTradePercent / 100);
     return account.buyingPower >= minRequired;
   }
 
@@ -96,7 +95,8 @@ class MetaStrategyController {
   _NextActionResult _nextActionForAssigned() {
     return _NextActionResult(
       action: "Review Assignment",
-      reason: "You were assigned — confirm shares and prepare to sell a covered call.",
+      reason:
+          "You were assigned — confirm shares and prepare to sell a covered call.",
     );
   }
 
@@ -121,12 +121,14 @@ class MetaStrategyController {
     if (!_hasSufficientBuyingPower(account, riskProfile)) {
       return _NextActionResult(
         action: "Wait",
-        reason: "Shares were called away, but buying power is below your risk threshold.",
+        reason:
+            "Shares were called away, but buying power is below your risk threshold.",
       );
     }
     return _NextActionResult(
       action: "Restart Wheel with CSP",
-      reason: "Shares were called away — you can restart the wheel with a new CSP.",
+      reason:
+          "Shares were called away — you can restart the wheel with a new CSP.",
     );
   }
 }

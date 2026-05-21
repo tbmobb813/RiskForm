@@ -44,12 +44,12 @@ void main() {
         {
           'id': 'c1',
           'disciplineScore': 90,
-          'disciplineBreakdown': {'adherence': 40, 'timing': 30, 'risk': 25}
+          'disciplineBreakdown': {'adherence': 40, 'timing': 30, 'risk': 25},
         },
         {
           'id': 'c2',
           'disciplineScore': 85,
-          'disciplineBreakdown': {'adherence': 35, 'timing': 25, 'risk': 30}
+          'disciplineBreakdown': {'adherence': 35, 'timing': 25, 'risk': 30},
         },
       ],
       regimeWeaknesses: [],
@@ -59,11 +59,16 @@ void main() {
     );
 
     test('getTrend', () {
-      expect(StrategyDisciplineAnalyzer.getTrend(snapshot), snapshot.disciplineTrend);
+      expect(
+        StrategyDisciplineAnalyzer.getTrend(snapshot),
+        snapshot.disciplineTrend,
+      );
     });
 
     test('computeCleanCycleStreak', () {
-      final streak = StrategyDisciplineAnalyzer.computeCleanCycleStreak(snapshot);
+      final streak = StrategyDisciplineAnalyzer.computeCleanCycleStreak(
+        snapshot,
+      );
       expect(streak, 2);
     });
   });

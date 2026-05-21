@@ -32,22 +32,23 @@ class WheelStrategyAdapter extends TradingStrategy {
     this.shareQuantity = 100,
     double? putPremiumReceived,
     double? callPremiumReceived,
-  })  : putPremiumReceived = putPremiumReceived ?? putContract.premium,
-        callPremiumReceived = callPremiumReceived ?? (callContract?.premium ?? 0.0);
+  }) : putPremiumReceived = putPremiumReceived ?? putContract.premium,
+       callPremiumReceived =
+           callPremiumReceived ?? (callContract?.premium ?? 0.0);
 
   @override
   String get typeId => 'wheel';
 
   @override
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'label': label,
-        'putContract': putContract.toJson(),
-        'callContract': callContract?.toJson(),
-        'shareQuantity': shareQuantity,
-        'putPremiumReceived': putPremiumReceived,
-        'callPremiumReceived': callPremiumReceived,
-      };
+    'id': id,
+    'label': label,
+    'putContract': putContract.toJson(),
+    'callContract': callContract?.toJson(),
+    'shareQuantity': shareQuantity,
+    'putPremiumReceived': putPremiumReceived,
+    'callPremiumReceived': callPremiumReceived,
+  };
 
   @override
   List<Leg> get legs {
@@ -55,7 +56,13 @@ class WheelStrategyAdapter extends TradingStrategy {
     // short put
     l.add(Leg(contract: putContract, quantity: -1));
     // model assigned shares as long legs when present (adapter may include these)
-    l.add(Leg.shares(id: 'SHARES', shares: shareQuantity, costBasisPerShare: putContract.strike));
+    l.add(
+      Leg.shares(
+        id: 'SHARES',
+        shares: shareQuantity,
+        costBasisPerShare: putContract.strike,
+      ),
+    );
     // short call if provided
     if (callContract != null) {
       l.add(Leg(contract: callContract!, quantity: -1));
@@ -87,7 +94,11 @@ class WheelStrategyAdapter extends TradingStrategy {
   }
 
   @override
-  List<PayoffPoint> payoffCurve({required double underlyingPrice, required double rangePercent, required int steps}) {
+  List<PayoffPoint> payoffCurve({
+    required double underlyingPrice,
+    required double rangePercent,
+    required int steps,
+  }) {
     final engine = PayoffEngine();
 
     // If we have shares + call, model as covered call; otherwise model as CSP
@@ -111,7 +122,9 @@ class WheelStrategyAdapter extends TradingStrategy {
         points: steps,
       );
 
-      return offsets.map((o) => PayoffPoint(underlyingPrice: o.dx, profitLoss: o.dy)).toList();
+      return offsets
+          .map((o) => PayoffPoint(underlyingPrice: o.dx, profitLoss: o.dy))
+          .toList();
     }
 
     // Fallback: model as CSP
@@ -132,17 +145,26 @@ class WheelStrategyAdapter extends TradingStrategy {
       points: steps,
     );
 
-    return offsets.map((o) => PayoffPoint(underlyingPrice: o.dx, profitLoss: o.dy)).toList();
+    return offsets
+        .map((o) => PayoffPoint(underlyingPrice: o.dx, profitLoss: o.dy))
+        .toList();
   }
 
   @override
   StrategyExplanation explain() {
     return StrategyExplanation(
-      summary: 'Simplified Wheel adapter: sell put, accept assignment, sell covered call.',
+      summary:
+          'Simplified Wheel adapter: sell put, accept assignment, sell covered call.',
       pros: ['Generates premium', 'Systematic income approach'],
-      cons: ['Large capital requirement upon assignment', 'Assignment exposure'],
+      cons: [
+        'Large capital requirement upon assignment',
+        'Assignment exposure',
+      ],
       idealConditions: ['Neutral to slightly bullish markets'],
-      risks: ['Assignment and large capital lock-up', 'Opportunity cost when stock rallies'],
+      risks: [
+        'Assignment and large capital lock-up',
+        'Opportunity cost when stock rallies',
+      ],
     );
   }
 }

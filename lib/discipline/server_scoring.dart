@@ -16,7 +16,11 @@ class ServerScoring {
       final callable = functions.httpsCallable('scoreTrade');
 
       // Build canonical payload using helper
-      final payload = pb.buildScoreTradePayload(journalId: journalId, plannedParams: plannedParams, executedParams: executedParams);
+      final payload = pb.buildScoreTradePayload(
+        journalId: journalId,
+        plannedParams: plannedParams,
+        executedParams: executedParams,
+      );
 
       final res = await callable.call(payload);
 
@@ -28,7 +32,10 @@ class ServerScoring {
     }
 
     // Fallback to local scoring
-    final score = DisciplineEngine.scoreTrade(plannedParams: plannedParams, executedParams: executedParams);
+    final score = DisciplineEngine.scoreTrade(
+      plannedParams: plannedParams,
+      executedParams: executedParams,
+    );
     return score.total;
   }
 }

@@ -7,7 +7,11 @@ class BatchBacktestStatus extends StatelessWidget {
   final String strategyId;
   final String batchId;
 
-  const BatchBacktestStatus({required this.strategyId, required this.batchId, super.key});
+  const BatchBacktestStatus({
+    required this.strategyId,
+    required this.batchId,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -29,10 +33,7 @@ class BatchBacktestStatus extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _CockpitCard(
-              title: "Batch Status",
-              child: Text("Status: $status"),
-            ),
+            _CockpitCard(title: "Batch Status", child: Text("Status: $status")),
             const SizedBox(height: 12),
             if (status == 'complete' && summary != null)
               BatchBacktestSummary(summary: Map<String, dynamic>.from(summary)),

@@ -21,7 +21,8 @@ class WheelCycleService {
     required List<Position> positions,
     bool persist = true,
   }) async {
-    final previousCycle = previous ??
+    final previousCycle =
+        previous ??
         await getCycle(uid) ??
         WheelCycle(
           state: WheelCycleState.idle,
@@ -48,7 +49,8 @@ class WheelCycleService {
   }
 
   int _incrementCycleCount(WheelCycle prev, WheelCycleState next) {
-    if (prev.state == WheelCycleState.calledAway && next == WheelCycleState.idle) {
+    if (prev.state == WheelCycleState.calledAway &&
+        next == WheelCycleState.idle) {
       return prev.cycleCount + 1;
     }
     return prev.cycleCount;
@@ -95,9 +97,9 @@ class WheelCycleService {
         .collection("wheel")
         .doc("cycle")
         .set({
-      "state": cycle.state.toString().split('.').last,
-      "lastTransition": cycle.lastTransition,
-      "cycleCount": cycle.cycleCount,
-    });
+          "state": cycle.state.toString().split('.').last,
+          "lastTransition": cycle.lastTransition,
+          "cycleCount": cycle.cycleCount,
+        });
   }
 }

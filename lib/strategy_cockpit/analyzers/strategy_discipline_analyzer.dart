@@ -1,6 +1,7 @@
 class StrategyCycleDiscipline {
   final double score; // 0–100
-  final Map<String, int> violations; // e.g. { adherence: 2, timing: 1, risk: 0 }
+  final Map<String, int>
+  violations; // e.g. { adherence: 2, timing: 1, risk: 0 }
   final int streakImpact; // optional: net effect on streaks
 
   const StrategyCycleDiscipline({
@@ -12,7 +13,7 @@ class StrategyCycleDiscipline {
 
 class StrategyDisciplineAnalyzer {
   /// executions: trade summaries
-  /// disciplineFlags: flags from StrategyHealth / context (e.g. ["timing_slippage"]) 
+  /// disciplineFlags: flags from StrategyHealth / context (e.g. ["timing_slippage"])
   /// constraints: strategy constraints (maxRisk, maxPositions, etc.)
   static StrategyCycleDiscipline computeCycleDiscipline({
     required List<Map<String, dynamic>> executions,
@@ -60,12 +61,13 @@ class StrategyDisciplineAnalyzer {
 
     // 3) Timing heuristic: if many trades in short time, treat as timing slippage
     if (executions.length >= 3) {
-      final timestamps = executions
-          .map((e) => e['timestamp'])
-          .whereType<DateTime>()
-          .cast<DateTime>()
-          .toList()
-        ..sort();
+      final timestamps =
+          executions
+              .map((e) => e['timestamp'])
+              .whereType<DateTime>()
+              .cast<DateTime>()
+              .toList()
+            ..sort();
       if (timestamps.length >= 3) {
         final first = timestamps.first;
         final last = timestamps.last;

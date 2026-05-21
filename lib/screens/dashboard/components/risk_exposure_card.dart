@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../state/risk_exposure_provider.dart';
 import '../../../models/risk_exposure.dart';
+import '../../../widgets/skeleton_card.dart';
 
 class RiskExposureCard extends ConsumerWidget {
   const RiskExposureCard({super.key});
@@ -37,13 +38,18 @@ class _RiskCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text("Total Risk: ${risk.totalRiskPercent.toStringAsFixed(1)}%"),
-            Text("Assignment Exposure: ${risk.assignmentExposure ? "Yes" : "No"}"),
+            Text(
+              "Assignment Exposure: ${risk.assignmentExposure ? "Yes" : "No"}",
+            ),
             const SizedBox(height: 12),
             if (risk.warnings.isNotEmpty)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Warnings:", style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text(
+                    "Warnings:",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   ...risk.warnings.map((w) => Text("- $w")),
                 ],
               ),
@@ -59,11 +65,10 @@ class _LoadingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Card(
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Text("Calculating risk exposure..."),
-      ),
+    return const SkeletonCard(
+      title: 'Risk Exposure',
+      lines: 4,
+      titleWidth: 0.45,
     );
   }
 }

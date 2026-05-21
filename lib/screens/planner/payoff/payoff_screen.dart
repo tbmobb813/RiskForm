@@ -20,10 +20,7 @@ class PayoffScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Payoff Overview"),
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text("Payoff Overview"), elevation: 0),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),

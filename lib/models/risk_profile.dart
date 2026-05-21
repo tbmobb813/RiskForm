@@ -15,10 +15,7 @@ class RiskProfile {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'maxRiskPercent': maxRiskPercent,
-    };
+    return {'id': id, 'maxRiskPercent': maxRiskPercent};
   }
 
   /// Default risk profile for new users.

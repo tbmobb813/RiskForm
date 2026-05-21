@@ -8,7 +8,8 @@ class InMemoryDoc {
   InMemoryDoc(this.data);
 }
 
-class FakeDocumentSnapshot implements QueryDocumentSnapshot<Map<String, dynamic>> {
+class FakeDocumentSnapshot
+    implements QueryDocumentSnapshot<Map<String, dynamic>> {
   @override
   final String id;
   final Map<String, dynamic>? _data;
@@ -58,7 +59,10 @@ class FakeDocumentReference implements DocumentReference<Map<String, dynamic>> {
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-class FakeCollectionReference implements CollectionReference<Map<String, dynamic>>, Query<Map<String, dynamic>> {
+class FakeCollectionReference
+    implements
+        CollectionReference<Map<String, dynamic>>,
+        Query<Map<String, dynamic>> {
   @override
   final String path;
   final Map<String, InMemoryDoc> store;
@@ -100,12 +104,16 @@ class FakeCollectionReference implements CollectionReference<Map<String, dynamic
         int va = 0;
         int vb = 0;
         try {
-          if (ma is Timestamp) va = ma.toDate().millisecondsSinceEpoch;
-          else if (ma is String) va = DateTime.parse(ma).millisecondsSinceEpoch;
+          if (ma is Timestamp)
+            va = ma.toDate().millisecondsSinceEpoch;
+          else if (ma is String)
+            va = DateTime.parse(ma).millisecondsSinceEpoch;
         } catch (_) {}
         try {
-          if (mb is Timestamp) vb = mb.toDate().millisecondsSinceEpoch;
-          else if (mb is String) vb = DateTime.parse(mb).millisecondsSinceEpoch;
+          if (mb is Timestamp)
+            vb = mb.toDate().millisecondsSinceEpoch;
+          else if (mb is String)
+            vb = DateTime.parse(mb).millisecondsSinceEpoch;
         } catch (_) {}
         return _orderDesc ? vb.compareTo(va) : va.compareTo(vb);
       });
@@ -123,7 +131,8 @@ class _FakeQuerySnapshot implements QuerySnapshot<Map<String, dynamic>> {
   _FakeQuerySnapshot(this._docs);
 
   @override
-  List<QueryDocumentSnapshot<Map<String, dynamic>>> get docs => _docs.cast<QueryDocumentSnapshot<Map<String, dynamic>>>();
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> get docs =>
+      _docs.cast<QueryDocumentSnapshot<Map<String, dynamic>>>();
 
   @override
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

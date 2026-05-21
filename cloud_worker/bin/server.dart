@@ -62,11 +62,13 @@ Future<void> _handleHealth(HttpRequest request) async {
   request.response
     ..statusCode = HttpStatus.ok
     ..headers.contentType = ContentType.json
-    ..write(jsonEncode({
-      'status': 'healthy',
-      'timestamp': DateTime.now().toIso8601String(),
-      'version': '1.0.0',
-    }));
+    ..write(
+      jsonEncode({
+        'status': 'healthy',
+        'timestamp': DateTime.now().toIso8601String(),
+        'version': '1.0.0',
+      }),
+    );
   await request.response.close();
 }
 
@@ -108,7 +110,6 @@ Future<void> _handleRunBacktest(HttpRequest request) async {
       ..headers.contentType = ContentType.json
       ..write(jsonEncode({'backtestResult': resultMap}));
     await request.response.close();
-
   } catch (e, stackTrace) {
     final durationMs = DateTime.now().difference(startTime).inMilliseconds;
     _log('ERROR', 'backtest_failed', {

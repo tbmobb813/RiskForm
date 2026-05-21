@@ -1,4 +1,3 @@
-
 import '../../services/market_data_service.dart';
 import '../../services/market_data_models.dart';
 import '../../engines/regime_engine.dart';
@@ -39,7 +38,11 @@ class LiveSyncManager {
     required this.narrativeEngine,
   });
 
-  Future<LiveSyncResult> refresh(String symbol, StrategyContext ctx, {planner_hints.PlannerState? plannerState}) async {
+  Future<LiveSyncResult> refresh(
+    String symbol,
+    StrategyContext ctx, {
+    planner_hints.PlannerState? plannerState,
+  }) async {
     final vol = await market.getVolatility(symbol);
     final liq = await market.getLiquidity(symbol);
 
@@ -52,7 +55,14 @@ class LiveSyncManager {
       liq: liq,
     );
     final hintBundle = await hintsService.generateHints(
-      plannerState ?? planner_hints.PlannerState(dte: 30, delta: 0.2, width: 20.0, size: 1, type: ctx.currentRegime),
+      plannerState ??
+          planner_hints.PlannerState(
+            dte: 30,
+            delta: 0.2,
+            width: 20.0,
+            size: 1,
+            type: ctx.currentRegime,
+          ),
       symbol: symbol,
       contextOverrides: ctx,
     );

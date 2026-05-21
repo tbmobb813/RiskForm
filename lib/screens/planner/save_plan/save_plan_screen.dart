@@ -32,9 +32,9 @@ class SavePlanScreen extends ConsumerWidget {
             tooltip: 'Journal',
             icon: const Icon(Icons.book),
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const JournalScreen()),
-              );
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const JournalScreen()));
             },
           ),
         ],
@@ -58,7 +58,8 @@ class SavePlanScreen extends ConsumerWidget {
                   onPressed: () async {
                     // run a small deterministic parameter sweep and open ComparisonScreen
                     final accountAsync = ref.watch(accountContextProvider);
-                    final startingCapital = accountAsync.value?.accountSize ?? 10000.0;
+                    final startingCapital =
+                        accountAsync.value?.accountSize ?? 10000.0;
                     final basePrice = state.payoff?.breakeven ?? 100.0;
 
                     final baseConfig = BacktestConfig(
@@ -67,13 +68,19 @@ class SavePlanScreen extends ConsumerWidget {
                       pricePath: [basePrice],
                       strategyId: state.strategyId ?? 'wheel',
                       symbol: 'SPY',
-                      startDate: DateTime.now().subtract(const Duration(days: 365)),
+                      startDate: DateTime.now().subtract(
+                        const Duration(days: 365),
+                      ),
                       endDate: DateTime.now(),
                     );
 
                     // deterministic drifts for regime comparisons
                     final drifts = [-0.005, -0.001, 0.0, 0.001, 0.005];
-                    final configs = generateSweepConfigs(base: baseConfig, drifts: drifts, length: 252);
+                    final configs = generateSweepConfigs(
+                      base: baseConfig,
+                      drifts: drifts,
+                      length: 252,
+                    );
 
                     final runner = ref.read(comparisonRunnerProvider);
                     final comparisonConfig = ComparisonConfig(configs: configs);
@@ -81,7 +88,9 @@ class SavePlanScreen extends ConsumerWidget {
 
                     if (context.mounted) {
                       Navigator.of(context).push(
-                        MaterialPageRoute(builder: (c) => ComparisonScreen(result: result)),
+                        MaterialPageRoute(
+                          builder: (c) => ComparisonScreen(result: result),
+                        ),
                       );
                     }
                   },
@@ -110,9 +119,13 @@ class SavePlanScreen extends ConsumerWidget {
                   onPressed: () {
                     // Build a BacktestConfig from current planner state and account.
                     final accountAsync = ref.watch(accountContextProvider);
-                    final startingCapital = accountAsync.value?.accountSize ?? 10000.0;
+                    final startingCapital =
+                        accountAsync.value?.accountSize ?? 10000.0;
                     final basePrice = state.payoff?.breakeven ?? 100.0;
-                    final prices = List<double>.generate(60, (i) => basePrice + (i - 30) * 0.5);
+                    final prices = List<double>.generate(
+                      60,
+                      (i) => basePrice + (i - 30) * 0.5,
+                    );
 
                     final config = BacktestConfig(
                       startingCapital: startingCapital,
@@ -120,12 +133,16 @@ class SavePlanScreen extends ConsumerWidget {
                       pricePath: prices,
                       strategyId: state.strategyId ?? 'wheel',
                       symbol: 'SPY',
-                      startDate: DateTime.now().subtract(const Duration(days: 365 * 2)),
+                      startDate: DateTime.now().subtract(
+                        const Duration(days: 365 * 2),
+                      ),
                       endDate: DateTime.now(),
                     );
 
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (c) => BacktestScreen(config: config)),
+                      MaterialPageRoute(
+                        builder: (c) => BacktestScreen(config: config),
+                      ),
                     );
                   },
                   child: const Text('Simulate this plan'),
@@ -147,7 +164,9 @@ class SavePlanScreen extends ConsumerWidget {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text("Trade plan saved. No position has been placed."),
+                              content: Text(
+                                "Trade plan saved. No position has been placed.",
+                              ),
                             ),
                           );
                           context.goNamed("dashboard");
@@ -162,7 +181,11 @@ class SavePlanScreen extends ConsumerWidget {
                         if (!ok) {
                           if (!context.mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(state.errorMessage ?? 'Execution failed')),
+                            SnackBar(
+                              content: Text(
+                                state.errorMessage ?? 'Execution failed',
+                              ),
+                            ),
                           );
                           return;
                         }

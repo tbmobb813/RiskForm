@@ -46,10 +46,7 @@ class StrategyExecutionResult {
   }
 
   factory StrategyExecutionResult.fail(String message) {
-    return StrategyExecutionResult(
-      success: false,
-      errorMessage: message,
-    );
+    return StrategyExecutionResult(success: false, errorMessage: message);
   }
 }
 
@@ -62,9 +59,11 @@ class ExecutionService {
     FirebaseFirestore? firestore,
     StrategyCycleService? cycleService,
     StrategyHealthService? healthService,
-  })  : _firestore = firestore,
-        _cycleService = cycleService ?? StrategyCycleService(firestore: firestore),
-        _healthService = healthService ?? StrategyHealthService(firestore: firestore);
+  }) : _firestore = firestore,
+       _cycleService =
+           cycleService ?? StrategyCycleService(firestore: firestore),
+       _healthService =
+           healthService ?? StrategyHealthService(firestore: firestore);
 
   // ------------------------------------------------------------
   // Public entrypoint: execute a strategy-bound trade
@@ -75,7 +74,9 @@ class ExecutionService {
     // Require per-user context for enforcement and auditing.
     final userId = request.execution['userId'] as String?;
     if (userId == null) {
-      return StrategyExecutionResult.fail('Authentication required: missing userId in execution payload.');
+      return StrategyExecutionResult.fail(
+        'Authentication required: missing userId in execution payload.',
+      );
     }
     final ctx = request.strategyContext;
 
@@ -100,38 +101,34 @@ class ExecutionService {
     // 3) Write journal entry + update cycle + health in a transaction
     try {
       final db = _firestore ?? FirebaseFirestore.instance;
-      return await db.runTransaction<StrategyExecutionResult>(
-        (tx) async {
-          // 3a) Create journal entry
-          final journalRef = db.collection('journal').doc();
-          final journalData = _buildJournalEntryData(ctx, request.execution);
-          tx.set(journalRef, journalData);
+      return await db.runTransaction<StrategyExecutionResult>((tx) async {
+        // 3a) Create journal entry
+        final journalRef = db.collection('journal').doc();
+        final journalData = _buildJournalEntryData(ctx, request.execution);
+        tx.set(journalRef, journalData);
 
-          // 3b) Update / create strategy cycle
-          final cycleId = await _cycleService.appendExecutionToCycleInTx(
-            tx: tx,
-            strategyId: ctx.strategyId,
-            execution: request.execution,
-            strategyContext: ctx,
-            existingCycleId: request.cycleId,
-          );
+        // 3b) Update / create strategy cycle
+        final cycleId = await _cycleService.appendExecutionToCycleInTx(
+          tx: tx,
+          strategyId: ctx.strategyId,
+          execution: request.execution,
+          strategyContext: ctx,
+          existingCycleId: request.cycleId,
+        );
 
-          // 3c) Trigger health recompute (enqueue marker)
-          await _healthService.markHealthDirtyInTx(
-            tx: tx,
-            strategyId: ctx.strategyId,
-          );
+        // 3c) Trigger health recompute (enqueue marker)
+        await _healthService.markHealthDirtyInTx(
+          tx: tx,
+          strategyId: ctx.strategyId,
+        );
 
-          return StrategyExecutionResult.ok(
-            journalEntryId: journalRef.id,
-            cycleId: cycleId,
-          );
-        },
-      );
+        return StrategyExecutionResult.ok(
+          journalEntryId: journalRef.id,
+          cycleId: cycleId,
+        );
+      });
     } catch (e) {
-      return StrategyExecutionResult.fail(
-        'Execution failed: ${e.toString()}',
-      );
+      return StrategyExecutionResult.fail('Execution failed: ${e.toString()}');
     }
   }
 

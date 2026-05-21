@@ -21,10 +21,7 @@ class StrategyMetricCard extends StatelessWidget {
           children: [
             Text(label, style: Theme.of(context).textTheme.bodySmall),
             const SizedBox(height: 4),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text(value, style: Theme.of(context).textTheme.titleMedium),
           ],
         ),
       ),

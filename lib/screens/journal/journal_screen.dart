@@ -64,7 +64,8 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
     // group by date string
     final Map<String, List<JournalEntry>> grouped = {};
     for (final e in entries) {
-      final key = '${e.timestamp.year}-${e.timestamp.month.toString().padLeft(2, '0')}-${e.timestamp.day.toString().padLeft(2, '0')}';
+      final key =
+          '${e.timestamp.year}-${e.timestamp.month.toString().padLeft(2, '0')}-${e.timestamp.day.toString().padLeft(2, '0')}';
       grouped.putIfAbsent(key, () => []).add(e);
     }
 
@@ -127,19 +128,27 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: groups
-                  .map((group) => Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            child: Text(
-                              group.key,
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  .map(
+                    (group) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Text(
+                            group.key,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                          ...group.value.map((e) => _JournalListTile(key: ValueKey(e.id), entry: e)),
-                        ],
-                      ))
+                        ),
+                        ...group.value.map(
+                          (e) =>
+                              _JournalListTile(key: ValueKey(e.id), entry: e),
+                        ),
+                      ],
+                    ),
+                  )
                   .toList(),
             ),
           ),
@@ -163,17 +172,19 @@ class _JournalListTile extends StatelessWidget {
         child: ListTile(
           key: ValueKey('entry-${entry.id}'),
           title: Text(_titleFor(entry)),
-        subtitle: Text(
-          '${entry.timestamp.toLocal()}${_isLive(entry) ? " • LIVE" : ""}',
-          style: const TextStyle(fontSize: 12),
-        ),
-        tileColor: _isLive(entry) ? Colors.blueGrey.shade50 : null,
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => JournalEntryDetail(entry: entry)),
-          );
-        },
+          subtitle: Text(
+            '${entry.timestamp.toLocal()}${_isLive(entry) ? " • LIVE" : ""}',
+            style: const TextStyle(fontSize: 12),
+          ),
+          tileColor: _isLive(entry) ? Colors.blueGrey.shade50 : null,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => JournalEntryDetail(entry: entry),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -185,7 +196,9 @@ class _JournalListTile extends StatelessWidget {
     switch (e.type) {
       case 'cycle':
         final idx = e.data['cycleIndex']?.toString() ?? '?';
-        final r = (e.data['cycleReturn'] is double) ? (e.data['cycleReturn'] * 100).toStringAsFixed(2) + '%' : '';
+        final r = (e.data['cycleReturn'] is double)
+            ? (e.data['cycleReturn'] * 100).toStringAsFixed(2) + '%'
+            : '';
         return 'Cycle $idx ${r.isNotEmpty ? '— $r' : ''}';
       case 'assignment':
         return 'Assignment Event';

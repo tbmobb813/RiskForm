@@ -5,11 +5,7 @@ class SpreadSelection {
   final OptionContract? shortLeg;
   final DateTime? expiry;
 
-  const SpreadSelection({
-    this.longLeg,
-    this.shortLeg,
-    this.expiry,
-  });
+  const SpreadSelection({this.longLeg, this.shortLeg, this.expiry});
 
   SpreadSelection copyWith({
     OptionContract? longLeg,

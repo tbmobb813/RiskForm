@@ -32,15 +32,16 @@ class ActivePositionsSection extends ConsumerWidget {
               child: Text("You have no active positions."),
             ),
           )
-
         // CASE 2: Render list of positions
         else
           Column(
             children: positions
-                .map((pos) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: PositionCard(position: pos),
-                    ))
+                .map(
+                  (pos) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: PositionCard(position: pos),
+                  ),
+                )
                 .toList(),
           ),
       ],

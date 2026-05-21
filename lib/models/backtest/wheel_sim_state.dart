@@ -13,12 +13,8 @@ class SimOption {
     required this.isShort,
   });
 
-  SimOption copy() => SimOption(
-        strike: strike,
-        dte: dte,
-        isPut: isPut,
-        isShort: isShort,
-      );
+  SimOption copy() =>
+      SimOption(strike: strike, dte: dte, isPut: isPut, isShort: isShort);
 }
 
 class WheelSimState {

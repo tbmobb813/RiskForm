@@ -51,7 +51,9 @@ class PendingJournalService {
   /// await service.removePendingJournal(positionId);
   /// ```
   Future<void> removePendingJournal(String positionId) async {
-    await ref.read(cockpitControllerProvider.notifier).removePendingJournal(positionId);
+    await ref
+        .read(cockpitControllerProvider.notifier)
+        .removePendingJournal(positionId);
   }
 
   /// Get current pending journals (for debugging)
@@ -66,4 +68,6 @@ class PendingJournalService {
 }
 
 /// Provider for pending journal service
-final pendingJournalServiceProvider = Provider((ref) => PendingJournalService(ref));
+final pendingJournalServiceProvider = Provider(
+  (ref) => PendingJournalService(ref),
+);

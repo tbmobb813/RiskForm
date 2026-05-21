@@ -1,57 +1,91 @@
 import 'package:flutter/material.dart';
+import 'package:riskform/app.dart';
 
 class StrategyTile extends StatelessWidget {
   final String name;
-  final String category;
-  final Color color;
+  final String strategyId;
   final VoidCallback onTap;
+  final bool highlighted;
 
   const StrategyTile({
     super.key,
     required this.name,
-    required this.category,
-    required this.color,
+    required this.strategyId,
     required this.onTap,
+    this.highlighted = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final color = StrategyTheme.color(strategyId);
+    final badge = StrategyTheme.badge(strategyId);
+    final category = StrategyTheme.category(strategyId);
+
     return Card(
+      color: highlighted ? AppColors.primaryDim : null,
+      clipBehavior: Clip.hardEdge,
       child: InkWell(
         onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+        child: IntrinsicHeight(
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Category Tag
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: color.withAlpha((0.2 * 255).round()),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: color),
-                ),
-                child: Text(
-                  category,
-                  style: TextStyle(color: color, fontSize: 12),
-                ),
-              ),
-
-              const SizedBox(width: 12),
-
-              // Strategy Name
+              // Left accent bar
+              Container(width: 3, color: color),
+              // Content
               Expanded(
-                child: Text(
-                  name,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 14,
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: color.withAlpha(30),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          badge,
+                          style: AppTextStyles.mono(11, color: color),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              name,
+                              style: AppTextStyles.body(
+                                15,
+                                weight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              category,
+                              style: AppTextStyles.body(
+                                11,
+                              ).copyWith(color: AppColors.textMuted),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.chevron_right,
+                        color: AppColors.textMuted,
+                        size: 18,
+                      ),
+                    ],
                   ),
                 ),
               ),
-
-              const Icon(Icons.chevron_right),
             ],
           ),
         ),

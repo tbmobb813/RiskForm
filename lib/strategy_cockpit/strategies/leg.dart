@@ -28,7 +28,11 @@ class Leg {
   /// Create a share leg. [shares] is number of shares (not contracts).
   /// The returned leg contains a lightweight `OptionContract` with `type`
   /// set to `'share'` and `premium` used for per-share cost basis.
-  factory Leg.shares({required String id, required int shares, required double costBasisPerShare}) {
+  factory Leg.shares({
+    required String id,
+    required int shares,
+    required double costBasisPerShare,
+  }) {
     final c = OptionContract(
       id: id,
       strike: 0.0,

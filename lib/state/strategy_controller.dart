@@ -23,7 +23,10 @@ class StrategyState {
 }
 
 class StrategyController extends StateNotifier<StrategyState> {
-  StrategyController() : super(const StrategyState(mode: AccountMode.smallAccount, strategy: null)) {
+  StrategyController()
+    : super(
+        const StrategyState(mode: AccountMode.smallAccount, strategy: null),
+      ) {
     _loadPersistedStrategy();
   }
 
@@ -39,7 +42,8 @@ class StrategyController extends StateNotifier<StrategyState> {
 
   /// Internal helper used when restoring state from persistence to avoid
   /// triggering persistence listeners.
-  void setStrategySilently(TradingStrategy strategy) => state = state.copyWith(strategy: strategy);
+  void setStrategySilently(TradingStrategy strategy) =>
+      state = state.copyWith(strategy: strategy);
 
   void clearStrategy() => state = state.copyWith(strategy: null);
 
@@ -61,8 +65,14 @@ class StrategyController extends StateNotifier<StrategyState> {
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid == null) return;
 
-      final persisted = PersistedStrategy(type: strategy.typeId, data: strategy.toJson());
-      await StrategyPersistenceService().saveStrategy(uid: uid, strategy: persisted);
+      final persisted = PersistedStrategy(
+        type: strategy.typeId,
+        data: strategy.toJson(),
+      );
+      await StrategyPersistenceService().saveStrategy(
+        uid: uid,
+        strategy: persisted,
+      );
     } catch (_) {}
   }
 
@@ -86,8 +96,9 @@ class StrategyController extends StateNotifier<StrategyState> {
   }
 }
 
-final strategyControllerProvider = StateNotifierProvider<StrategyController, StrategyState>((ref) {
-  final controller = StrategyController();
+final strategyControllerProvider =
+    StateNotifierProvider<StrategyController, StrategyState>((ref) {
+      final controller = StrategyController();
 
-  return controller;
-});
+      return controller;
+    });

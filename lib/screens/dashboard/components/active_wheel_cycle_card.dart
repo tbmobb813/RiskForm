@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../state/wheel_cycle_provider.dart';
 import '../../../models/wheel_cycle.dart';
+import '../../../widgets/skeleton_card.dart';
 
 class ActiveWheelCycleCard extends ConsumerWidget {
   const ActiveWheelCycleCard({super.key});
@@ -39,15 +40,9 @@ class _WheelCycleCard extends StatelessWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            Text(
-              stateLabel,
-              style: const TextStyle(fontSize: 16),
-            ),
+            Text(stateLabel, style: const TextStyle(fontSize: 16)),
             const SizedBox(height: 8),
-            Text(
-              description,
-              style: const TextStyle(color: Colors.white70),
-            ),
+            Text(description, style: const TextStyle(color: Colors.white70)),
             const SizedBox(height: 12),
             Text("Cycle Count: ${wheel.cycleCount}"),
             if (wheel.lastTransition != null)
@@ -98,12 +93,7 @@ class _LoadingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Card(
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Text("Loading wheel cycle..."),
-      ),
-    );
+    return const SkeletonCard(title: 'Wheel Cycle', lines: 4, titleWidth: 0.4);
   }
 }
 

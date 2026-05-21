@@ -17,13 +17,17 @@ final tradingStrategyProvider = Provider<TradingStrategy?>((ref) {
     if (id == null || inputs == null) return null;
 
     // Helper to produce an expiry date
-    final expiry = inputs.expiration ?? DateTime.now().add(const Duration(days: 30));
+    final expiry =
+        inputs.expiration ?? DateTime.now().add(const Duration(days: 30));
 
     switch (id) {
       case 'wheel-cycle':
         final put = OptionContract(
           id: 'PUT1',
-          strike: inputs.strike ?? inputs.shortStrike ?? (inputs.underlyingPrice ?? 0.0),
+          strike:
+              inputs.strike ??
+              inputs.shortStrike ??
+              (inputs.underlyingPrice ?? 0.0),
           premium: inputs.premiumReceived ?? inputs.netCredit ?? 0.0,
           expiry: expiry,
           type: 'put',
@@ -78,7 +82,11 @@ final tradingStrategyProvider = Provider<TradingStrategy?>((ref) {
             expiry: expiry,
             type: 'call',
           );
-          return PMCCStrategy(callContract: call, shareQuantity: inputs.sharesOwned ?? 100, costBasis: inputs.costBasis ?? 0.0);
+          return PMCCStrategy(
+            callContract: call,
+            shareQuantity: inputs.sharesOwned ?? 100,
+            costBasis: inputs.costBasis ?? 0.0,
+          );
         }
 
         return null;

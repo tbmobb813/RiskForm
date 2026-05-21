@@ -35,7 +35,8 @@ class StrategyPerformanceAnalyzer {
   // Best Cycle (highest PnL)
   // ------------------------------------------------------------
   static Map<String, dynamic>? computeBestCycle(
-      StrategyHealthSnapshot snapshot) {
+    StrategyHealthSnapshot snapshot,
+  ) {
     if (snapshot.cycleSummaries.isEmpty) return null;
 
     Map<String, dynamic>? best;
@@ -56,7 +57,8 @@ class StrategyPerformanceAnalyzer {
   // Worst Cycle (lowest PnL)
   // ------------------------------------------------------------
   static Map<String, dynamic>? computeWorstCycle(
-      StrategyHealthSnapshot snapshot) {
+    StrategyHealthSnapshot snapshot,
+  ) {
     if (snapshot.cycleSummaries.isEmpty) return null;
 
     Map<String, dynamic>? worst;
@@ -128,7 +130,9 @@ class StrategyPerformanceAnalyzer {
       final type = (e['type'] ?? '').toString().toUpperCase();
       final premium = (e['premium'] ?? 0).toDouble();
       final qty = (e['qty'] ?? 1).toDouble();
-      final pnl = (type.contains('SELL') ? premium * 100 * qty : -premium * 100 * qty);
+      final pnl = (type.contains('SELL')
+          ? premium * 100 * qty
+          : -premium * 100 * qty);
 
       realized += pnl;
 
@@ -196,7 +200,9 @@ extension StrategyPerformanceAdapter on StrategyPerformanceAnalyzer {
       final type = (e['type'] ?? '').toString().toUpperCase();
       final premium = (e['premium'] ?? 0).toDouble();
       final qty = (e['qty'] ?? 1).toDouble();
-      final pnl = (type.contains('SELL') ? premium * 100 * qty : -premium * 100 * qty);
+      final pnl = (type.contains('SELL')
+          ? premium * 100 * qty
+          : -premium * 100 * qty);
 
       realized += pnl;
 

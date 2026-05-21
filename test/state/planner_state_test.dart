@@ -3,7 +3,10 @@ import 'package:riskform/state/planner_state.dart';
 
 void main() {
   test('PlannerState copyWith and clearError behavior', () {
-    final s = PlannerState.initial().copyWith(isLoading: false, errorMessage: 'err');
+    final s = PlannerState.initial().copyWith(
+      isLoading: false,
+      errorMessage: 'err',
+    );
     final cleared = s.copyWith(clearError: true);
 
     expect(s.errorMessage, 'err');

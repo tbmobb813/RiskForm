@@ -17,10 +17,17 @@ void main() {
       capitalRequired: 5000.0,
     );
 
-    final result = await engine.compute(strategyId: 'csp', inputs: inputs, payoff: payoff);
+    final result = await engine.compute(
+      strategyId: 'csp',
+      inputs: inputs,
+      payoff: payoff,
+    );
 
     expect(result.riskPercentOfAccount, closeTo(50.0, 0.001));
-    expect(result.warnings, contains('This trade locks more than 10% of your account.'));
+    expect(
+      result.warnings,
+      contains('This trade locks more than 10% of your account.'),
+    );
     expect(result.assignmentExposure, isTrue);
   });
 }

@@ -61,8 +61,8 @@ class OptionPricingEngine {
     this.riskFreeRate = 0.02,
     this.enableCache = true,
     int cacheSize = 10000,
-  })  : _putCache = _PricingCache(maxSize: cacheSize),
-        _callCache = _PricingCache(maxSize: cacheSize);
+  }) : _putCache = _PricingCache(maxSize: cacheSize),
+       _callCache = _PricingCache(maxSize: cacheSize);
 
   /// Generates a cache key from pricing inputs.
   /// Rounds values to reduce cache misses from floating point variance.
@@ -83,9 +83,9 @@ class OptionPricingEngine {
 
   /// Returns cache statistics for monitoring.
   Map<String, int> get cacheStats => {
-        'putCacheSize': _putCache.size,
-        'callCacheSize': _callCache.size,
-      };
+    'putCacheSize': _putCache.size,
+    'callCacheSize': _callCache.size,
+  };
 
   double priceEuropeanPut({
     required double spot,
@@ -103,7 +103,12 @@ class OptionPricingEngine {
       final cached = _putCache.get(key);
       if (cached != null) return cached;
 
-      final price = _computePutPrice(spot, strike, volatility, timeToExpiryYears);
+      final price = _computePutPrice(
+        spot,
+        strike,
+        volatility,
+        timeToExpiryYears,
+      );
       _putCache.put(key, price);
       return price;
     }
@@ -111,8 +116,14 @@ class OptionPricingEngine {
     return _computePutPrice(spot, strike, volatility, timeToExpiryYears);
   }
 
-  double _computePutPrice(double spot, double strike, double volatility, double timeToExpiryYears) {
-    final d1 = (log(spot / strike) +
+  double _computePutPrice(
+    double spot,
+    double strike,
+    double volatility,
+    double timeToExpiryYears,
+  ) {
+    final d1 =
+        (log(spot / strike) +
             (riskFreeRate + 0.5 * pow(volatility, 2)) * timeToExpiryYears) /
         (volatility * sqrt(timeToExpiryYears));
     final d2 = d1 - volatility * sqrt(timeToExpiryYears);
@@ -139,7 +150,12 @@ class OptionPricingEngine {
       final cached = _callCache.get(key);
       if (cached != null) return cached;
 
-      final price = _computeCallPrice(spot, strike, volatility, timeToExpiryYears);
+      final price = _computeCallPrice(
+        spot,
+        strike,
+        volatility,
+        timeToExpiryYears,
+      );
       _callCache.put(key, price);
       return price;
     }
@@ -147,8 +163,14 @@ class OptionPricingEngine {
     return _computeCallPrice(spot, strike, volatility, timeToExpiryYears);
   }
 
-  double _computeCallPrice(double spot, double strike, double volatility, double timeToExpiryYears) {
-    final d1 = (log(spot / strike) +
+  double _computeCallPrice(
+    double spot,
+    double strike,
+    double volatility,
+    double timeToExpiryYears,
+  ) {
+    final d1 =
+        (log(spot / strike) +
             (riskFreeRate + 0.5 * pow(volatility, 2)) * timeToExpiryYears) /
         (volatility * sqrt(timeToExpiryYears));
     final d2 = d1 - volatility * sqrt(timeToExpiryYears);
@@ -174,7 +196,8 @@ class OptionPricingEngine {
       final absZ = z.abs();
       final t = 1.0 / (1.0 + p * absZ);
       final expTerm = exp(-absZ * absZ);
-      final y = 1.0 - (((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t) * expTerm;
+      final y =
+          1.0 - (((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t) * expTerm;
       return sign * y;
     }
 
@@ -199,7 +222,10 @@ class OptionPricingEngine {
       return spot < strike ? -1.0 : 0.0;
     }
 
-    final d1 = (log(spot / strike) + (riskFreeRate + 0.5 * pow(volatility, 2)) * timeToExpiryYears) / (volatility * sqrt(timeToExpiryYears));
+    final d1 =
+        (log(spot / strike) +
+            (riskFreeRate + 0.5 * pow(volatility, 2)) * timeToExpiryYears) /
+        (volatility * sqrt(timeToExpiryYears));
     if (isCall) return _normCdf(d1);
     return _normCdf(d1) - 1.0;
   }
@@ -213,7 +239,10 @@ class OptionPricingEngine {
     required double timeToExpiryYears,
   }) {
     if (timeToExpiryYears <= 0 || volatility <= 0) return 0.0;
-    final d1 = (log(spot / strike) + (riskFreeRate + 0.5 * pow(volatility, 2)) * timeToExpiryYears) / (volatility * sqrt(timeToExpiryYears));
+    final d1 =
+        (log(spot / strike) +
+            (riskFreeRate + 0.5 * pow(volatility, 2)) * timeToExpiryYears) /
+        (volatility * sqrt(timeToExpiryYears));
     return spot * _normPdf(d1) * sqrt(timeToExpiryYears);
   }
 
@@ -228,15 +257,29 @@ class OptionPricingEngine {
   }) {
     if (timeToExpiryYears <= 0 || volatility <= 0) return 0.0;
 
-    final d1 = (log(spot / strike) + (riskFreeRate + 0.5 * pow(volatility, 2)) * timeToExpiryYears) / (volatility * sqrt(timeToExpiryYears));
+    final d1 =
+        (log(spot / strike) +
+            (riskFreeRate + 0.5 * pow(volatility, 2)) * timeToExpiryYears) /
+        (volatility * sqrt(timeToExpiryYears));
     final d2 = d1 - volatility * sqrt(timeToExpiryYears);
 
-    final firstTerm = - (spot * _normPdf(d1) * volatility) / (2 * sqrt(timeToExpiryYears));
-    final secondTermCall = riskFreeRate * strike * exp(-riskFreeRate * timeToExpiryYears) * _normCdf(d2);
-    final secondTermPut = riskFreeRate * strike * exp(-riskFreeRate * timeToExpiryYears) * _normCdf(-d2);
+    final firstTerm =
+        -(spot * _normPdf(d1) * volatility) / (2 * sqrt(timeToExpiryYears));
+    final secondTermCall =
+        riskFreeRate *
+        strike *
+        exp(-riskFreeRate * timeToExpiryYears) *
+        _normCdf(d2);
+    final secondTermPut =
+        riskFreeRate *
+        strike *
+        exp(-riskFreeRate * timeToExpiryYears) *
+        _normCdf(-d2);
 
     // Theta is usually annualized; convert to per-day by dividing by 365.
-    final thetaAnnual = isCall ? (firstTerm - secondTermCall) : (firstTerm + secondTermPut);
+    final thetaAnnual = isCall
+        ? (firstTerm - secondTermCall)
+        : (firstTerm + secondTermPut);
     return thetaAnnual / 365.0;
   }
 }

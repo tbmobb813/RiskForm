@@ -153,87 +153,93 @@ void main() {
       expect(rec.wheelState, WheelCycleState.sharesOwned);
     });
 
-    test('Transient: CSP marked open but shares + prior cspOpen -> assigned (duplicate CSP)', () {
-      final positions = [
-        // duplicate CSP record that might still be present
-        Position(
-          type: PositionType.csp,
-          symbol: 'DUP',
-          strategy: 'csp',
-          quantity: 1,
-          expiration: DateTime.now().add(const Duration(days: 2)),
-          isOpen: true,
-        ),
-        // shares indicate assignment occurred
-        Position(
-          type: PositionType.shares,
-          symbol: 'DUP',
-          strategy: 'shares',
-          quantity: 100,
-          expiration: DateTime.now().add(const Duration(days: 90)),
-          isOpen: true,
-        ),
-      ];
+    test(
+      'Transient: CSP marked open but shares + prior cspOpen -> assigned (duplicate CSP)',
+      () {
+        final positions = [
+          // duplicate CSP record that might still be present
+          Position(
+            type: PositionType.csp,
+            symbol: 'DUP',
+            strategy: 'csp',
+            quantity: 1,
+            expiration: DateTime.now().add(const Duration(days: 2)),
+            isOpen: true,
+          ),
+          // shares indicate assignment occurred
+          Position(
+            type: PositionType.shares,
+            symbol: 'DUP',
+            strategy: 'shares',
+            quantity: 100,
+            expiration: DateTime.now().add(const Duration(days: 90)),
+            isOpen: true,
+          ),
+        ];
 
-      final wheel = WheelCycle(state: WheelCycleState.cspOpen);
-      final account = AccountSnapshot(
-        accountSize: 10000.0,
-        buyingPower: 10000.0,
-        sharesOwned: {'DUP': 100},
-        totalRiskExposurePercent: 0.0,
-        wheelState: 'short_put',
-      );
-      final risk = RiskProfile(id: 'r', maxRiskPercent: 1.0);
+        final wheel = WheelCycle(state: WheelCycleState.cspOpen);
+        final account = AccountSnapshot(
+          accountSize: 10000.0,
+          buyingPower: 10000.0,
+          sharesOwned: {'DUP': 100},
+          totalRiskExposurePercent: 0.0,
+          wheelState: 'short_put',
+        );
+        final risk = RiskProfile(id: 'r', maxRiskPercent: 1.0);
 
-      final rec = controller.evaluate(
-        account: account,
-        positions: positions,
-        wheel: wheel,
-        riskProfile: risk,
-      );
+        final rec = controller.evaluate(
+          account: account,
+          positions: positions,
+          wheel: wheel,
+          riskProfile: risk,
+        );
 
-      expect(rec.wheelState, WheelCycleState.assigned);
-    });
+        expect(rec.wheelState, WheelCycleState.assigned);
+      },
+    );
 
-    test('Edge: hasOpenCsp true but wheel not cspOpen and shares present -> sharesOwned', () {
-      final positions = [
-        Position(
-          type: PositionType.csp,
-          symbol: 'E1',
-          strategy: 'csp',
-          quantity: 1,
-          expiration: DateTime.now().add(const Duration(days: 30)),
-          isOpen: true,
-        ),
-        Position(
-          type: PositionType.shares,
-          symbol: 'E1',
-          strategy: 'shares',
-          quantity: 100,
-          expiration: DateTime.now().add(const Duration(days: 90)),
-          isOpen: true,
-        ),
-      ];
+    test(
+      'Edge: hasOpenCsp true but wheel not cspOpen and shares present -> sharesOwned',
+      () {
+        final positions = [
+          Position(
+            type: PositionType.csp,
+            symbol: 'E1',
+            strategy: 'csp',
+            quantity: 1,
+            expiration: DateTime.now().add(const Duration(days: 30)),
+            isOpen: true,
+          ),
+          Position(
+            type: PositionType.shares,
+            symbol: 'E1',
+            strategy: 'shares',
+            quantity: 100,
+            expiration: DateTime.now().add(const Duration(days: 90)),
+            isOpen: true,
+          ),
+        ];
 
-      // Wheel state does not indicate a prior CSP open
-      final wheel = WheelCycle(state: WheelCycleState.idle);
-      final account = AccountSnapshot(
-        accountSize: 10000.0,
-        buyingPower: 10000.0,
-        sharesOwned: {'E1': 100},
-        totalRiskExposurePercent: 0.0,
-        wheelState: 'shares_owned',
-      );
-      final risk = RiskProfile(id: 'r', maxRiskPercent: 1.0);
+        // Wheel state does not indicate a prior CSP open
+        final wheel = WheelCycle(state: WheelCycleState.idle);
+        final account = AccountSnapshot(
+          accountSize: 10000.0,
+          buyingPower: 10000.0,
+          sharesOwned: {'E1': 100},
+          totalRiskExposurePercent: 0.0,
+          wheelState: 'shares_owned',
+        );
+        final risk = RiskProfile(id: 'r', maxRiskPercent: 1.0);
 
-      final rec = controller.evaluate(
-        account: account,
-        positions: positions,
-        wheel: wheel,
-        riskProfile: risk,
-      );
+        final rec = controller.evaluate(
+          account: account,
+          positions: positions,
+          wheel: wheel,
+          riskProfile: risk,
+        );
 
-      expect(rec.wheelState, WheelCycleState.cspOpen);
-    });
+        expect(rec.wheelState, WheelCycleState.cspOpen);
+      },
+    );
   });
 }

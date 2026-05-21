@@ -124,7 +124,7 @@ class _RangeSliderRow extends StatefulWidget {
     required this.max,
     required this.step,
     required this.onChanged,
-  }) ;
+  });
 
   @override
   State<_RangeSliderRow> createState() => _RangeSliderRowState();
@@ -144,7 +144,9 @@ class _RangeSliderRowState extends State<_RangeSliderRow> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('${widget.label}: ${_values.start} → ${_values.end} (step ${widget.step})'),
+        Text(
+          '${widget.label}: ${_values.start} → ${_values.end} (step ${widget.step})',
+        ),
         RangeSlider(
           values: _values,
           min: widget.min,
@@ -153,7 +155,9 @@ class _RangeSliderRowState extends State<_RangeSliderRow> {
           labels: RangeLabels('${_values.start}', '${_values.end}'),
           onChanged: (v) {
             setState(() => _values = v);
-            widget.onChanged(ParameterRange(start: v.start, end: v.end, step: widget.step));
+            widget.onChanged(
+              ParameterRange(start: v.start, end: v.end, step: widget.step),
+            );
           },
         ),
       ],
@@ -193,11 +197,16 @@ class _RunBatchButton extends StatelessWidget {
       onPressed: grid.isEmpty
           ? null
           : () async {
-                  final batchService = BatchBacktestService();
-                  final messenger = ScaffoldMessenger.of(context);
-                  await batchService.createBatchJob(strategyId: strategyId, parameterGrid: grid);
-                  messenger.showSnackBar(const SnackBar(content: Text('Batch Backtest Started')));
-                },
+              final batchService = BatchBacktestService();
+              final messenger = ScaffoldMessenger.of(context);
+              await batchService.createBatchJob(
+                strategyId: strategyId,
+                parameterGrid: grid,
+              );
+              messenger.showSnackBar(
+                const SnackBar(content: Text('Batch Backtest Started')),
+              );
+            },
       child: const Text('Run Batch Backtest'),
     );
   }

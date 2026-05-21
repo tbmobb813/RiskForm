@@ -16,7 +16,11 @@ class StrategyCockpitScreen extends StatefulWidget {
   final String strategyId;
   final StrategyCockpitViewModel? viewModel;
 
-  const StrategyCockpitScreen({super.key, required this.strategyId, this.viewModel});
+  const StrategyCockpitScreen({
+    super.key,
+    required this.strategyId,
+    this.viewModel,
+  });
 
   @override
   State<StrategyCockpitScreen> createState() => _StrategyCockpitScreenState();
@@ -29,13 +33,27 @@ class _StrategyCockpitScreenState extends State<StrategyCockpitScreen> {
   @override
   void initState() {
     super.initState();
-    _vm = widget.viewModel ?? StrategyCockpitViewModel(
-      strategyId: widget.strategyId,
-      marketDataService: ProviderScope.containerOf(context, listen: false).read(marketDataServiceProvider),
-      recsEngine: ProviderScope.containerOf(context, listen: false).read(strategyRecommendationsEngineProvider),
-      narrativeEngine: ProviderScope.containerOf(context, listen: false).read(strategyNarrativeEngineProvider),
-      liveSyncManager: ProviderScope.containerOf(context, listen: false).read(liveSyncManagerProvider),
-    );
+    _vm =
+        widget.viewModel ??
+        StrategyCockpitViewModel(
+          strategyId: widget.strategyId,
+          marketDataService: ProviderScope.containerOf(
+            context,
+            listen: false,
+          ).read(marketDataServiceProvider),
+          recsEngine: ProviderScope.containerOf(
+            context,
+            listen: false,
+          ).read(strategyRecommendationsEngineProvider),
+          narrativeEngine: ProviderScope.containerOf(
+            context,
+            listen: false,
+          ).read(strategyNarrativeEngineProvider),
+          liveSyncManager: ProviderScope.containerOf(
+            context,
+            listen: false,
+          ).read(liveSyncManagerProvider),
+        );
     _ownsVm = widget.viewModel == null;
     _vm.addListener(_onVmChanged);
   }
@@ -54,9 +72,7 @@ class _StrategyCockpitScreenState extends State<StrategyCockpitScreen> {
     final strategyName = _vm.strategy?.name ?? widget.strategyId;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Cockpit — $strategyName'),
-      ),
+      appBar: AppBar(title: Text('Cockpit — $strategyName')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: 24.0),
         child: Column(
@@ -68,26 +84,44 @@ class _StrategyCockpitScreenState extends State<StrategyCockpitScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(strategyName, style: Theme.of(context).textTheme.headlineSmall),
+                  Text(
+                    strategyName,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
                   const SizedBox(height: 8),
                 ],
               ),
             ),
 
             // Performance
-            StrategyPerformanceSection(strategyId: widget.strategyId, viewModel: null),
+            StrategyPerformanceSection(
+              strategyId: widget.strategyId,
+              viewModel: null,
+            ),
 
             // Discipline
-            StrategyDisciplineSection(strategyId: widget.strategyId, viewModel: null),
+            StrategyDisciplineSection(
+              strategyId: widget.strategyId,
+              viewModel: null,
+            ),
 
             // Regime
-            StrategyRegimeSection(strategyId: widget.strategyId, viewModel: null),
+            StrategyRegimeSection(
+              strategyId: widget.strategyId,
+              viewModel: null,
+            ),
 
             // Backtests
-            StrategyBacktestSection(strategyId: widget.strategyId, viewModel: null),
+            StrategyBacktestSection(
+              strategyId: widget.strategyId,
+              viewModel: null,
+            ),
 
             // Actions
-            StrategyActionsSection(strategyId: widget.strategyId, viewModel: _vm),
+            StrategyActionsSection(
+              strategyId: widget.strategyId,
+              viewModel: _vm,
+            ),
           ],
         ),
       ),

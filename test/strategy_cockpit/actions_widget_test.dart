@@ -15,15 +15,30 @@ import 'package:riskform/strategy_cockpit/services/strategy_backtest_service.dar
 import 'package:riskform/regime/regime_service.dart';
 
 class FakeStrategyService implements StrategyService {
+  @override
+  Future<String> createStrategy({
+    required String name,
+    String? description,
+    List<String> tags = const [],
+    Map<String, dynamic>? constraints,
+    bool experimental = false,
+  }) async => 's1';
 
   @override
-  Future<String> createStrategy({required String name, String? description, List<String> tags = const [], Map<String, dynamic>? constraints, bool experimental = false}) async => 's1';
+  Future<void> updateStrategy({
+    required String strategyId,
+    String? name,
+    String? description,
+    List<String>? tags,
+    Map<String, dynamic>? constraints,
+  }) async {}
 
   @override
-  Future<void> updateStrategy({required String strategyId, String? name, String? description, List<String>? tags, Map<String, dynamic>? constraints}) async {}
-
-  @override
-  Future<void> changeStrategyState({required String strategyId, required StrategyState nextState, String? reason}) async {}
+  Future<void> changeStrategyState({
+    required String strategyId,
+    required StrategyState nextState,
+    String? reason,
+  }) async {}
 
   @override
   Stream<List<Map<String, dynamic>>> watchStrategies() async* {
@@ -44,19 +59,27 @@ class FakeStrategyService implements StrategyService {
 
 class FakeHealthService implements StrategyHealthService {
   @override
-  Stream<StrategyHealthSnapshot?> watchHealth(String strategyId) => Stream.value(null);
+  Stream<StrategyHealthSnapshot?> watchHealth(String strategyId) =>
+      Stream.value(null);
 
   @override
-  Future<StrategyHealthSnapshot?> fetchLatestHealth(String strategyId) async => null;
+  Future<StrategyHealthSnapshot?> fetchLatestHealth(String strategyId) async =>
+      null;
 
   @override
   Future<void> saveHealthSnapshot(StrategyHealthSnapshot snapshot) async {}
 
   @override
-  Future<void> updateHealthFields({required String strategyId, Map<String, dynamic>? fields}) async {}
+  Future<void> updateHealthFields({
+    required String strategyId,
+    Map<String, dynamic>? fields,
+  }) async {}
 
   @override
-  Future<void> markHealthDirtyInTx({required dynamic tx, required String strategyId}) async {}
+  Future<void> markHealthDirtyInTx({
+    required dynamic tx,
+    required String strategyId,
+  }) async {}
 
   @override
   Future<void> recomputeHealth(String strategyId) async {}
@@ -64,25 +87,44 @@ class FakeHealthService implements StrategyHealthService {
 
 class FakeBacktestService implements StrategyBacktestService {
   @override
-  Stream<Map<String, dynamic>?> watchLatestBacktest(String strategyId) => Stream.value(null);
+  Stream<Map<String, dynamic>?> watchLatestBacktest(String strategyId) =>
+      Stream.value(null);
 
   @override
-  Stream<List<Map<String, dynamic>>> watchBacktestHistory(String strategyId) => Stream.value([]);
+  Stream<List<Map<String, dynamic>>> watchBacktestHistory(String strategyId) =>
+      Stream.value([]);
 
   @override
-  Stream<List<Map<String, dynamic>>> watchBacktestJobs(String strategyId) => Stream.value([]);
+  Stream<List<Map<String, dynamic>>> watchBacktestJobs(String strategyId) =>
+      Stream.value([]);
 
   @override
-  Future<String> createBacktestJob({required String strategyId, required Map<String, dynamic> parameters}) async => 'job-1';
+  Future<String> createBacktestJob({
+    required String strategyId,
+    required Map<String, dynamic> parameters,
+  }) async => 'job-1';
 
   @override
-  Future<void> updateJobStatus({required String jobId, required String status, Map<String, dynamic>? result}) async {}
+  Future<void> updateJobStatus({
+    required String jobId,
+    required String status,
+    Map<String, dynamic>? result,
+  }) async {}
 
   @override
-  Future<void> saveBacktestResult({required String jobId, required String strategyId, required Map<String, dynamic> summary, required List<double> pnlCurve, required Map<String, dynamic> regimeBreakdown}) async {}
+  Future<void> saveBacktestResult({
+    required String jobId,
+    required String strategyId,
+    required Map<String, dynamic> summary,
+    required List<double> pnlCurve,
+    required Map<String, dynamic> regimeBreakdown,
+  }) async {}
 
   @override
-  Future<void> runBacktest(String strategyId, Map<String, dynamic> params) async {}
+  Future<void> runBacktest(
+    String strategyId,
+    Map<String, dynamic> params,
+  ) async {}
 }
 
 class FakeRegimeService implements RegimeService {
@@ -91,7 +133,9 @@ class FakeRegimeService implements RegimeService {
 }
 
 void main() {
-  testWidgets('Actions section shows lifecycle buttons and planner', (WidgetTester tester) async {
+  testWidgets('Actions section shows lifecycle buttons and planner', (
+    WidgetTester tester,
+  ) async {
     final fake = FakeStrategyService();
     final fakeHealth = FakeHealthService();
     final fakeBacktest = FakeBacktestService();
@@ -104,10 +148,14 @@ void main() {
       regimeService: fakeRegime,
     );
 
-    await tester.pumpWidget(MaterialApp(
-      routes: {'/planner': (ctx) => const Scaffold(body: Text('Planner'))},
-      home: Scaffold(body: StrategyActionsSection(strategyId: 's1', viewModel: vm)),
-    ));
+    await tester.pumpWidget(
+      MaterialApp(
+        routes: {'/planner': (ctx) => const Scaffold(body: Text('Planner'))},
+        home: Scaffold(
+          body: StrategyActionsSection(strategyId: 's1', viewModel: vm),
+        ),
+      ),
+    );
 
     // Initially loading
     expect(find.byType(CircularProgressIndicator), findsOneWidget);

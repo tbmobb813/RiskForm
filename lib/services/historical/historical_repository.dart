@@ -6,10 +6,7 @@ class HistoricalRepository {
   final HistoricalDataSource source;
   final HistoricalCache cache;
 
-  HistoricalRepository({
-    required this.source,
-    required this.cache,
-  });
+  HistoricalRepository({required this.source, required this.cache});
 
   Future<List<HistoricalPrice>> getDailyPrices({
     required String symbol,

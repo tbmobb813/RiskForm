@@ -12,7 +12,10 @@ class WheelCycleTableCard extends StatelessWidget {
 
     if (cycles.isEmpty) {
       return const Card(
-        child: Padding(padding: EdgeInsets.all(16), child: Text('No completed cycles in this backtest.')),
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Text('No completed cycles in this backtest.'),
+        ),
       );
     }
 
@@ -22,7 +25,10 @@ class WheelCycleTableCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Cycle Breakdown', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Cycle Breakdown',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 12),
             ...cycles.map(_buildRow),
           ],

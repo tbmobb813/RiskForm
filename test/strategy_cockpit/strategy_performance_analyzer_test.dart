@@ -7,24 +7,30 @@ void main() {
       {'type': 'SELL', 'premium': 1.5, 'qty': 1},
     ];
 
-    final sellRes = StrategyPerformanceAnalyzer.computeCyclePerformance(executions: sellExec);
+    final sellRes = StrategyPerformanceAnalyzer.computeCyclePerformance(
+      executions: sellExec,
+    );
     expect(sellRes.realizedPnl, 150.0);
 
     final buyExec = [
       {'type': 'BUY', 'premium': 1.5, 'qty': 1},
     ];
 
-    final buyRes = StrategyPerformanceAnalyzer.computeCyclePerformance(executions: buyExec);
+    final buyRes = StrategyPerformanceAnalyzer.computeCyclePerformance(
+      executions: buyExec,
+    );
     expect(buyRes.realizedPnl, -150.0);
   });
 
   test('computeCyclePerformance handles multi-leg mixed executions', () {
     final execs = [
       {'type': 'SELL', 'premium': 1.5, 'qty': 1}, // +150
-      {'type': 'BUY', 'premium': 0.5, 'qty': 2},  // -100
+      {'type': 'BUY', 'premium': 0.5, 'qty': 2}, // -100
     ];
 
-    final res = StrategyPerformanceAnalyzer.computeCyclePerformance(executions: execs);
+    final res = StrategyPerformanceAnalyzer.computeCyclePerformance(
+      executions: execs,
+    );
     expect(res.realizedPnl, 50.0);
     expect(res.bestTrade?['type'], 'SELL');
     expect(res.worstTrade?['type'], 'BUY');
@@ -37,7 +43,9 @@ void main() {
       {'type': 'BUY', 'premium': 1.0, 'qty': 2}, // -200
     ];
 
-    final res = StrategyPerformanceAnalyzer.computeCyclePerformance(executions: execs);
+    final res = StrategyPerformanceAnalyzer.computeCyclePerformance(
+      executions: execs,
+    );
     expect(res.realizedPnl, 500.0); // 600+100-200
   });
 }

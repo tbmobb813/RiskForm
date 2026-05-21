@@ -13,7 +13,8 @@ final wheelCycleProvider = FutureProvider<WheelCycle>((ref) async {
 
   final positions = ref.watch(activePositionsProvider);
 
-  final previous = await service.getCycle(uid) ?? WheelCycle(state: WheelCycleState.idle);
+  final previous =
+      await service.getCycle(uid) ?? WheelCycle(state: WheelCycleState.idle);
 
   return service.updateCycle(
     uid: uid,

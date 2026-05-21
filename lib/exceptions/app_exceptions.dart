@@ -13,29 +13,31 @@ abstract class AppException implements Exception {
 /// Thrown when user is not authenticated or session expired.
 class AuthenticationException extends AppException {
   const AuthenticationException([super.message = 'User not authenticated'])
-      : super(code: 'AUTH_ERROR');
+    : super(code: 'AUTH_ERROR');
 
   factory AuthenticationException.sessionExpired() =>
       const AuthenticationException('Session expired. Please log in again.');
 
   factory AuthenticationException.notLoggedIn() =>
-      const AuthenticationException('User must be logged in to perform this action.');
+      const AuthenticationException(
+        'User must be logged in to perform this action.',
+      );
 }
 
 /// Thrown when input validation fails.
 class ValidationException extends AppException {
   final Map<String, String> fieldErrors;
 
-  const ValidationException(
-    super.message, {
-    this.fieldErrors = const {},
-  }) : super(code: 'VALIDATION_ERROR');
+  const ValidationException(super.message, {this.fieldErrors = const {}})
+    : super(code: 'VALIDATION_ERROR');
 
   factory ValidationException.field(String field, String error) =>
       ValidationException('Invalid $field', fieldErrors: {field: error});
 
-  factory ValidationException.required(String field) =>
-      ValidationException('$field is required', fieldErrors: {field: 'Required'});
+  factory ValidationException.required(String field) => ValidationException(
+    '$field is required',
+    fieldErrors: {field: 'Required'},
+  );
 
   factory ValidationException.multiple(Map<String, String> errors) =>
       ValidationException('Multiple validation errors', fieldErrors: errors);
@@ -53,13 +55,18 @@ class FirestoreException extends AppException {
   });
 
   factory FirestoreException.notFound(String collection, String id) =>
-      FirestoreException('Document not found: $collection/$id', code: 'NOT_FOUND');
+      FirestoreException(
+        'Document not found: $collection/$id',
+        code: 'NOT_FOUND',
+      );
 
   factory FirestoreException.permissionDenied() =>
       const FirestoreException('Permission denied', code: 'PERMISSION_DENIED');
 
-  factory FirestoreException.networkError() =>
-      const FirestoreException('Network error. Check your connection.', code: 'NETWORK_ERROR');
+  factory FirestoreException.networkError() => const FirestoreException(
+    'Network error. Check your connection.',
+    code: 'NETWORK_ERROR',
+  );
 
   factory FirestoreException.fromError(dynamic error) =>
       FirestoreException('Firestore operation failed', originalError: error);
@@ -77,10 +84,15 @@ class EngineException extends AppException {
       EngineException('Invalid configuration: $reason', code: 'INVALID_CONFIG');
 
   factory EngineException.computationFailed(String operation) =>
-      EngineException('$operation computation failed', code: 'COMPUTATION_FAILED');
+      EngineException(
+        '$operation computation failed',
+        code: 'COMPUTATION_FAILED',
+      );
 
-  factory EngineException.invalidPricePath() =>
-      const EngineException('Price path cannot be empty', code: 'INVALID_PRICE_PATH');
+  factory EngineException.invalidPricePath() => const EngineException(
+    'Price path cannot be empty',
+    code: 'INVALID_PRICE_PATH',
+  );
 }
 
 /// Thrown when backtest operations fail.
@@ -91,11 +103,15 @@ class BacktestException extends AppException {
     super.originalError,
   });
 
-  factory BacktestException.emptyPricePath() =>
-      const BacktestException('Backtest requires a non-empty price path', code: 'EMPTY_PRICE_PATH');
+  factory BacktestException.emptyPricePath() => const BacktestException(
+    'Backtest requires a non-empty price path',
+    code: 'EMPTY_PRICE_PATH',
+  );
 
-  factory BacktestException.invalidDateRange() =>
-      const BacktestException('Invalid date range for backtest', code: 'INVALID_DATE_RANGE');
+  factory BacktestException.invalidDateRange() => const BacktestException(
+    'Invalid date range for backtest',
+    code: 'INVALID_DATE_RANGE',
+  );
 
   factory BacktestException.timeout() =>
       const BacktestException('Backtest timed out', code: 'TIMEOUT');

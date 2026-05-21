@@ -20,9 +20,15 @@ class RiskMetricsCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            _row("Risk % of Account", "${risk.riskPercentOfAccount.toStringAsFixed(1)}%"),
+            _row(
+              "Risk % of Account",
+              "${risk.riskPercentOfAccount.toStringAsFixed(1)}%",
+            ),
             _row("Assignment Exposure", risk.assignmentExposure ? "Yes" : "No"),
-            _row("Capital Locked", "\$${risk.capitalLocked.toStringAsFixed(2)}"),
+            _row(
+              "Capital Locked",
+              "\$${risk.capitalLocked.toStringAsFixed(2)}",
+            ),
           ],
         ),
       ),

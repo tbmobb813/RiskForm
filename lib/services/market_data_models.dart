@@ -22,17 +22,18 @@ class MarketPriceSnapshot {
   });
 
   Map<String, dynamic> toJson() => {
-        'symbol': symbol,
-        'last': last,
-        'changePct': changePct,
-        'atr': atr,
-        'maShort': maShort,
-        'maLong': maLong,
-        'trendSlope': trendSlope,
-        'asOf': asOf.toIso8601String(),
-      };
+    'symbol': symbol,
+    'last': last,
+    'changePct': changePct,
+    'atr': atr,
+    'maShort': maShort,
+    'maLong': maLong,
+    'trendSlope': trendSlope,
+    'asOf': asOf.toIso8601String(),
+  };
 
-  factory MarketPriceSnapshot.fromJson(Map<String, dynamic> j) => MarketPriceSnapshot(
+  factory MarketPriceSnapshot.fromJson(Map<String, dynamic> j) =>
+      MarketPriceSnapshot(
         symbol: j['symbol'] as String,
         last: (j['last'] as num).toDouble(),
         changePct: (j['changePct'] as num).toDouble(),
@@ -62,20 +63,23 @@ class MarketVolatilitySnapshot {
   });
 
   Map<String, dynamic> toJson() => {
-        'symbol': symbol,
-        'iv': iv,
-        'ivRank': ivRank,
-        'ivPercentile': ivPercentile,
-        'vixLevel': vixLevel,
-        'asOf': asOf.toIso8601String(),
-      };
+    'symbol': symbol,
+    'iv': iv,
+    'ivRank': ivRank,
+    'ivPercentile': ivPercentile,
+    'vixLevel': vixLevel,
+    'asOf': asOf.toIso8601String(),
+  };
 
-  factory MarketVolatilitySnapshot.fromJson(Map<String, dynamic> j) => MarketVolatilitySnapshot(
+  factory MarketVolatilitySnapshot.fromJson(Map<String, dynamic> j) =>
+      MarketVolatilitySnapshot(
         symbol: j['symbol'] as String,
         iv: (j['iv'] as num).toDouble(),
         ivRank: (j['ivRank'] as num).toDouble(),
         ivPercentile: (j['ivPercentile'] as num).toDouble(),
-        vixLevel: j['vixLevel'] == null ? null : (j['vixLevel'] as num).toDouble(),
+        vixLevel: j['vixLevel'] == null
+            ? null
+            : (j['vixLevel'] as num).toDouble(),
         asOf: DateTime.parse(j['asOf'] as String),
       );
 }
@@ -98,15 +102,16 @@ class MarketLiquiditySnapshot {
   });
 
   Map<String, dynamic> toJson() => {
-        'symbol': symbol,
-        'bidAskSpread': bidAskSpread,
-        'volume': volume,
-        'openInterest': openInterest,
-        'slippageEstimate': slippageEstimate,
-        'asOf': asOf.toIso8601String(),
-      };
+    'symbol': symbol,
+    'bidAskSpread': bidAskSpread,
+    'volume': volume,
+    'openInterest': openInterest,
+    'slippageEstimate': slippageEstimate,
+    'asOf': asOf.toIso8601String(),
+  };
 
-  factory MarketLiquiditySnapshot.fromJson(Map<String, dynamic> j) => MarketLiquiditySnapshot(
+  factory MarketLiquiditySnapshot.fromJson(Map<String, dynamic> j) =>
+      MarketLiquiditySnapshot(
         symbol: j['symbol'] as String,
         bidAskSpread: (j['bidAskSpread'] as num).toDouble(),
         volume: (j['volume'] as num).toInt(),
@@ -132,14 +137,15 @@ class MarketRegimeSnapshot {
   });
 
   Map<String, dynamic> toJson() => {
-        'symbol': symbol,
-        'trend': trend,
-        'volatility': volatility,
-        'liquidity': liquidity,
-        'asOf': asOf.toIso8601String(),
-      };
+    'symbol': symbol,
+    'trend': trend,
+    'volatility': volatility,
+    'liquidity': liquidity,
+    'asOf': asOf.toIso8601String(),
+  };
 
-  factory MarketRegimeSnapshot.fromJson(Map<String, dynamic> j) => MarketRegimeSnapshot(
+  factory MarketRegimeSnapshot.fromJson(Map<String, dynamic> j) =>
+      MarketRegimeSnapshot(
         symbol: j['symbol'] as String,
         trend: j['trend'] as String,
         volatility: j['volatility'] as String,

@@ -15,7 +15,10 @@ class FakeTradePlanRepository implements TradePlanRepository {
   Future<void> savePlan(TradePlan plan) async {}
 
   @override
-  Future<void> savePlanAndUpdateWheel(TradePlan plan, {bool persistPlan = true}) async {}
+  Future<void> savePlanAndUpdateWheel(
+    TradePlan plan, {
+    bool persistPlan = true,
+  }) async {}
 
   @override
   Future<List<TradePlan>> fetchPlans() async => [];
@@ -23,16 +26,34 @@ class FakeTradePlanRepository implements TradePlanRepository {
 
 class FakePayoffEngine extends PayoffEngine {
   @override
-  Future<PayoffResult> compute({required String strategyId, required TradeInputs inputs}) async {
-    return PayoffResult(maxGain: 0, maxLoss: 0, breakeven: 0, capitalRequired: 0);
+  Future<PayoffResult> compute({
+    required String strategyId,
+    required TradeInputs inputs,
+  }) async {
+    return PayoffResult(
+      maxGain: 0,
+      maxLoss: 0,
+      breakeven: 0,
+      capitalRequired: 0,
+    );
   }
 }
 
 class FakeRiskEngine extends RiskEngine {
-  FakeRiskEngine(): super(const AccountContext(accountSize:1000,buyingPower:1000));
+  FakeRiskEngine()
+    : super(const AccountContext(accountSize: 1000, buyingPower: 1000));
   @override
-  Future<RiskResult> compute({required String strategyId, required TradeInputs inputs, required PayoffResult payoff}) async {
-    return RiskResult(riskPercentOfAccount:0, assignmentExposure:false, capitalLocked:0, warnings: []);
+  Future<RiskResult> compute({
+    required String strategyId,
+    required TradeInputs inputs,
+    required PayoffResult payoff,
+  }) async {
+    return RiskResult(
+      riskPercentOfAccount: 0,
+      assignmentExposure: false,
+      capitalLocked: 0,
+      warnings: [],
+    );
   }
 }
 
@@ -49,6 +70,9 @@ void main() {
 
     final result = await notifier.executeTrade();
     expect(result, isFalse);
-    expect(notifier.state.errorMessage, 'Authentication required to execute trades.');
+    expect(
+      notifier.state.errorMessage,
+      'Authentication required to execute trades.',
+    );
   });
 }

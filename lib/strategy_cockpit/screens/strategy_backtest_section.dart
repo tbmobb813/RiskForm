@@ -99,7 +99,10 @@ class _LatestBacktestCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Latest Backtest', style: Theme.of(context).textTheme.titleSmall),
+            Text(
+              'Latest Backtest',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
             const SizedBox(height: 8),
             Text('Total PnL: ${_formatPnl(pnl)}'),
             Text('Win Rate: ${(winRate * 100).toStringAsFixed(1)}%'),
@@ -185,10 +188,9 @@ class _BacktestActions extends StatelessWidget {
           child: OutlinedButton(
             onPressed: () {
               // Navigate to CloudBacktestScreen
-              Navigator.of(context).pushNamed(
-                '/cloudBacktest',
-                arguments: strategyId,
-              );
+              Navigator.of(
+                context,
+              ).pushNamed('/cloudBacktest', arguments: strategyId);
             },
             child: const Text('Run Backtest'),
           ),

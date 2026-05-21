@@ -49,7 +49,9 @@ class _BacktestScreenState extends ConsumerState<BacktestScreen> {
       });
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Backtest failed: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Backtest failed: $e')));
     } finally {
       if (mounted) setState(() => _running = false);
     }
@@ -60,14 +62,19 @@ class _BacktestScreenState extends ConsumerState<BacktestScreen> {
     final userId = auth.currentUserId;
     if (userId == null) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please sign in to run in cloud')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please sign in to run in cloud')),
+      );
       return;
     }
 
     setState(() => _isSubmittingToCloud = true);
     try {
       final cloud = ref.read(cloudBacktestServiceProvider);
-      final jobId = await cloud.submitJob(userId: userId, configMap: widget.config.toMap());
+      final jobId = await cloud.submitJob(
+        userId: userId,
+        configMap: widget.config.toMap(),
+      );
       setState(() {
         _cloudJobId = jobId;
         _isSubmittingToCloud = false;
@@ -78,15 +85,21 @@ class _BacktestScreenState extends ConsumerState<BacktestScreen> {
         if (!mounted) return;
         setState(() => _cloudJob = job);
         if (job?.status == CloudBacktestStatus.completed) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cloud backtest completed')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Cloud backtest completed')),
+          );
         } else if (job?.status == CloudBacktestStatus.failed) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cloud backtest failed')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Cloud backtest failed')),
+          );
         }
       });
     } catch (e) {
       if (!mounted) return;
       setState(() => _isSubmittingToCloud = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to submit: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to submit: $e')));
     }
   }
 
@@ -99,7 +112,10 @@ class _BacktestScreenState extends ConsumerState<BacktestScreen> {
     final comparisonConfig = ComparisonConfig(configs: _comparisonConfigs);
     final result = await runner.run(comparisonConfig);
     if (!mounted) return;
-    Navigator.push(context, MaterialPageRoute(builder: (c) => ComparisonScreen(result: result)));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (c) => ComparisonScreen(result: result)),
+    );
   }
 
   @override
@@ -111,13 +127,30 @@ class _BacktestScreenState extends ConsumerState<BacktestScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [
-              ElevatedButton(onPressed: _running ? null : _run, child: _running ? const CircularProgressIndicator() : const Text('Run')),
-              const SizedBox(width: 12),
-              if (_result != null) ElevatedButton(onPressed: () {}, child: const Text('Save')),
-              const SizedBox(width: 12),
-              ElevatedButton(onPressed: _isSubmittingToCloud ? null : _submitToCloud, child: _isSubmittingToCloud ? const SizedBox(width:16,height:16,child:CircularProgressIndicator(strokeWidth:2)) : const Text('Run in Cloud')),
-            ]),
+            Row(
+              children: [
+                ElevatedButton(
+                  onPressed: _running ? null : _run,
+                  child: _running
+                      ? const CircularProgressIndicator()
+                      : const Text('Run'),
+                ),
+                const SizedBox(width: 12),
+                if (_result != null)
+                  ElevatedButton(onPressed: () {}, child: const Text('Save')),
+                const SizedBox(width: 12),
+                ElevatedButton(
+                  onPressed: _isSubmittingToCloud ? null : _submitToCloud,
+                  child: _isSubmittingToCloud
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Run in Cloud'),
+                ),
+              ],
+            ),
             const SizedBox(height: 12),
             Card(
               child: Padding(
@@ -125,44 +158,93 @@ class _BacktestScreenState extends ConsumerState<BacktestScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Comparison', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Comparison',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(height: 8),
-                    ..._comparisonConfigs.map((c) => Padding(
-                          padding: const EdgeInsets.only(bottom: 6),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(c.strategyId),
-                              IconButton(icon: const Icon(Icons.delete), onPressed: () => setState(() => _comparisonConfigs.remove(c)))
-                            ],
-                          ),
-                        )),
-                    Row(children: [
-                      ElevatedButton(onPressed: _addCurrentConfigToComparison, child: const Text('Add Current')),
-                      const SizedBox(width: 8),
-                      ElevatedButton(onPressed: _lastRunConfig == null ? null : () => setState(() => _comparisonConfigs.add(_lastRunConfig!)), child: const Text('Add Last Run')),
-                      const SizedBox(width: 8),
-                      ElevatedButton(onPressed: _comparisonConfigs.length < 2 ? null : _runComparison, child: const Text('Compare')),
-                    ])
+                    ..._comparisonConfigs.map(
+                      (c) => Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(c.strategyId),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () =>
+                                  setState(() => _comparisonConfigs.remove(c)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        ElevatedButton(
+                          onPressed: _addCurrentConfigToComparison,
+                          child: const Text('Add Current'),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: _lastRunConfig == null
+                              ? null
+                              : () => setState(
+                                  () => _comparisonConfigs.add(_lastRunConfig!),
+                                ),
+                          child: const Text('Add Last Run'),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: _comparisonConfigs.length < 2
+                              ? null
+                              : _runComparison,
+                          child: const Text('Compare'),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
             ),
-                    const SizedBox(height: 16),
-                    if (_cloudJob != null) Card(
-                      child: ListTile(
-                        leading: Icon(_cloudJob!.status == CloudBacktestStatus.running ? Icons.sync : _cloudJob!.status == CloudBacktestStatus.completed ? Icons.check_circle : _cloudJob!.status == CloudBacktestStatus.failed ? Icons.error : Icons.hourglass_empty),
-                        title: Text('Cloud Job: ${_cloudJob!.status.name.toUpperCase()}'),
-                        subtitle: Text('ID: ${_cloudJobId ?? ''}'),
-                        trailing: IconButton(icon: const Icon(Icons.chevron_right), onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (_) => CloudJobStatusScreen(jobId: _cloudJobId!))); }),
-                      ),
-                    ),
+            const SizedBox(height: 16),
+            if (_cloudJob != null)
+              Card(
+                child: ListTile(
+                  leading: Icon(
+                    _cloudJob!.status == CloudBacktestStatus.running
+                        ? Icons.sync
+                        : _cloudJob!.status == CloudBacktestStatus.completed
+                        ? Icons.check_circle
+                        : _cloudJob!.status == CloudBacktestStatus.failed
+                        ? Icons.error
+                        : Icons.hourglass_empty,
+                  ),
+                  title: Text(
+                    'Cloud Job: ${_cloudJob!.status.name.toUpperCase()}',
+                  ),
+                  subtitle: Text('ID: ${_cloudJobId ?? ''}'),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.chevron_right),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              CloudJobStatusScreen(jobId: _cloudJobId!),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
             if (_result != null) ...[
               BacktestMetricsCard(result: _result!),
               const SizedBox(height: 12),
               BacktestEquityChart(result: _result!),
               const SizedBox(height: 12),
-              if (_result!.cycles.isNotEmpty) CycleBreakdownCard(cycles: _result!.cycles),
+              if (_result!.cycles.isNotEmpty)
+                CycleBreakdownCard(cycles: _result!.cycles),
               const SizedBox(height: 12),
               BacktestLogList(steps: _result!.notes),
             ],

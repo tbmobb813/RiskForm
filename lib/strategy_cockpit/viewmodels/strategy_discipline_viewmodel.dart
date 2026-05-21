@@ -42,15 +42,12 @@ class StrategyDisciplineViewModel extends ChangeNotifier {
   // Initialization
   // -----------------------------
   void _init() {
-    _healthSub = _healthService.watchHealth(strategyId).listen(
-      (snapshot) {
-        if (snapshot != null) {
-          _computeDiscipline(snapshot);
-        }
-        _setLoaded();
-      },
-      onError: (_) => _setError(),
-    );
+    _healthSub = _healthService.watchHealth(strategyId).listen((snapshot) {
+      if (snapshot != null) {
+        _computeDiscipline(snapshot);
+      }
+      _setLoaded();
+    }, onError: (_) => _setError());
   }
 
   // -----------------------------
@@ -59,22 +56,25 @@ class StrategyDisciplineViewModel extends ChangeNotifier {
   void _computeDiscipline(StrategyHealthSnapshot snapshot) {
     disciplineTrend = StrategyDisciplineAnalyzer.getTrend(snapshot);
 
-    violationBreakdown =
-        StrategyDisciplineAnalyzer.computeViolationBreakdown(snapshot);
+    violationBreakdown = StrategyDisciplineAnalyzer.computeViolationBreakdown(
+      snapshot,
+    );
 
-    cleanCycleStreak =
-        StrategyDisciplineAnalyzer.computeCleanCycleStreak(snapshot);
+    cleanCycleStreak = StrategyDisciplineAnalyzer.computeCleanCycleStreak(
+      snapshot,
+    );
 
-    adherenceStreak =
-        StrategyDisciplineAnalyzer.computeAdherenceStreak(snapshot);
+    adherenceStreak = StrategyDisciplineAnalyzer.computeAdherenceStreak(
+      snapshot,
+    );
 
     riskStreak = StrategyDisciplineAnalyzer.computeRiskStreak(snapshot);
 
-    recentEvents =
-        StrategyDisciplineAnalyzer.recentDisciplineEvents(snapshot);
+    recentEvents = StrategyDisciplineAnalyzer.recentDisciplineEvents(snapshot);
 
-    mostCommonViolation =
-        StrategyDisciplineAnalyzer.computeMostCommonViolation(snapshot);
+    mostCommonViolation = StrategyDisciplineAnalyzer.computeMostCommonViolation(
+      snapshot,
+    );
 
     notifyListeners();
   }

@@ -10,9 +10,9 @@ class MockAccountRepository extends Mock implements AccountRepository {}
 void main() {
   test('accountContextProvider returns defaults when repo null', () async {
     final repo = MockAccountRepository();
-    final container = ProviderContainer(overrides: [
-      accountRepositoryProvider.overrideWithValue(repo),
-    ]);
+    final container = ProviderContainer(
+      overrides: [accountRepositoryProvider.overrideWithValue(repo)],
+    );
 
     when(() => repo.fetchAccount()).thenAnswer((_) async => null);
 

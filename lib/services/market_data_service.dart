@@ -18,15 +18,23 @@ abstract class MarketDataService {
 
   /// Optional: subscribe to periodic snapshots for UI streaming.
   /// Implementations may return a broadcast stream.
-  Stream<MarketPriceSnapshot> subscribePrice(String symbol, {Duration? interval}) =>
-      Stream.empty();
+  Stream<MarketPriceSnapshot> subscribePrice(
+    String symbol, {
+    Duration? interval,
+  }) => Stream.empty();
 
-  Stream<MarketVolatilitySnapshot> subscribeVolatility(String symbol, {Duration? interval}) =>
-      Stream.empty();
+  Stream<MarketVolatilitySnapshot> subscribeVolatility(
+    String symbol, {
+    Duration? interval,
+  }) => Stream.empty();
 
-  Stream<MarketLiquiditySnapshot> subscribeLiquidity(String symbol, {Duration? interval}) =>
-      Stream.empty();
+  Stream<MarketLiquiditySnapshot> subscribeLiquidity(
+    String symbol, {
+    Duration? interval,
+  }) => Stream.empty();
 
-  Stream<MarketRegimeSnapshot> subscribeRegime(String symbol, {Duration? interval}) =>
-      Stream.empty();
+  Stream<MarketRegimeSnapshot> subscribeRegime(
+    String symbol, {
+    Duration? interval,
+  }) => Stream.empty();
 }

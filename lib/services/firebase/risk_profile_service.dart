@@ -2,12 +2,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/risk_profile.dart';
 
-final riskProfileServiceProvider = Provider<RiskProfileService>((ref) => RiskProfileService());
+final riskProfileServiceProvider = Provider<RiskProfileService>(
+  (ref) => RiskProfileService(),
+);
 
 class RiskProfileService {
   final FirebaseFirestore _db;
 
-  RiskProfileService([FirebaseFirestore? db]) : _db = db ?? FirebaseFirestore.instance;
+  RiskProfileService([FirebaseFirestore? db])
+    : _db = db ?? FirebaseFirestore.instance;
 
   Future<RiskProfile?> fetchRiskProfile(String uid) async {
     final doc = await _db.collection('users').doc(uid).get();
@@ -29,9 +32,8 @@ class RiskProfileService {
     required String uid,
     required RiskProfile profile,
   }) async {
-    await _db.collection('users').doc(uid).set(
-      {'riskProfile': profile.toJson()},
-      SetOptions(merge: true),
-    );
+    await _db.collection('users').doc(uid).set({
+      'riskProfile': profile.toJson(),
+    }, SetOptions(merge: true));
   }
 }

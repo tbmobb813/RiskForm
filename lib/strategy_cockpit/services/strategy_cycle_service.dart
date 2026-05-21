@@ -107,9 +107,7 @@ class StrategyCycleService {
     required PlannerStrategyContext strategyContext,
   }) {
     final now = DateTime.now();
-    final executions = <Map<String, dynamic>>[
-      _executionSummary(execution),
-    ];
+    final executions = <Map<String, dynamic>>[_executionSummary(execution)];
 
     final metrics = _computeMetrics(
       executions: executions,
@@ -229,4 +227,3 @@ class _CycleMetrics {
     required this.dominantRegime,
   });
 }
-

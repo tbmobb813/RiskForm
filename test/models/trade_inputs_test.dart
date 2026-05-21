@@ -49,10 +49,18 @@ void main() {
     expect(resCsp.isValid, isFalse);
     expect(resCsp.errors.containsKey('strike'), isTrue);
 
-    final goodCsp = TradeInputs(strike: 50, premiumReceived: 1, underlyingPrice: 100);
+    final goodCsp = TradeInputs(
+      strike: 50,
+      premiumReceived: 1,
+      underlyingPrice: 100,
+    );
     expect(goodCsp.validateForStrategy('csp').isValid, isTrue);
 
-    final emptyCc = TradeInputs(strike: 10, premiumReceived: 1, underlyingPrice: 100);
+    final emptyCc = TradeInputs(
+      strike: 10,
+      premiumReceived: 1,
+      underlyingPrice: 100,
+    );
     final resCc = emptyCc.validateForStrategy('cc');
     expect(resCc.isValid, isFalse);
     expect(resCc.errors.containsKey('costBasis'), isTrue);

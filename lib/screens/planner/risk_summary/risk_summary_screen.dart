@@ -25,10 +25,7 @@ class RiskSummaryScreen extends ConsumerWidget {
     final classification = _classifyRisk(risk);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Risk Summary"),
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text("Risk Summary"), elevation: 0),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -59,14 +56,17 @@ class RiskSummaryScreen extends ConsumerWidget {
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () => GoRouter.of(context).pop(), // back to TradePlannerScreen
+                      onPressed: () => GoRouter.of(
+                        context,
+                      ).pop(), // back to TradePlannerScreen
                       child: const Text("Adjust Inputs"),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () => GoRouter.of(context).pushNamed("save_plan"),
+                      onPressed: () =>
+                          GoRouter.of(context).pushNamed("save_plan"),
                       child: const Text("Save Trade Plan"),
                     ),
                   ),
@@ -94,11 +94,7 @@ RiskClassification _classifyRisk(RiskResult risk) {
   return RiskClassification.withinRules;
 }
 
-enum RiskClassification {
-  withinRules,
-  borderline,
-  outsideRules,
-}
+enum RiskClassification { withinRules, borderline, outsideRules }
 
 class _RiskClassificationBanner extends StatelessWidget {
   final RiskClassification classification;
@@ -110,14 +106,14 @@ class _RiskClassificationBanner extends StatelessWidget {
     final color = classification == RiskClassification.withinRules
         ? Colors.green
         : classification == RiskClassification.borderline
-            ? Colors.orange
-            : Colors.red;
+        ? Colors.orange
+        : Colors.red;
 
     final text = classification == RiskClassification.withinRules
         ? "Within Rules"
         : classification == RiskClassification.borderline
-            ? "Borderline"
-            : "Outside Rules";
+        ? "Borderline"
+        : "Outside Rules";
 
     final bg = color.withAlpha((0.1 * 255).round());
     return Container(

@@ -50,7 +50,7 @@ void main() {
           quantity: 1,
           expiration: DateTime.now().add(const Duration(days: 30)),
           isOpen: true,
-        )
+        ),
       ];
       final wheel = WheelCycle(state: WheelCycleState.idle);
       final risk = RiskProfile(id: 'r', maxRiskPercent: 2.0);
@@ -83,7 +83,7 @@ void main() {
           quantity: 100,
           expiration: DateTime.now().add(const Duration(days: 30)),
           isOpen: true,
-        )
+        ),
       ];
       final wheel = WheelCycle(state: WheelCycleState.idle);
       final risk = RiskProfile(id: 'r', maxRiskPercent: 2.0);
@@ -142,7 +142,7 @@ void main() {
           quantity: 100,
           expiration: DateTime.now().add(const Duration(days: 30)),
           isOpen: true,
-        )
+        ),
       ];
       final wheel = WheelCycle(state: WheelCycleState.cspOpen);
       final risk = RiskProfile(id: 'r', maxRiskPercent: 2.0);
@@ -183,7 +183,7 @@ void main() {
           quantity: 1,
           expiration: DateTime.now().add(const Duration(days: 30)),
           isOpen: true,
-        )
+        ),
       ];
       final wheel = WheelCycle(state: WheelCycleState.sharesOwned);
       final risk = RiskProfile(id: 'r', maxRiskPercent: 2.0);
@@ -275,7 +275,7 @@ void main() {
           quantity: 100,
           expiration: DateTime.now().add(const Duration(days: 30)),
           isOpen: true,
-        )
+        ),
       ];
       final wheel = WheelCycle(state: WheelCycleState.idle);
       final risk = RiskProfile(id: 'r', maxRiskPercent: 2.0);
@@ -293,4 +293,3 @@ void main() {
     });
   });
 }
-

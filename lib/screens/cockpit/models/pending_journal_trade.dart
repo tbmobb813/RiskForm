@@ -17,7 +17,8 @@ class PendingJournalTrade {
     this.isPaper = true,
   });
 
-  String get displayName => '$strategy → ${pnl >= 0 ? '+' : ''}\$${pnl.toStringAsFixed(2)}';
+  String get displayName =>
+      '$strategy → ${pnl >= 0 ? '+' : ''}\$${pnl.toStringAsFixed(2)}';
 
   String get timeAgo {
     final diff = DateTime.now().difference(closedAt);
@@ -28,13 +29,13 @@ class PendingJournalTrade {
   }
 
   Map<String, dynamic> toJson() => {
-        'positionId': positionId,
-        'ticker': ticker,
-        'strategy': strategy,
-        'pnl': pnl,
-        'closedAt': closedAt.toIso8601String(),
-        'isPaper': isPaper,
-      };
+    'positionId': positionId,
+    'ticker': ticker,
+    'strategy': strategy,
+    'pnl': pnl,
+    'closedAt': closedAt.toIso8601String(),
+    'isPaper': isPaper,
+  };
 
   factory PendingJournalTrade.fromJson(Map<String, dynamic> json) {
     return PendingJournalTrade(

@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 class OptionalInputsSection extends StatefulWidget {
   final ValueChanged<String> onNotesChanged;
 
-  const OptionalInputsSection({
-    super.key,
-    required this.onNotesChanged,
-  });
+  const OptionalInputsSection({super.key, required this.onNotesChanged});
 
   @override
   State<OptionalInputsSection> createState() => _OptionalInputsSectionState();

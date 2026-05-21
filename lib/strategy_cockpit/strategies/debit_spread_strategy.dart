@@ -17,9 +17,9 @@ class DebitSpreadStrategy extends TradingStrategy {
 
   @override
   Map<String, dynamic> toJson() => {
-        'longLeg': longLeg.toJson(),
-        'shortLeg': shortLeg.toJson(),
-      };
+    'longLeg': longLeg.toJson(),
+    'shortLeg': shortLeg.toJson(),
+  };
 
   @override
   String get id => 'debit_spread_${longLeg.id}_${shortLeg.id}';
@@ -29,9 +29,9 @@ class DebitSpreadStrategy extends TradingStrategy {
 
   @override
   List<Leg> get legs => [
-        Leg(contract: longLeg, quantity: 1),
-        Leg(contract: shortLeg, quantity: -1),
-      ];
+    Leg(contract: longLeg, quantity: 1),
+    Leg(contract: shortLeg, quantity: -1),
+  ];
 
   @override
   double get maxRisk => (longLeg.premium - shortLeg.premium).abs();
@@ -43,7 +43,11 @@ class DebitSpreadStrategy extends TradingStrategy {
   double get breakeven => longLeg.strike + maxRisk;
 
   @override
-  List<PayoffPoint> payoffCurve({required double underlyingPrice, required double rangePercent, required int steps}) {
+  List<PayoffPoint> payoffCurve({
+    required double underlyingPrice,
+    required double rangePercent,
+    required int steps,
+  }) {
     // Use PayoffEngine to produce a deterministic payoff curve
 
     final engine = PayoffEngine();
@@ -66,7 +70,9 @@ class DebitSpreadStrategy extends TradingStrategy {
       points: steps,
     );
 
-    return offsets.map((o) => PayoffPoint(underlyingPrice: o.dx, profitLoss: o.dy)).toList();
+    return offsets
+        .map((o) => PayoffPoint(underlyingPrice: o.dx, profitLoss: o.dy))
+        .toList();
   }
 
   @override

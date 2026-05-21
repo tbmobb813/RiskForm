@@ -3,7 +3,10 @@ import 'market_data_providers.dart';
 import 'market_data_models.dart';
 
 /// Provides the latest price for a given ticker symbol.
-final currentPriceProvider = FutureProvider.family<double?, String>((ref, symbol) async {
+final currentPriceProvider = FutureProvider.family<double?, String>((
+  ref,
+  symbol,
+) async {
   if (symbol.isEmpty) return null;
 
   final market = ref.read(marketDataServiceProvider);

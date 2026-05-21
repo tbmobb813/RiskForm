@@ -53,20 +53,11 @@ class UserService {
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
         // Default settings
-        'settings': {
-          'notifications': true,
-          'theme': 'system',
-        },
+        'settings': {'notifications': true, 'theme': 'system'},
         // Default risk profile
-        'riskProfile': {
-          'id': 'default',
-          'maxRiskPercent': 2.0,
-        },
+        'riskProfile': {'id': 'default', 'maxRiskPercent': 2.0},
         // Default account (placeholder until connected)
-        'account': {
-          'accountSize': 0,
-          'buyingPower': 0,
-        },
+        'account': {'accountSize': 0, 'buyingPower': 0},
       });
     } catch (e) {
       throw FirestoreException.fromError(e);

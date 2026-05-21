@@ -33,7 +33,8 @@ class SmallAccountCockpitScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => ref.read(cockpitControllerProvider.notifier).refresh(),
+            onPressed: () =>
+                ref.read(cockpitControllerProvider.notifier).refresh(),
             tooltip: 'Refresh',
           ),
           IconButton(
@@ -48,7 +49,8 @@ class SmallAccountCockpitScreen extends ConsumerWidget {
       body: state.isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
-              onRefresh: () => ref.read(cockpitControllerProvider.notifier).refresh(),
+              onRefresh: () =>
+                  ref.read(cockpitControllerProvider.notifier).refresh(),
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(16),
@@ -73,7 +75,9 @@ class SmallAccountCockpitScreen extends ConsumerWidget {
                         onJournalTap: (trade) {
                           // TODO: Navigate to journal form with pre-filled data
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Journal ${trade.ticker} trade')),
+                            SnackBar(
+                              content: Text('Journal ${trade.ticker} trade'),
+                            ),
                           );
                         },
                       ),
@@ -84,11 +88,15 @@ class SmallAccountCockpitScreen extends ConsumerWidget {
                     WatchlistCard(
                       watchlist: state.watchlist,
                       onAddTicker: () => _showAddTickerDialog(context, ref),
-                      onRemoveTicker: (ticker) => ref.read(cockpitControllerProvider.notifier).removeFromWatchlist(ticker),
+                      onRemoveTicker: (ticker) => ref
+                          .read(cockpitControllerProvider.notifier)
+                          .removeFromWatchlist(ticker),
                       onScanTap: (ticker) {
                         // TODO: Navigate to options scanner
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Scan $ticker options (coming soon)')),
+                          SnackBar(
+                            content: Text('Scan $ticker options (coming soon)'),
+                          ),
                         );
                       },
                     ),
@@ -100,13 +108,19 @@ class SmallAccountCockpitScreen extends ConsumerWidget {
                       onManageTap: (position) {
                         // TODO: Navigate to position management
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Manage ${position.ticker} position')),
+                          SnackBar(
+                            content: Text('Manage ${position.ticker} position'),
+                          ),
                         );
                       },
                       onJournalAndCloseTap: (position) {
                         // TODO: Navigate to journal form
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Journal and close ${position.ticker}')),
+                          SnackBar(
+                            content: Text(
+                              'Journal and close ${position.ticker}',
+                            ),
+                          ),
                         );
                       },
                     ),
@@ -147,7 +161,9 @@ class SmallAccountCockpitScreen extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Enter ticker symbol (max 5 tickers for small accounts)'),
+            const Text(
+              'Enter ticker symbol (max 5 tickers for small accounts)',
+            ),
             const SizedBox(height: 12),
             TextField(
               controller: controller,
@@ -171,13 +187,15 @@ class SmallAccountCockpitScreen extends ConsumerWidget {
               if (ticker.isEmpty) return;
 
               try {
-                await ref.read(cockpitControllerProvider.notifier).addToWatchlist(ticker);
+                await ref
+                    .read(cockpitControllerProvider.notifier)
+                    .addToWatchlist(ticker);
                 if (ctx.mounted) Navigator.of(ctx).pop();
               } catch (e) {
                 if (ctx.mounted) {
-                  ScaffoldMessenger.of(ctx).showSnackBar(
-                    SnackBar(content: Text(e.toString())),
-                  );
+                  ScaffoldMessenger.of(
+                    ctx,
+                  ).showSnackBar(SnackBar(content: Text(e.toString())));
                 }
               }
             },
@@ -213,9 +231,9 @@ class SmallAccountCockpitScreen extends ConsumerWidget {
 
     // All clear, navigate to planner
     // TODO: Navigate to trade planner
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Opening trade planner...')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Opening trade planner...')));
   }
 
   /// Show dialog when user is blocked from trading
@@ -230,7 +248,9 @@ class SmallAccountCockpitScreen extends ConsumerWidget {
             Text('Action Required'),
           ],
         ),
-        content: Text(message ?? 'You must journal your trades before continuing.'),
+        content: Text(
+          message ?? 'You must journal your trades before continuing.',
+        ),
         actions: [
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(),

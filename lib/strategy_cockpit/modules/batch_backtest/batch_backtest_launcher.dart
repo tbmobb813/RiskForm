@@ -26,8 +26,10 @@ class _BatchBacktestLauncherState extends State<BatchBacktestLauncher> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Batch Backtest",
-                  style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                "Batch Backtest",
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               const SizedBox(height: 12),
 
               _ParameterBuilder(
@@ -66,7 +68,9 @@ class _BatchBacktestLauncherState extends State<BatchBacktestLauncher> {
               if (vm.batchId != null) ...[
                 const SizedBox(height: 24),
                 BatchBacktestStatus(
-                    strategyId: widget.strategyId, batchId: vm.batchId!),
+                  strategyId: widget.strategyId,
+                  batchId: vm.batchId!,
+                ),
               ],
             ],
           );

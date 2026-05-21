@@ -17,10 +17,15 @@ class InsightsSection extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: insights
-                .map((i) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Text(i, style: const TextStyle(color: Colors.white70)),
-                    ))
+                .map(
+                  (i) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      i,
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                  ),
+                )
                 .toList(),
           ),
         ),

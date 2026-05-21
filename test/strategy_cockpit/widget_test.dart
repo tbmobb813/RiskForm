@@ -9,10 +9,12 @@ import 'package:riskform/strategy_cockpit/services/strategy_health_service.dart'
 import 'package:riskform/models/strategy_health_snapshot.dart';
 
 class FakeHealthService implements StrategyHealthService {
-  final StreamController<StrategyHealthSnapshot?> _ctrl = StreamController.broadcast();
+  final StreamController<StrategyHealthSnapshot?> _ctrl =
+      StreamController.broadcast();
 
   @override
-  Stream<StrategyHealthSnapshot?> watchHealth(String strategyId) => _ctrl.stream;
+  Stream<StrategyHealthSnapshot?> watchHealth(String strategyId) =>
+      _ctrl.stream;
 
   void add(StrategyHealthSnapshot? s) => _ctrl.add(s);
 
@@ -20,29 +22,45 @@ class FakeHealthService implements StrategyHealthService {
 
   // The following methods are unused in tests and implemented as no-ops.
   @override
-  Future<StrategyHealthSnapshot?> fetchLatestHealth(String strategyId) async => null;
+  Future<StrategyHealthSnapshot?> fetchLatestHealth(String strategyId) async =>
+      null;
 
   @override
   Future<void> saveHealthSnapshot(StrategyHealthSnapshot snapshot) async {}
 
   @override
-  Future<void> updateHealthFields({required String strategyId, Map<String, dynamic>? fields}) async {}
+  Future<void> updateHealthFields({
+    required String strategyId,
+    Map<String, dynamic>? fields,
+  }) async {}
 
   @override
-  Future<void> markHealthDirtyInTx({required dynamic tx, required String strategyId}) async {}
+  Future<void> markHealthDirtyInTx({
+    required dynamic tx,
+    required String strategyId,
+  }) async {}
 
   @override
   Future<void> recomputeHealth(String strategyId) async {}
 }
 
 void main() {
-  testWidgets('Performance section shows win rate from health snapshot', (WidgetTester tester) async {
+  testWidgets('Performance section shows win rate from health snapshot', (
+    WidgetTester tester,
+  ) async {
     final fake = FakeHealthService();
-    final vm = StrategyPerformanceViewModel(strategyId: 's1', healthService: fake);
+    final vm = StrategyPerformanceViewModel(
+      strategyId: 's1',
+      healthService: fake,
+    );
 
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(body: StrategyPerformanceSection(strategyId: 's1', viewModel: vm)),
-    ));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: StrategyPerformanceSection(strategyId: 's1', viewModel: vm),
+        ),
+      ),
+    );
 
     // Initially shows loading indicator
     expect(find.byType(CircularProgressIndicator), findsOneWidget);

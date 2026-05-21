@@ -32,23 +32,24 @@ class WheelStrategy extends TradingStrategy {
     double? putPremiumReceived,
     double? callPremiumReceived,
     this.cycle,
-  })  : putPremiumReceived = putPremiumReceived ?? putContract.premium,
-        callPremiumReceived = callPremiumReceived ?? (callContract?.premium ?? 0.0);
+  }) : putPremiumReceived = putPremiumReceived ?? putContract.premium,
+       callPremiumReceived =
+           callPremiumReceived ?? (callContract?.premium ?? 0.0);
 
   @override
   String get typeId => 'wheel';
 
   @override
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'label': label,
-        'putContract': putContract.toJson(),
-        'callContract': callContract?.toJson(),
-        'shareQuantity': shareQuantity,
-        'putPremiumReceived': putPremiumReceived,
-        'callPremiumReceived': callPremiumReceived,
-        // Note: WheelCycle not persisted here to keep the active strategy lightweight.
-      };
+    'id': id,
+    'label': label,
+    'putContract': putContract.toJson(),
+    'callContract': callContract?.toJson(),
+    'shareQuantity': shareQuantity,
+    'putPremiumReceived': putPremiumReceived,
+    'callPremiumReceived': callPremiumReceived,
+    // Note: WheelCycle not persisted here to keep the active strategy lightweight.
+  };
 
   @override
   List<Leg> get legs {
@@ -57,7 +58,13 @@ class WheelStrategy extends TradingStrategy {
     l.add(Leg.option(putContract, quantity: -1));
 
     // model assigned shares as long legs when present (quantity = shares)
-    l.add(Leg.shares(id: 'SHARES', shares: shareQuantity, costBasisPerShare: putContract.strike));
+    l.add(
+      Leg.shares(
+        id: 'SHARES',
+        shares: shareQuantity,
+        costBasisPerShare: putContract.strike,
+      ),
+    );
 
     // short call if provided
     if (callContract != null) {
@@ -88,7 +95,11 @@ class WheelStrategy extends TradingStrategy {
   }
 
   @override
-  List<PayoffPoint> payoffCurve({required double underlyingPrice, required double rangePercent, required int steps}) {
+  List<PayoffPoint> payoffCurve({
+    required double underlyingPrice,
+    required double rangePercent,
+    required int steps,
+  }) {
     final engine = PayoffEngine();
 
     final legsList = legs;
@@ -106,17 +117,26 @@ class WheelStrategy extends TradingStrategy {
       points: steps,
     );
 
-    return offsets.map((o) => PayoffPoint(underlyingPrice: o.dx, profitLoss: o.dy)).toList();
+    return offsets
+        .map((o) => PayoffPoint(underlyingPrice: o.dx, profitLoss: o.dy))
+        .toList();
   }
 
   @override
   StrategyExplanation explain() {
     final base = StrategyExplanation(
-      summary: 'Wheel strategy: sell put, accept assignment, sell covered call.',
+      summary:
+          'Wheel strategy: sell put, accept assignment, sell covered call.',
       pros: ['Generates premium', 'Systematic income approach'],
-      cons: ['Large capital requirement upon assignment', 'Assignment exposure'],
+      cons: [
+        'Large capital requirement upon assignment',
+        'Assignment exposure',
+      ],
       idealConditions: ['Neutral to slightly bullish markets'],
-      risks: ['Assignment and large capital lock-up', 'Opportunity cost when stock rallies'],
+      risks: [
+        'Assignment and large capital lock-up',
+        'Opportunity cost when stock rallies',
+      ],
     );
 
     if (cycle == null) return base;

@@ -9,8 +9,8 @@ class JournalRepository extends ChangeNotifier {
   final String? _userId;
 
   JournalRepository({FirebaseFirestore? firestore, String? userId})
-      : _firestore = firestore,
-        _userId = userId {
+    : _firestore = firestore,
+      _userId = userId {
     if (_firestore != null && _userId != null) {
       _loadFromFirestore();
     }
@@ -23,7 +23,9 @@ class JournalRepository extends ChangeNotifier {
 
   Future<void> _loadFromFirestore() async {
     try {
-      final snap = await _userJournals(_userId!).orderBy('timestamp', descending: true).get();
+      final snap = await _userJournals(
+        _userId!,
+      ).orderBy('timestamp', descending: true).get();
       _entries.clear();
       for (final d in snap.docs) {
         _entries.add(JournalEntry.fromFirestore(d));

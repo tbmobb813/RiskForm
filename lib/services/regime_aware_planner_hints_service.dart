@@ -1,7 +1,9 @@
 import '../services/market_data_service.dart';
 import '../engines/regime_engine.dart';
-import '../strategy_cockpit/analytics/regime_aware_planner_hints.dart' as planner_hints;
-import '../strategy_cockpit/analytics/strategy_recommendations_engine.dart' as recs;
+import '../strategy_cockpit/analytics/regime_aware_planner_hints.dart'
+    as planner_hints;
+import '../strategy_cockpit/analytics/strategy_recommendations_engine.dart'
+    as recs;
 import '../services/market_data_models.dart';
 
 /// Service that composes live market/regime context and the existing
@@ -17,7 +19,11 @@ class RegimeAwarePlannerHintsService {
   ///
   /// This method is best-effort: if live data fetch fails it falls back to
   /// defaults and still returns a deterministic hints bundle.
-  Future<planner_hints.PlannerHintBundle> generateHints(planner_hints.PlannerState state, {String? symbol, recs.StrategyContext? contextOverrides}) async {
+  Future<planner_hints.PlannerHintBundle> generateHints(
+    planner_hints.PlannerState state, {
+    String? symbol,
+    recs.StrategyContext? contextOverrides,
+  }) async {
     try {
       // Fetch live snapshots when symbol provided
       MarketRegimeSnapshot? regime;
@@ -32,15 +38,20 @@ class RegimeAwarePlannerHintsService {
       }
 
       // Build a StrategyContext by merging live info with provided overrides.
-      final constraints = contextOverrides?.constraints ?? recs.Constraints(maxRisk: 100, maxPositions: 5);
+      final constraints =
+          contextOverrides?.constraints ??
+          recs.Constraints(maxRisk: 100, maxPositions: 5);
       final healthScore = contextOverrides?.healthScore ?? 50;
       final pnlTrend = contextOverrides?.pnlTrend ?? const <double>[];
-      final disciplineTrend = contextOverrides?.disciplineTrend ?? const <int>[];
-      final recentCycles = contextOverrides?.recentCycles ?? const <recs.CycleSummary>[];
+      final disciplineTrend =
+          contextOverrides?.disciplineTrend ?? const <int>[];
+      final recentCycles =
+          contextOverrides?.recentCycles ?? const <recs.CycleSummary>[];
       final backtestComparison = contextOverrides?.backtestComparison;
       final drawdown = contextOverrides?.drawdown ?? 0.0;
 
-      final currentRegime = regime?.trend ?? (contextOverrides?.currentRegime ?? 'sideways');
+      final currentRegime =
+          regime?.trend ?? (contextOverrides?.currentRegime ?? 'sideways');
 
       final ctx = recs.StrategyContext(
         healthScore: healthScore,

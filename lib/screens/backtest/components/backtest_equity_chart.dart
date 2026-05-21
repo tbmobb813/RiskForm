@@ -32,7 +32,10 @@ class BacktestEquityChart extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Equity Curve', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text(
+              'Equity Curve',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             AspectRatio(
               aspectRatio: 1.8,
@@ -48,7 +51,12 @@ class BacktestEquityChart extends StatelessWidget {
                       color: Theme.of(context).colorScheme.primary,
                       barWidth: 2,
                       dotData: FlDotData(show: false),
-                      belowBarData: BarAreaData(show: true, color: Theme.of(context).colorScheme.primary.withAlpha(40)),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withAlpha(40),
+                      ),
                     ),
                   ],
                   minY: minY,
@@ -62,4 +70,3 @@ class BacktestEquityChart extends StatelessWidget {
     );
   }
 }
-

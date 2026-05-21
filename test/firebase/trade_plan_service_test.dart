@@ -10,9 +10,15 @@ import 'package:riskform/models/payoff_result.dart';
 import 'package:riskform/models/risk_result.dart';
 
 class MockFirestore extends Mock implements FirebaseFirestore {}
-class MockCollectionRef extends Mock implements CollectionReference<Map<String, dynamic>> {}
-class MockDocRef extends Mock implements DocumentReference<Map<String, dynamic>> {}
-class MockQuerySnapshot extends Mock implements QuerySnapshot<Map<String, dynamic>> {}
+
+class MockCollectionRef extends Mock
+    implements CollectionReference<Map<String, dynamic>> {}
+
+class MockDocRef extends Mock
+    implements DocumentReference<Map<String, dynamic>> {}
+
+class MockQuerySnapshot extends Mock
+    implements QuerySnapshot<Map<String, dynamic>> {}
 
 void main() {
   test('savePlan calls firestore set', () async {
@@ -25,8 +31,18 @@ void main() {
       strategyId: 'csp',
       strategyName: 'S',
       inputs: const TradeInputs(),
-      payoff: PayoffResult(maxGain: 10, maxLoss: -5, breakeven: 1, capitalRequired: 100),
-      risk: RiskResult(riskPercentOfAccount: 1.0, assignmentExposure: false, capitalLocked: 0.0, warnings: []),
+      payoff: PayoffResult(
+        maxGain: 10,
+        maxLoss: -5,
+        breakeven: 1,
+        capitalRequired: 100,
+      ),
+      risk: RiskResult(
+        riskPercentOfAccount: 1.0,
+        assignmentExposure: false,
+        capitalLocked: 0.0,
+        warnings: [],
+      ),
       notes: '',
       tags: [],
       createdAt: DateTime.now(),

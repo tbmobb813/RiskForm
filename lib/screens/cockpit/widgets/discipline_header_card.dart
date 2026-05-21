@@ -13,10 +13,7 @@ import '../models/discipline_snapshot.dart';
 class DisciplineHeaderCard extends StatelessWidget {
   final DisciplineSnapshot discipline;
 
-  const DisciplineHeaderCard({
-    super.key,
-    required this.discipline,
-  });
+  const DisciplineHeaderCard({super.key, required this.discipline});
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +32,7 @@ class DisciplineHeaderCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Score
-                Expanded(
-                  child: _buildScoreSection(colorScheme),
-                ),
+                Expanded(child: _buildScoreSection(colorScheme)),
 
                 const SizedBox(width: 16),
 
@@ -139,7 +134,9 @@ class DisciplineHeaderCard extends StatelessWidget {
           child: LinearProgressIndicator(
             value: progress,
             minHeight: 8,
-            backgroundColor: colorScheme.accentColor.withAlpha((0.2 * 255).round()),
+            backgroundColor: colorScheme.accentColor.withAlpha(
+              (0.2 * 255).round(),
+            ),
             valueColor: AlwaysStoppedAnimation<Color>(colorScheme.accentColor),
           ),
         ),

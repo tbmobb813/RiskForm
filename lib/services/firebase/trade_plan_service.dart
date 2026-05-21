@@ -20,10 +20,7 @@ class TradePlanService {
     }
   }
 
-  Future<void> savePlan({
-    required String uid,
-    required TradePlan plan,
-  }) async {
+  Future<void> savePlan({required String uid, required TradePlan plan}) async {
     final ref = _database
         .collection("users")
         .doc(uid)
@@ -40,11 +37,11 @@ class TradePlanService {
 
   Future<List<TradePlan>> fetchPlans(String uid) async {
     final snap = await _database
-      .collection("users")
-      .doc(uid)
-      .collection("trade_plans")
-      .orderBy("createdAt", descending: true)
-      .get();
+        .collection("users")
+        .doc(uid)
+        .collection("trade_plans")
+        .orderBy("createdAt", descending: true)
+        .get();
 
     return snap.docs.map((d) => TradePlan.fromDoc(d)).toList();
   }

@@ -48,9 +48,30 @@ void main() {
     });
 
     test('classifyVolatility high/low/normal', () {
-      final high = MarketVolatilitySnapshot(symbol: 'T', iv: 0.5, ivRank: 80, ivPercentile: 80, vixLevel: null, asOf: DateTime.now());
-      final low = MarketVolatilitySnapshot(symbol: 'T', iv: 0.1, ivRank: 20, ivPercentile: 20, vixLevel: null, asOf: DateTime.now());
-      final norm = MarketVolatilitySnapshot(symbol: 'T', iv: 0.3, ivRank: 50, ivPercentile: 50, vixLevel: null, asOf: DateTime.now());
+      final high = MarketVolatilitySnapshot(
+        symbol: 'T',
+        iv: 0.5,
+        ivRank: 80,
+        ivPercentile: 80,
+        vixLevel: null,
+        asOf: DateTime.now(),
+      );
+      final low = MarketVolatilitySnapshot(
+        symbol: 'T',
+        iv: 0.1,
+        ivRank: 20,
+        ivPercentile: 20,
+        vixLevel: null,
+        asOf: DateTime.now(),
+      );
+      final norm = MarketVolatilitySnapshot(
+        symbol: 'T',
+        iv: 0.3,
+        ivRank: 50,
+        ivPercentile: 50,
+        vixLevel: null,
+        asOf: DateTime.now(),
+      );
 
       expect(classifyVolatility(high), 'high');
       expect(classifyVolatility(low), 'low');
@@ -58,9 +79,30 @@ void main() {
     });
 
     test('classifyLiquidity deep/normal/thin', () {
-      final deep = MarketLiquiditySnapshot(symbol: 'T', bidAskSpread: 0.02, volume: 200000, openInterest: 6000, slippageEstimate: 0.0005, asOf: DateTime.now());
-      final thin = MarketLiquiditySnapshot(symbol: 'T', bidAskSpread: 0.5, volume: 5000, openInterest: 100, slippageEstimate: 0.05, asOf: DateTime.now());
-      final normal = MarketLiquiditySnapshot(symbol: 'T', bidAskSpread: 0.1, volume: 50000, openInterest: 2000, slippageEstimate: 0.005, asOf: DateTime.now());
+      final deep = MarketLiquiditySnapshot(
+        symbol: 'T',
+        bidAskSpread: 0.02,
+        volume: 200000,
+        openInterest: 6000,
+        slippageEstimate: 0.0005,
+        asOf: DateTime.now(),
+      );
+      final thin = MarketLiquiditySnapshot(
+        symbol: 'T',
+        bidAskSpread: 0.5,
+        volume: 5000,
+        openInterest: 100,
+        slippageEstimate: 0.05,
+        asOf: DateTime.now(),
+      );
+      final normal = MarketLiquiditySnapshot(
+        symbol: 'T',
+        bidAskSpread: 0.1,
+        volume: 50000,
+        openInterest: 2000,
+        slippageEstimate: 0.005,
+        asOf: DateTime.now(),
+      );
 
       expect(classifyLiquidity(deep), 'deep');
       expect(classifyLiquidity(thin), 'thin');
@@ -70,11 +112,38 @@ void main() {
 
   group('LiveRegimeEngine integration', () {
     test('getRegime uses market data snapshots and classifies', () async {
-      final price = MarketPriceSnapshot(symbol: 'ABC', last: 150, changePct: 1.2, atr: 2.0, maShort: 110, maLong: 100, trendSlope: 0.3, asOf: DateTime.now());
-      final vol = MarketVolatilitySnapshot(symbol: 'ABC', iv: 0.4, ivRank: 75, ivPercentile: 75, vixLevel: null, asOf: DateTime.now());
-      final liq = MarketLiquiditySnapshot(symbol: 'ABC', bidAskSpread: 0.02, volume: 200000, openInterest: 6000, slippageEstimate: 0.0005, asOf: DateTime.now());
+      final price = MarketPriceSnapshot(
+        symbol: 'ABC',
+        last: 150,
+        changePct: 1.2,
+        atr: 2.0,
+        maShort: 110,
+        maLong: 100,
+        trendSlope: 0.3,
+        asOf: DateTime.now(),
+      );
+      final vol = MarketVolatilitySnapshot(
+        symbol: 'ABC',
+        iv: 0.4,
+        ivRank: 75,
+        ivPercentile: 75,
+        vixLevel: null,
+        asOf: DateTime.now(),
+      );
+      final liq = MarketLiquiditySnapshot(
+        symbol: 'ABC',
+        bidAskSpread: 0.02,
+        volume: 200000,
+        openInterest: 6000,
+        slippageEstimate: 0.0005,
+        asOf: DateTime.now(),
+      );
 
-      final mock = MockMarketDataService(prices: {'ABC': price}, vols: {'ABC': vol}, liqs: {'ABC': liq});
+      final mock = MockMarketDataService(
+        prices: {'ABC': price},
+        vols: {'ABC': vol},
+        liqs: {'ABC': liq},
+      );
       final engine = LiveRegimeEngine(mock);
 
       final regime = await engine.getRegime('ABC');

@@ -8,8 +8,9 @@ import 'risk_profile_provider.dart';
 import 'wheel_cycle_provider.dart';
 import 'meta_strategy_provider.dart';
 
-final metaStrategySnapshotProvider =
-    FutureProvider<StrategyRecommendation>((ref) async {
+final metaStrategySnapshotProvider = FutureProvider<StrategyRecommendation>((
+  ref,
+) async {
   final accountCtx = await ref.watch(accountContextProvider.future);
   final positions = ref.watch(activePositionsProvider);
   final riskProfile = await ref.watch(riskProfileProvider.future);

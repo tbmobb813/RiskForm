@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riskform/app.dart';
 import '../../../../models/payoff_result.dart';
 import '../../../../services/engines/payoff_engine.dart';
 import '../../../../state/trading_strategy_provider.dart';
@@ -55,7 +56,9 @@ class PayoffChartCard extends StatelessWidget {
           rangePercent: 0.5,
           steps: 80,
         );
-        curve = pts.map((p) => Offset(p.underlyingPrice, p.profitLoss)).toList();
+        curve = pts
+            .map((p) => Offset(p.underlyingPrice, p.profitLoss))
+            .toList();
       } else {
         final engine = container.read(payoffEngineProvider);
 
@@ -67,20 +70,41 @@ class PayoffChartCard extends StatelessWidget {
         );
       }
 
+      final color = StrategyTheme.color(strategyId);
       return Card(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Payoff Diagram",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: color.withAlpha(30),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      StrategyTheme.badge(strategyId),
+                      style: AppTextStyles.mono(11, color: color),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Payoff Diagram',
+                    style: AppTextStyles.body(15, weight: FontWeight.w600),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
               PayoffChart(
                 curve: curve,
                 breakeven: payoff.breakeven,
+                strategyId: strategyId,
               ),
             ],
           ),

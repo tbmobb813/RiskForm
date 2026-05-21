@@ -46,9 +46,12 @@ class CloudBacktestJob {
 
   factory CloudBacktestJob.fromMap(Map<String, dynamic> m) {
     String statusRaw = m['status'] as String;
-    final statusToken = statusRaw.contains('.') ? statusRaw.split('.').last : statusRaw;
-    final status = CloudBacktestStatus.values
-        .firstWhere((e) => e.toString().split('.').last == statusToken);
+    final statusToken = statusRaw.contains('.')
+        ? statusRaw.split('.').last
+        : statusRaw;
+    final status = CloudBacktestStatus.values.firstWhere(
+      (e) => e.toString().split('.').last == statusToken,
+    );
 
     DateTime? parseDate(dynamic v) {
       if (v == null) return null;
@@ -76,7 +79,9 @@ class CloudBacktestJob {
       startedAt: parseDate(m['startedAt']),
       completedAt: parseDate(m['completedAt']),
       status: status,
-      configUsed: BacktestConfig.fromMap(Map<String, dynamic>.from(m['configUsed'] as Map)),
+      configUsed: BacktestConfig.fromMap(
+        Map<String, dynamic>.from(m['configUsed'] as Map),
+      ),
       engineVersion: m['engineVersion'] as String,
       priority: (m['priority'] as num?)?.toInt(),
       errorMessage: m['errorMessage'] as String?,

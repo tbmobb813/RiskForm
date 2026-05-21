@@ -3,7 +3,12 @@ import 'package:riskform/models/payoff_result.dart';
 
 void main() {
   test('PayoffResult string getters format currency', () {
-    final p = PayoffResult(maxGain: 1234.5, maxLoss: 10.0, breakeven: 50.0, capitalRequired: 500.0);
+    final p = PayoffResult(
+      maxGain: 1234.5,
+      maxLoss: 10.0,
+      breakeven: 50.0,
+      capitalRequired: 500.0,
+    );
 
     expect(p.maxGainString, r"$1234.50");
     expect(p.maxLossString, r"$10.00");

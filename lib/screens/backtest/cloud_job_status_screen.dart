@@ -16,9 +16,7 @@ class CloudJobStatusScreen extends ConsumerWidget {
     final cloudService = ref.watch(cloudBacktestServiceProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Cloud Job Status'),
-      ),
+      appBar: AppBar(title: const Text('Cloud Job Status')),
       body: StreamBuilder<CloudBacktestJob?>(
         stream: cloudService.watchJob(jobId),
         builder: (context, jobSnapshot) {
@@ -164,10 +162,7 @@ class CloudJobStatusScreen extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Text('Duration'),
-          Text(
-            formatted,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
+          Text(formatted, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -204,10 +199,14 @@ class CloudJobStatusScreen extends ConsumerWidget {
             _buildConfigRow('Symbol', config.symbol),
             _buildConfigRow('Strategy', config.strategyId),
             _buildConfigRow(
-                'Starting Capital', '\$${config.startingCapital.toStringAsFixed(0)}'),
+              'Starting Capital',
+              '\$${config.startingCapital.toStringAsFixed(0)}',
+            ),
             _buildConfigRow('Max Cycles', config.maxCycles.toString()),
-            _buildConfigRow('Date Range',
-                '${_formatDate(config.startDate)} - ${_formatDate(config.endDate)}'),
+            _buildConfigRow(
+              'Date Range',
+              '${_formatDate(config.startDate)} - ${_formatDate(config.endDate)}',
+            ),
           ],
         ),
       ),
@@ -262,7 +261,10 @@ class CloudJobStatusScreen extends ConsumerWidget {
   }
 
   Widget _buildResultSection(
-      BuildContext context, WidgetRef ref, CloudBacktestJob job) {
+    BuildContext context,
+    WidgetRef ref,
+    CloudBacktestJob job,
+  ) {
     final cloudService = ref.watch(cloudBacktestServiceProvider);
 
     return StreamBuilder<CloudBacktestResult?>(
@@ -315,9 +317,8 @@ class CloudJobStatusScreen extends ConsumerWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => CloudBacktestResultScreen(
-                                  result: result,
-                                ),
+                                builder: (_) =>
+                                    CloudBacktestResultScreen(result: result),
                               ),
                             );
                           }

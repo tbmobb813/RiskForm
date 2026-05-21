@@ -13,39 +13,67 @@ class FakeBacktestService implements StrategyBacktestService {
   final Map<String, dynamic> _item = {
     'id': 'b1',
     'summary': {'totalPnl': 123.45, 'winRate': 0.55, 'cycles': 10},
-    'completedAt': DateTime.now().toIso8601String()
+    'completedAt': DateTime.now().toIso8601String(),
   };
 
   @override
-  Stream<Map<String, dynamic>?> watchLatestBacktest(String strategyId) => Stream.value(_item);
+  Stream<Map<String, dynamic>?> watchLatestBacktest(String strategyId) =>
+      Stream.value(_item);
 
   @override
-  Stream<List<Map<String, dynamic>>> watchBacktestHistory(String strategyId) => Stream.value([_item]);
+  Stream<List<Map<String, dynamic>>> watchBacktestHistory(String strategyId) =>
+      Stream.value([_item]);
 
   @override
-  Stream<List<Map<String, dynamic>>> watchBacktestJobs(String strategyId) => Stream.value([]);
+  Stream<List<Map<String, dynamic>>> watchBacktestJobs(String strategyId) =>
+      Stream.value([]);
 
   @override
-  Future<String> createBacktestJob({required String strategyId, required Map<String, dynamic> parameters}) async => 'job-1';
+  Future<String> createBacktestJob({
+    required String strategyId,
+    required Map<String, dynamic> parameters,
+  }) async => 'job-1';
 
   @override
-  Future<void> updateJobStatus({required String jobId, required String status, Map<String, dynamic>? result}) async {}
+  Future<void> updateJobStatus({
+    required String jobId,
+    required String status,
+    Map<String, dynamic>? result,
+  }) async {}
 
   @override
-  Future<void> saveBacktestResult({required String jobId, required String strategyId, required Map<String, dynamic> summary, required List<double> pnlCurve, required Map<String, dynamic> regimeBreakdown}) async {}
+  Future<void> saveBacktestResult({
+    required String jobId,
+    required String strategyId,
+    required Map<String, dynamic> summary,
+    required List<double> pnlCurve,
+    required Map<String, dynamic> regimeBreakdown,
+  }) async {}
 
   @override
-  Future<void> runBacktest(String strategyId, Map<String, dynamic> params) async {}
+  Future<void> runBacktest(
+    String strategyId,
+    Map<String, dynamic> params,
+  ) async {}
 }
 
 void main() {
-  testWidgets('Backtest section shows latest and history', (WidgetTester tester) async {
+  testWidgets('Backtest section shows latest and history', (
+    WidgetTester tester,
+  ) async {
     final fake = FakeBacktestService();
-    final vm = StrategyBacktestViewModel(strategyId: 's1', backtestService: fake);
+    final vm = StrategyBacktestViewModel(
+      strategyId: 's1',
+      backtestService: fake,
+    );
 
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(body: StrategyBacktestSection(strategyId: 's1', viewModel: vm)),
-    ));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: StrategyBacktestSection(strategyId: 's1', viewModel: vm),
+        ),
+      ),
+    );
 
     // Allow the viewmodel to fetch and build
     await tester.pumpAndSettle();

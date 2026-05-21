@@ -17,12 +17,16 @@ dependencies:
   flutter_riverpod: ^3.1.0
   provider: ^6.0.5
   equatable: ^2.0.8
-  fl_chart:
-    path: vendor/fl_chart
+  fl_chart: ^0.68.0
   http: ^1.6.0
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   uuid: ^4.5.1
+  file_picker: ^8.1.7
+  csv: ^6.0.0
+  google_fonts: ^6.2.1
+  flutter_animate: ^4.5.0
+  shimmer: ^3.0.0
   riskform_core:
     path: packages/riskform_core
   riskform_cloud_worker:

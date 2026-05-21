@@ -40,7 +40,9 @@ class BehaviorAnalytics {
   static double averageLastFive(List<JournalEntry> entries) {
     final lastFive = entries.take(5).toList();
     if (lastFive.isEmpty) return 0;
-    final sum = lastFive.map((e) => e.disciplineScore ?? 0).reduce((a, b) => a + b);
+    final sum = lastFive
+        .map((e) => e.disciplineScore ?? 0)
+        .reduce((a, b) => a + b);
     return sum / lastFive.length;
   }
 
@@ -62,7 +64,8 @@ class BehaviorAnalytics {
         counts['risk'] = counts['risk']! + 1;
       }
     }
-    final sorted = counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    final sorted = counts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
     return sorted.isNotEmpty ? sorted.first.key : 'none';
   }
 }

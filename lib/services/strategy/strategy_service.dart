@@ -5,7 +5,7 @@ class StrategyService {
   final FirebaseFirestore _firestore;
 
   StrategyService({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   // -----------------------------
   // Collection references
@@ -27,8 +27,8 @@ class StrategyService {
     final docRef = _strategies.doc();
 
     final state = experimental
-      ? StrategyState.experimental.toString().split('.').last
-      : StrategyState.active.toString().split('.').last;
+        ? StrategyState.experimental.toString().split('.').last
+        : StrategyState.active.toString().split('.').last;
 
     await docRef.set({
       'name': name,
@@ -118,10 +118,7 @@ class StrategyService {
   Stream<List<Map<String, dynamic>>> watchStrategies() {
     return _strategies.snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
-        return {
-          'id': doc.id,
-          ...doc.data() as Map<String, dynamic>,
-        };
+        return {'id': doc.id, ...doc.data() as Map<String, dynamic>};
       }).toList();
     });
   }
@@ -132,10 +129,7 @@ class StrategyService {
   Stream<Map<String, dynamic>?> watchStrategy(String strategyId) {
     return _strategies.doc(strategyId).snapshots().map((doc) {
       if (!doc.exists) return null;
-      return {
-        'id': doc.id,
-        ...doc.data() as Map<String, dynamic>,
-      };
+      return {'id': doc.id, ...doc.data() as Map<String, dynamic>};
     });
   }
 

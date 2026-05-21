@@ -10,7 +10,10 @@ final journalRepositoryProvider = Provider<JournalRepository>((ref) {
   final uid = ref.watch(currentUserIdProvider);
   // Provide a Firestore-backed repository when a user is signed in.
   if (uid != null) {
-    return JournalRepository(firestore: FirebaseFirestore.instance, userId: uid);
+    return JournalRepository(
+      firestore: FirebaseFirestore.instance,
+      userId: uid,
+    );
   }
   // Fallback to in-memory repository when not authenticated
   return JournalRepository();

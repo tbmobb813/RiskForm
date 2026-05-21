@@ -63,10 +63,7 @@ class OpenPositionsCard extends StatelessWidget {
         children: [
           Icon(Icons.assessment_outlined, size: 48, color: Colors.black26),
           SizedBox(height: 8),
-          Text(
-            'No open positions',
-            style: TextStyle(color: Colors.black54),
-          ),
+          Text('No open positions', style: TextStyle(color: Colors.black54)),
           SizedBox(height: 4),
           Text(
             'Create a trade plan to open your first position',
@@ -108,8 +105,8 @@ class OpenPositionsCard extends StatelessWidget {
                   color: position.isProfit
                       ? Colors.green
                       : position.isLoss
-                          ? Colors.red
-                          : Colors.black54,
+                      ? Colors.red
+                      : Colors.black54,
                 ),
               ),
             ],
@@ -126,7 +123,10 @@ class OpenPositionsCard extends StatelessWidget {
               if (position.isPaper) ...[
                 const SizedBox(width: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.blue.shade50,
                     borderRadius: BorderRadius.circular(4),
@@ -167,7 +167,10 @@ class OpenPositionsCard extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                   ),
-                  child: const Text('Journal & Close', style: TextStyle(fontSize: 13)),
+                  child: const Text(
+                    'Journal & Close',
+                    style: TextStyle(fontSize: 13),
+                  ),
                 ),
               ),
             ],
@@ -182,10 +185,7 @@ class OpenPositionsCard extends StatelessWidget {
       children: [
         const Icon(Icons.circle, size: 6, color: Colors.black54),
         const SizedBox(width: 6),
-        Text(
-          text,
-          style: const TextStyle(fontSize: 12, color: Colors.black87),
-        ),
+        Text(text, style: const TextStyle(fontSize: 12, color: Colors.black87)),
       ],
     );
   }

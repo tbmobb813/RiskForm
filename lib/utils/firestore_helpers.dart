@@ -3,9 +3,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// Firestore helpers: convert client-side values into Firestore-friendly
 /// representations and perform shallow sanitization.
 
-Timestamp? toTimestamp(DateTime? dt) => dt == null ? null : Timestamp.fromDate(dt);
+Timestamp? toTimestamp(DateTime? dt) =>
+    dt == null ? null : Timestamp.fromDate(dt);
 
-Map<String, dynamic> normalizeDateFields(Map<String, dynamic> m, Iterable<String> keys) {
+Map<String, dynamic> normalizeDateFields(
+  Map<String, dynamic> m,
+  Iterable<String> keys,
+) {
   final out = Map<String, dynamic>.from(m);
   for (final k in keys) {
     final v = out[k];

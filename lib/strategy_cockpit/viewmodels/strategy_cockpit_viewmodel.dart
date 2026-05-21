@@ -12,7 +12,6 @@ import '../analytics/strategy_narrative_engine.dart';
 import 'package:riskform/services/market_data_service.dart';
 import '../live_sync_manager.dart';
 
-
 class StrategyCockpitViewModel extends ChangeNotifier {
   final strategy_service.StrategyService _strategyService;
   final StrategyHealthService _healthService;
@@ -68,14 +67,14 @@ class StrategyCockpitViewModel extends ChangeNotifier {
     StrategyRecommendationsEngine? recsEngine,
     StrategyNarrativeEngine? narrativeEngine,
     LiveSyncManager? liveSyncManager,
-  })  : _strategyService = strategyService ?? strategy_service.StrategyService(),
-        _healthService = healthService ?? StrategyHealthService(),
-        _backtestService = backtestService ?? StrategyBacktestService(),
-        _regimeService = regimeService ?? RegimeService(),
-        _marketDataService = marketDataService,
-        _recsEngine = recsEngine,
-      _narrativeEngine = narrativeEngine ?? const StrategyNarrativeEngine(),
-      _liveSyncManager = liveSyncManager {
+  }) : _strategyService = strategyService ?? strategy_service.StrategyService(),
+       _healthService = healthService ?? StrategyHealthService(),
+       _backtestService = backtestService ?? StrategyBacktestService(),
+       _regimeService = regimeService ?? RegimeService(),
+       _marketDataService = marketDataService,
+       _recsEngine = recsEngine,
+       _narrativeEngine = narrativeEngine ?? const StrategyNarrativeEngine(),
+       _liveSyncManager = liveSyncManager {
     // Initialize listeners asynchronously so `isLoading` remains true
     // for the first build frame. This ensures widgets can show a
     // loading indicator before synchronous stream emits occur.
@@ -96,58 +95,48 @@ class StrategyCockpitViewModel extends ChangeNotifier {
   // Strategy Document
   // -----------------------------
   void _listenToStrategy() {
-    _strategySub = _strategyService.watchStrategy(strategyId).listen(
-      (data) {
-        if (data == null) return;
-        strategy = Strategy.fromMap(strategyId, data);
-        _setLoaded();
-      },
-      onError: (_) => _setError(),
-    );
+    _strategySub = _strategyService.watchStrategy(strategyId).listen((data) {
+      if (data == null) return;
+      strategy = Strategy.fromMap(strategyId, data);
+      _setLoaded();
+    }, onError: (_) => _setError());
   }
 
   // -----------------------------
   // Strategy Health Snapshot
   // -----------------------------
   void _listenToHealth() {
-    _healthSub = _healthService.watchHealth(strategyId).listen(
-      (snapshot) {
-        if (snapshot != null) {
-          health = snapshot;
-          _maybeGenerateRecommendations();
-        }
-        _setLoaded();
-      },
-      onError: (_) => _setError(),
-    );
+    _healthSub = _healthService.watchHealth(strategyId).listen((snapshot) {
+      if (snapshot != null) {
+        health = snapshot;
+        _maybeGenerateRecommendations();
+      }
+      _setLoaded();
+    }, onError: (_) => _setError());
   }
 
   // -----------------------------
   // Latest Backtest
   // -----------------------------
   void _listenToBacktests() {
-    _backtestSub = _backtestService.watchLatestBacktest(strategyId).listen(
-      (data) {
-        latestBacktest = data;
-        _maybeGenerateRecommendations();
-        _setLoaded();
-      },
-      onError: (_) => _setError(),
-    );
+    _backtestSub = _backtestService.watchLatestBacktest(strategyId).listen((
+      data,
+    ) {
+      latestBacktest = data;
+      _maybeGenerateRecommendations();
+      _setLoaded();
+    }, onError: (_) => _setError());
   }
 
   // -----------------------------
   // Current Regime
   // -----------------------------
   void _listenToRegime() {
-    _regimeSub = _regimeService.watchCurrentRegime().listen(
-      (regime) {
-        currentRegime = regime;
-        _maybeGenerateRecommendations();
-        _setLoaded();
-      },
-      onError: (_) => _setError(),
-    );
+    _regimeSub = _regimeService.watchCurrentRegime().listen((regime) {
+      currentRegime = regime;
+      _maybeGenerateRecommendations();
+      _setLoaded();
+    }, onError: (_) => _setError());
   }
 
   void _maybeGenerateRecommendations() {
@@ -162,31 +151,47 @@ class StrategyCockpitViewModel extends ChangeNotifier {
     final pnlTrend = List<double>.from(healthLocal.pnlTrend);
 
     // Convert discipline trend to ints [0..100]
-    final disciplineTrend = healthLocal.disciplineTrend.map((d) => d.round()).toList();
+    final disciplineTrend = healthLocal.disciplineTrend
+        .map((d) => d.round())
+        .toList();
 
     // Recent cycles: map last up to 5 summaries to CycleSummary
     final cycleMaps = healthLocal.cycleSummaries;
     final recent = <CycleSummary>[];
     for (var i = cycleMaps.length - 1; i >= 0 && recent.length < 5; i--) {
       final m = cycleMaps[i];
-      final ds = (m['disciplineScore'] is num) ? (m['disciplineScore'] as num).toInt() : 50;
+      final ds = (m['disciplineScore'] is num)
+          ? (m['disciplineScore'] as num).toInt()
+          : 50;
       final pnl = (m['pnl'] is num) ? (m['pnl'] as num).toDouble() : 0.0;
-      final r = (m['regime'] is String) ? m['regime'] as String : currentRegimeLocal;
+      final r = (m['regime'] is String)
+          ? m['regime'] as String
+          : currentRegimeLocal;
       recent.add(CycleSummary(disciplineScore: ds, pnl: pnl, regime: r));
     }
 
     // Backtest summary
     final backtest = latestBacktest == null
         ? null
-        : BacktestSummary(bestConfig: latestBacktest, weakConfig: null, summaryNote: null);
+        : BacktestSummary(
+            bestConfig: latestBacktest,
+            weakConfig: null,
+            summaryNote: null,
+          );
 
     // Constraints -> map to engine Constraints
     final c = strategyLocal.constraints;
     final constraints = Constraints(
       maxRisk: (c['maxRisk'] is int) ? c['maxRisk'] as int : 100,
       maxPositions: (c['maxPositions'] is int) ? c['maxPositions'] as int : 10,
-      allowedDteRange: c['allowedDteRange'] is List ? List<int>.from(c['allowedDteRange']) : null,
-      allowedDeltaRange: c['allowedDeltaRange'] is List ? List<double>.from(c['allowedDeltaRange'].map((v) => (v as num).toDouble())) : null,
+      allowedDteRange: c['allowedDteRange'] is List
+          ? List<int>.from(c['allowedDteRange'])
+          : null,
+      allowedDeltaRange: c['allowedDeltaRange'] is List
+          ? List<double>.from(
+              c['allowedDeltaRange'].map((v) => (v as num).toDouble()),
+            )
+          : null,
     );
 
     // Compute drawdown from pnlTrend
@@ -220,7 +225,8 @@ class StrategyCockpitViewModel extends ChangeNotifier {
     final lb = latestBacktest;
     if (lb != null && lb['symbol'] is String) {
       symbol = lb['symbol'] as String;
-    } else if (strategyLocal.constraints.containsKey('symbol') && strategyLocal.constraints['symbol'] is String) {
+    } else if (strategyLocal.constraints.containsKey('symbol') &&
+        strategyLocal.constraints['symbol'] is String) {
       symbol = strategyLocal.constraints['symbol'] as String;
     }
 
@@ -230,74 +236,104 @@ class StrategyCockpitViewModel extends ChangeNotifier {
       if (_liveSyncManager != null) {
         final lsm = _liveSyncManager;
         final token = _beginAsyncCallback();
-        lsm.refresh(symbol, ctx).then((res) {
-          if (!_activeCallbackTokens.contains(token)) {
-            _endAsyncCallback(token);
-            return;
-          }
-          recommendations = res.recommendations;
-          narrative = res.narrative;
-          notifyListeners();
-          _endAsyncCallback(token);
-        }).catchError((_) {
-          if (!_activeCallbackTokens.contains(token)) {
-            _endAsyncCallback(token);
-            return;
-          }
-          recommendations = generateRecommendations(ctx);
-          narrative = generateNarrative(ctx, recsBundle: recommendations);
-          notifyListeners();
-          _endAsyncCallback(token);
-        });
+        lsm
+            .refresh(symbol, ctx)
+            .then((res) {
+              if (!_activeCallbackTokens.contains(token)) {
+                _endAsyncCallback(token);
+                return;
+              }
+              recommendations = res.recommendations;
+              narrative = res.narrative;
+              notifyListeners();
+              _endAsyncCallback(token);
+            })
+            .catchError((_) {
+              if (!_activeCallbackTokens.contains(token)) {
+                _endAsyncCallback(token);
+                return;
+              }
+              recommendations = generateRecommendations(ctx);
+              narrative = generateNarrative(ctx, recsBundle: recommendations);
+              notifyListeners();
+              _endAsyncCallback(token);
+            });
       } else {
         // best-effort asynchronous fetch; update recommendations/narrative when ready
         final token = _beginAsyncCallback();
         final sym = symbol;
-        mds.getRegime(sym).then((regimeSnap) async {
-          if (!_activeCallbackTokens.contains(token)) {
-            _endAsyncCallback(token);
-            return;
-          }
-          final volSnap = await mds.getVolatility(sym);
-          if (!_activeCallbackTokens.contains(token)) {
-            _endAsyncCallback(token);
-            return;
-          }
-          final liqSnap = await mds.getLiquidity(sym);
-          if (!_activeCallbackTokens.contains(token)) {
-            _endAsyncCallback(token);
-            return;
-          }
+        mds
+            .getRegime(sym)
+            .then((regimeSnap) async {
+              if (!_activeCallbackTokens.contains(token)) {
+                _endAsyncCallback(token);
+                return;
+              }
+              final volSnap = await mds.getVolatility(sym);
+              if (!_activeCallbackTokens.contains(token)) {
+                _endAsyncCallback(token);
+                return;
+              }
+              final liqSnap = await mds.getLiquidity(sym);
+              if (!_activeCallbackTokens.contains(token)) {
+                _endAsyncCallback(token);
+                return;
+              }
 
-          final recs = await (_recsEngine?.generate(context: ctx, regime: regimeSnap, vol: volSnap, liq: liqSnap)
-              ?? StrategyRecommendationsEngine().generate(context: ctx, regime: regimeSnap, vol: volSnap, liq: liqSnap));
-          if (!_activeCallbackTokens.contains(token)) {
-            _endAsyncCallback(token);
-            return;
-          }
+              final recs =
+                  await (_recsEngine?.generate(
+                        context: ctx,
+                        regime: regimeSnap,
+                        vol: volSnap,
+                        liq: liqSnap,
+                      ) ??
+                      StrategyRecommendationsEngine().generate(
+                        context: ctx,
+                        regime: regimeSnap,
+                        vol: volSnap,
+                        liq: liqSnap,
+                      ));
+              if (!_activeCallbackTokens.contains(token)) {
+                _endAsyncCallback(token);
+                return;
+              }
 
-          final narr = _narrativeEngine?.generate(context: ctx, recs: recs, regime: regimeSnap, vol: volSnap, liq: liqSnap)
-              ?? const StrategyNarrativeEngine().generate(context: ctx, recs: recs, regime: regimeSnap, vol: volSnap, liq: liqSnap);
+              final narr =
+                  _narrativeEngine?.generate(
+                    context: ctx,
+                    recs: recs,
+                    regime: regimeSnap,
+                    vol: volSnap,
+                    liq: liqSnap,
+                  ) ??
+                  const StrategyNarrativeEngine().generate(
+                    context: ctx,
+                    recs: recs,
+                    regime: regimeSnap,
+                    vol: volSnap,
+                    liq: liqSnap,
+                  );
 
-          if (!_activeCallbackTokens.contains(token)) {
-            _endAsyncCallback(token);
-            return;
-          }
-          recommendations = recs;
-          narrative = narr;
-          notifyListeners();
-          _endAsyncCallback(token);
-        }).catchError((_) {
-          if (!_activeCallbackTokens.contains(token)) {
-            _endAsyncCallback(token);
-            return;
-          }
-          // fallback to pure deterministic generator on any failure
-          recommendations = generateRecommendations(ctx);
-          narrative = generateNarrative(ctx, recsBundle: recommendations);
-          notifyListeners();
-          _endAsyncCallback(token);
-        });
+              if (!_activeCallbackTokens.contains(token)) {
+                _endAsyncCallback(token);
+                return;
+              }
+              recommendations = recs;
+              narrative = narr;
+              notifyListeners();
+              _endAsyncCallback(token);
+            })
+            .catchError((_) {
+              if (!_activeCallbackTokens.contains(token)) {
+                _endAsyncCallback(token);
+                return;
+              }
+              // fallback to pure deterministic generator on any failure
+              recommendations = generateRecommendations(ctx);
+              narrative = generateNarrative(ctx, recsBundle: recommendations);
+              notifyListeners();
+              _endAsyncCallback(token);
+            });
       }
     } else {
       final token = _beginAsyncCallback();

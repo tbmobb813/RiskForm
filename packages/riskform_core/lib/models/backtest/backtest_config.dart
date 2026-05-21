@@ -66,7 +66,9 @@ class BacktestConfig {
     return BacktestConfig(
       startingCapital: (m['startingCapital'] as num).toDouble(),
       maxCycles: (m['maxCycles'] as num).toInt(),
-      pricePath: List<double>.from((m['pricePath'] as List).map((e) => (e as num).toDouble())),
+      pricePath: List<double>.from(
+        (m['pricePath'] as List).map((e) => (e as num).toDouble()),
+      ),
       strategyId: m['strategyId'] as String,
       label: m['label'] as String?,
       symbol: m['symbol'] as String,

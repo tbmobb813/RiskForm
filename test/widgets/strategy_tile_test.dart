@@ -1,29 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:riskform/screens/dashboard/strategy_tile.dart';
 
 void main() {
-  testWidgets('StrategyTile displays texts and reacts to tap', (WidgetTester tester) async {
+  setUpAll(() {
+    // Suppress font loading errors in tests
+    GoogleFonts.config.allowRuntimeFetching = false;
+  });
+
+  testWidgets('StrategyTile displays name and reacts to tap', (
+    WidgetTester tester,
+  ) async {
     var tapped = false;
 
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
           body: StrategyTile(
-            name: 'Test Strategy',
-            category: 'Income',
-            color: Colors.green,
+            name: 'Cash-Secured Put',
+            strategyId: 'csp',
             onTap: () => tapped = true,
           ),
         ),
       ),
     );
 
-    // Verify texts
-    expect(find.text('Test Strategy'), findsOneWidget);
-    expect(find.text('Income'), findsOneWidget);
+    expect(find.text('Cash-Secured Put'), findsOneWidget);
 
-    // Tap and verify callback
     await tester.tap(find.byType(StrategyTile));
     await tester.pumpAndSettle();
     expect(tapped, isTrue);

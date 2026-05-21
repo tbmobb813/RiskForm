@@ -66,7 +66,11 @@ class SmallAccountState {
     this.saving = false,
   });
 
-  SmallAccountState copyWith({SmallAccountSettings? settings, Map<String, String>? errors, bool? saving}) {
+  SmallAccountState copyWith({
+    SmallAccountSettings? settings,
+    Map<String, String>? errors,
+    bool? saving,
+  }) {
     return SmallAccountState(
       settings: settings ?? this.settings,
       errors: errors ?? this.errors,
@@ -80,7 +84,8 @@ class SmallAccountNotifier extends StateNotifier<SmallAccountState> {
   static const _key = 'settings';
 
   SmallAccountNotifier()
-      : super(SmallAccountState(
+    : super(
+        SmallAccountState(
           settings: const SmallAccountSettings(
             enabled: false,
             startingCapital: 1000.0,
@@ -88,13 +93,16 @@ class SmallAccountNotifier extends StateNotifier<SmallAccountState> {
             minTradeSize: 10.0,
             maxOpenPositions: 3,
           ),
-        )) {
+        ),
+      ) {
     _loadFromHive();
   }
 
   Future<void> _loadFromHive() async {
     try {
-      if (!Hive.isAdapterRegistered(1)) Hive.registerAdapter(_SmallAccountSettingsAdapter());
+      if (!Hive.isAdapterRegistered(1)) {
+        Hive.registerAdapter(_SmallAccountSettingsAdapter());
+      }
       final box = await Hive.openBox(_boxName);
       final stored = box.get(_key);
       if (stored is SmallAccountSettings) {
@@ -103,23 +111,42 @@ class SmallAccountNotifier extends StateNotifier<SmallAccountState> {
     } catch (_) {}
   }
 
-  void updateEnabled(bool v) => state = state.copyWith(settings: state.settings.copyWith(enabled: v));
+  void updateEnabled(bool v) =>
+      state = state.copyWith(settings: state.settings.copyWith(enabled: v));
 
-  void updateStartingCapital(double v) => state = state.copyWith(settings: state.settings.copyWith(startingCapital: v));
+  void updateStartingCapital(double v) => state = state.copyWith(
+    settings: state.settings.copyWith(startingCapital: v),
+  );
 
-  void updateMaxAllocationPct(double v) => state = state.copyWith(settings: state.settings.copyWith(maxAllocationPct: v));
+  void updateMaxAllocationPct(double v) => state = state.copyWith(
+    settings: state.settings.copyWith(maxAllocationPct: v),
+  );
 
-  void updateMinTradeSize(double v) => state = state.copyWith(settings: state.settings.copyWith(minTradeSize: v));
+  void updateMinTradeSize(double v) => state = state.copyWith(
+    settings: state.settings.copyWith(minTradeSize: v),
+  );
 
-  void updateMaxOpenPositions(int v) => state = state.copyWith(settings: state.settings.copyWith(maxOpenPositions: v));
+  void updateMaxOpenPositions(int v) => state = state.copyWith(
+    settings: state.settings.copyWith(maxOpenPositions: v),
+  );
 
   Map<String, String> validate(SmallAccountSettings s) {
     final errs = <String, String>{};
-    if (s.startingCapital <= 0) errs['startingCapital'] = 'Starting capital must be > 0';
-    if (s.maxAllocationPct <= 0 || s.maxAllocationPct > 1) errs['maxAllocationPct'] = 'Must be between 0 and 1';
-    if (s.minTradeSize <= 0) errs['minTradeSize'] = 'Min trade size must be > 0';
-    if (s.minTradeSize > s.startingCapital) errs['minTradeSize'] = 'Min trade size cannot exceed starting capital';
-    if (s.maxOpenPositions <= 0) errs['maxOpenPositions'] = 'Must allow at least 1 open position';
+    if (s.startingCapital <= 0) {
+      errs['startingCapital'] = 'Starting capital must be > 0';
+    }
+    if (s.maxAllocationPct <= 0 || s.maxAllocationPct > 1) {
+      errs['maxAllocationPct'] = 'Must be between 0 and 1';
+    }
+    if (s.minTradeSize <= 0) {
+      errs['minTradeSize'] = 'Min trade size must be > 0';
+    }
+    if (s.minTradeSize > s.startingCapital) {
+      errs['minTradeSize'] = 'Min trade size cannot exceed starting capital';
+    }
+    if (s.maxOpenPositions <= 0) {
+      errs['maxOpenPositions'] = 'Must allow at least 1 open position';
+    }
     return errs;
   }
 
@@ -129,14 +156,18 @@ class SmallAccountNotifier extends StateNotifier<SmallAccountState> {
     if (errs.isNotEmpty) return false;
     state = state.copyWith(saving: true);
     try {
-      if (!Hive.isAdapterRegistered(1)) Hive.registerAdapter(_SmallAccountSettingsAdapter());
+      if (!Hive.isAdapterRegistered(1)) {
+        Hive.registerAdapter(_SmallAccountSettingsAdapter());
+      }
       final box = await Hive.openBox(_boxName);
       await box.put(_key, state.settings);
       // Also persist to Firestore if user is signed in so server-side functions can enforce rules
       try {
         final uid = FirebaseAuth.instance.currentUser?.uid;
         if (uid != null) {
-          final doc = FirebaseFirestore.instance.doc('users/$uid/smallAccountSettings');
+          final doc = FirebaseFirestore.instance.doc(
+            'users/$uid/smallAccountSettings',
+          );
           await doc.set(state.settings.toMap());
         }
       } catch (_) {
@@ -151,7 +182,10 @@ class SmallAccountNotifier extends StateNotifier<SmallAccountState> {
   }
 }
 
-final smallAccountProvider = StateNotifierProvider<SmallAccountNotifier, SmallAccountState>((ref) => SmallAccountNotifier());
+final smallAccountProvider =
+    StateNotifierProvider<SmallAccountNotifier, SmallAccountState>(
+      (ref) => SmallAccountNotifier(),
+    );
 
 class _SmallAccountSettingsAdapter extends TypeAdapter<SmallAccountSettings> {
   @override

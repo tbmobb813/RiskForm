@@ -7,9 +7,15 @@ class StrategyHealth {
   final double ivScore; // 0..1
   final double liquidityScore; // 0..1
 
-  StrategyHealth({required this.deltaScore, required this.thetaScore, required this.ivScore, required this.liquidityScore});
+  StrategyHealth({
+    required this.deltaScore,
+    required this.thetaScore,
+    required this.ivScore,
+    required this.liquidityScore,
+  });
 
-  double get overall => (deltaScore + thetaScore + ivScore + liquidityScore) / 4.0;
+  double get overall =>
+      (deltaScore + thetaScore + ivScore + liquidityScore) / 4.0;
 }
 
 class StrategyHealthService {
@@ -20,7 +26,9 @@ class StrategyHealthService {
     final deltaScore = (1.0 - (delta - 0.2).abs() / 0.5).clamp(0.0, 1.0);
 
     // Theta score: prefer moderate time to expiry (e.g., 7-45 days)
-    final dte = inputs?.expiration != null ? inputs!.expiration!.difference(DateTime.now()).inDays.toDouble() : 30.0;
+    final dte = inputs?.expiration != null
+        ? inputs!.expiration!.difference(DateTime.now()).inDays.toDouble()
+        : 30.0;
     final thetaScore = (1.0 - ((dte - 21.0).abs() / 60.0)).clamp(0.0, 1.0);
 
     // IV score: use a conservative default since implied volatility is not
@@ -32,6 +40,11 @@ class StrategyHealthService {
     final size = (inputs?.sharesOwned ?? 1).toDouble();
     final liquidityScore = (size / (size + 100)).clamp(0.0, 1.0);
 
-    return StrategyHealth(deltaScore: deltaScore, thetaScore: thetaScore, ivScore: ivScore, liquidityScore: liquidityScore);
+    return StrategyHealth(
+      deltaScore: deltaScore,
+      thetaScore: thetaScore,
+      ivScore: ivScore,
+      liquidityScore: liquidityScore,
+    );
   }
 }

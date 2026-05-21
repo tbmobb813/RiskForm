@@ -7,10 +7,20 @@ void main() {
     final planned = {'plannedEntryTime': dt, 'strike': 10};
     final exec = {'executedAt': dt, 'entryPrice': 5.5};
 
-    final payload = pb.buildScoreTradePayload(journalId: 'j1', plannedParams: planned, executedParams: exec);
+    final payload = pb.buildScoreTradePayload(
+      journalId: 'j1',
+      plannedParams: planned,
+      executedParams: exec,
+    );
     expect(payload['journalId'], equals('j1'));
-    expect(payload['plannedParams']['plannedEntryTime'], equals(dt.toIso8601String()));
-    expect(payload['executedParams']['executedAt'], equals(dt.toIso8601String()));
+    expect(
+      payload['plannedParams']['plannedEntryTime'],
+      equals(dt.toIso8601String()),
+    );
+    expect(
+      payload['executedParams']['executedAt'],
+      equals(dt.toIso8601String()),
+    );
     expect(payload['plannedParams']['strike'], equals(10));
   });
 }

@@ -11,7 +11,7 @@ void main() {
       'time': now,
       'ts': ts,
       'nested': {
-        'list': [now, ts, 'keep']
+        'list': [now, ts, 'keep'],
       },
       'value': 42,
     };

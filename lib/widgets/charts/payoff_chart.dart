@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:riskform/app.dart';
 import '../../models/analytics/regime_segment.dart';
 import '../../models/analytics/market_regime.dart';
 
@@ -6,30 +7,31 @@ class PayoffChart extends StatelessWidget {
   final List<Offset> curve;
   final double breakeven;
   final List<RegimeSegment>? regimes;
+  final String? strategyId;
 
   const PayoffChart({
     super.key,
     required this.curve,
     required this.breakeven,
     this.regimes,
+    this.strategyId,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final axisColor = theme.colorScheme.onSurface.withAlpha((0.6 * 255).round());
+    final lineColor = StrategyTheme.color(strategyId);
+
     return SizedBox(
       height: 240,
       child: Card(
-        color: theme.colorScheme.surfaceContainerHighest,
+        color: AppColors.surface2,
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.fromLTRB(8, 12, 8, 8),
           child: CustomPaint(
             painter: _PayoffPainter(
               curve: curve,
               breakeven: breakeven,
-              lineColor: theme.colorScheme.primary,
-              axisColor: axisColor,
+              lineColor: lineColor,
               regimes: regimes,
             ),
           ),
@@ -43,14 +45,12 @@ class _PayoffPainter extends CustomPainter {
   final List<Offset> curve;
   final double breakeven;
   final Color lineColor;
-  final Color axisColor;
   final List<RegimeSegment>? regimes;
 
-  _PayoffPainter({
+  const _PayoffPainter({
     required this.curve,
     required this.breakeven,
     required this.lineColor,
-    required this.axisColor,
     this.regimes,
   });
 
@@ -63,129 +63,213 @@ class _PayoffPainter extends CustomPainter {
     double minY = curve.first.dy;
     double maxY = curve.first.dy;
     for (final p in curve) {
-      if (p.dy < minY) { minY = p.dy; }
-      if (p.dy > maxY) { maxY = p.dy; }
+      if (p.dy < minY) minY = p.dy;
+      if (p.dy > maxY) maxY = p.dy;
     }
     if (minY == maxY) {
       minY -= 1;
       maxY += 1;
     }
+    // Add vertical padding so the line never clips the card edge
+    final yPad = (maxY - minY) * 0.1;
+    minY -= yPad;
+    maxY += yPad;
 
-    // axis paint reserved for other uses; specific paints below use adjusted alpha
-
-    // draw regime background bands first (if provided)
-    if (regimes != null && regimes!.isNotEmpty) {
-          for (final seg in regimes!) {
-        final start = seg.startIndex.toDouble();
-        final end = seg.endIndex.toDouble();
-        final left = _mapX(start, minX, maxX, size.width);
-        final right = _mapX(end, minX, maxX, size.width);
+    // ── Regime bands ────────────────────────────────────────────────────────
+    if (regimes != null) {
+      for (final seg in regimes!) {
         Color bandColor;
         switch (seg.regime) {
           case MarketRegime.uptrend:
-            	bandColor = Colors.green.withAlpha((0.08 * 255).round());
-            break;
+            bandColor = AppColors.profit.withAlpha(20);
           case MarketRegime.downtrend:
-            	bandColor = Colors.red.withAlpha((0.08 * 255).round());
-            break;
+            bandColor = AppColors.loss.withAlpha(20);
           case MarketRegime.sideways:
-            	bandColor = Colors.yellow.withAlpha((0.06 * 255).round());
-            break;
+            bandColor = AppColors.signal.withAlpha(15);
         }
-        final rect = Rect.fromLTRB(left, 0, right, size.height);
-        final paint = Paint()..color = bandColor;
-        canvas.drawRect(rect, paint);
+        final left = _mx(seg.startIndex.toDouble(), minX, maxX, size.width);
+        final right = _mx(seg.endIndex.toDouble(), minX, maxX, size.width);
+        canvas.drawRect(
+          Rect.fromLTRB(left, 0, right, size.height),
+          Paint()..color = bandColor,
+        );
       }
     }
 
-    // draw zero line
-    final zeroY = _mapY(0, minY, maxY, size.height);
-    final zeroPaint = Paint()
-      ..color = axisColor.withAlpha((0.35 * 255).round())
-      ..strokeWidth = 1;
-    canvas.drawLine(Offset(0, zeroY), Offset(size.width, zeroY), zeroPaint);
+    // ── Zero line ────────────────────────────────────────────────────────────
+    final zeroY = _my(0, minY, maxY, size.height);
+    canvas.drawLine(
+      Offset(0, zeroY),
+      Offset(size.width, zeroY),
+      Paint()
+        ..color = AppColors.textMuted.withAlpha(80)
+        ..strokeWidth = 1.5,
+    );
 
-    // draw breakeven vertical
-    if (breakeven >= minX && breakeven <= maxX) {
-      final bx = _mapX(breakeven, minX, maxX, size.width);
-      final bePaint = Paint()
-        ..color = axisColor.withAlpha((0.35 * 255).round())
-        ..strokeWidth = 1;
-      canvas.drawLine(Offset(bx, 0), Offset(bx, size.height), bePaint);
-    }
+    // ── Profit / loss fill areas ─────────────────────────────────────────────
+    _drawFill(canvas, size, minX, maxX, minY, maxY, zeroY, above: true);
+    _drawFill(canvas, size, minX, maxX, minY, maxY, zeroY, above: false);
 
-    // draw axes ticks
-    final textStyle = TextStyle(color: axisColor, fontSize: 10);
-    _drawXTicks(canvas, size, minX, maxX, textStyle);
-    _drawYTicks(canvas, size, minY, maxY, textStyle);
-
-    // draw payoff line
-    final path = Path();
+    // ── Payoff line ──────────────────────────────────────────────────────────
+    final linePath = Path();
     for (var i = 0; i < curve.length; i++) {
-      final p = curve[i];
-      final dx = _mapX(p.dx, minX, maxX, size.width);
-      final dy = _mapY(p.dy, minY, maxY, size.height);
-      if (i == 0) { path.moveTo(dx, dy); }
-      else { path.lineTo(dx, dy); }
+      final dx = _mx(curve[i].dx, minX, maxX, size.width);
+      final dy = _my(curve[i].dy, minY, maxY, size.height);
+      i == 0 ? linePath.moveTo(dx, dy) : linePath.lineTo(dx, dy);
     }
+    canvas.drawPath(
+      linePath,
+      Paint()
+        ..color = lineColor
+        ..strokeWidth = 2.5
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
 
-    final paintLine = Paint()
-      ..color = lineColor
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-
-    canvas.drawPath(path, paintLine);
-  }
-
-  double _mapX(double x, double minX, double maxX, double width) {
-    if (maxX - minX == 0) return 0;
-    return ((x - minX) / (maxX - minX)) * width;
-  }
-
-  double _mapY(double y, double minY, double maxY, double height) {
-    if (maxY - minY == 0) return height / 2;
-    // invert y for canvas coordinates
-    return height - ((y - minY) / (maxY - minY)) * height;
-  }
-
-  void _drawXTicks(Canvas canvas, Size size, double minX, double maxX, TextStyle style) {
-    final tickCount = 4;
-    final interval = (maxX - minX) / tickCount;
-    for (int i = 0; i <= tickCount; i++) {
-      final value = minX + (i * interval);
-      final x = _mapX(value, minX, maxX, size.width);
-      final tp = TextPainter(
-        text: TextSpan(text: value.toStringAsFixed(0), style: style),
-        textDirection: TextDirection.ltr,
+    // ── Breakeven vertical ───────────────────────────────────────────────────
+    if (breakeven >= minX && breakeven <= maxX) {
+      final bx = _mx(breakeven, minX, maxX, size.width);
+      canvas.drawLine(
+        Offset(bx, 0),
+        Offset(bx, size.height),
+        Paint()
+          ..color = AppColors.signal.withAlpha(120)
+          ..strokeWidth = 1
+          ..style = PaintingStyle.stroke,
       );
-      tp.layout();
-      tp.paint(canvas, Offset(x - tp.width / 2, size.height - tp.height));
-    }
-  }
-
-  void _drawYTicks(Canvas canvas, Size size, double minY, double maxY, TextStyle style) {
-    final tickCount = 4;
-    final interval = (maxY - minY) / tickCount;
-    for (int i = 0; i <= tickCount; i++) {
-      final value = minY + (i * interval);
-      final y = _mapY(value, minY, maxY, size.height);
-      final tp = TextPainter(
-        text: TextSpan(text: _formatCurrency(value), style: style),
-        textDirection: TextDirection.ltr,
+      // Breakeven label badge
+      _drawLabel(
+        canvas,
+        'BE \$${breakeven.toStringAsFixed(0)}',
+        Offset(bx + 4, 4),
+        AppColors.signal,
       );
-      tp.layout();
-      tp.paint(canvas, Offset(0, y - tp.height / 2));
+    }
+
+    // ── Axis ticks ───────────────────────────────────────────────────────────
+    _drawXTicks(canvas, size, minX, maxX);
+    _drawYTicks(canvas, size, minY, maxY);
+  }
+
+  /// Fill area above (profit) or below (loss) the zero line.
+  void _drawFill(
+    Canvas canvas,
+    Size size,
+    double minX,
+    double maxX,
+    double minY,
+    double maxY,
+    double zeroY, {
+    required bool above,
+  }) {
+    final fillPath = Path();
+    bool started = false;
+
+    for (var i = 0; i < curve.length; i++) {
+      final dx = _mx(curve[i].dx, minX, maxX, size.width);
+      final dy = _my(curve[i].dy, minY, maxY, size.height);
+      final isAbove = dy <= zeroY;
+
+      if (above ? isAbove : !isAbove) {
+        if (!started) {
+          fillPath.moveTo(dx, zeroY);
+          fillPath.lineTo(dx, dy);
+          started = true;
+        } else {
+          fillPath.lineTo(dx, dy);
+        }
+      } else if (started) {
+        fillPath.lineTo(dx, zeroY);
+        fillPath.close();
+        started = false;
+      }
+    }
+
+    if (started) {
+      final lastDx = _mx(curve.last.dx, minX, maxX, size.width);
+      fillPath.lineTo(lastDx, zeroY);
+      fillPath.close();
+    }
+
+    canvas.drawPath(
+      fillPath,
+      Paint()
+        ..color = (above ? AppColors.profit : AppColors.loss).withAlpha(30)
+        ..style = PaintingStyle.fill,
+    );
+  }
+
+  void _drawLabel(Canvas canvas, String text, Offset pos, Color color) {
+    final span = TextSpan(
+      text: text,
+      style: TextStyle(
+        color: color,
+        fontSize: 9,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.3,
+      ),
+    );
+    final tp = TextPainter(text: span, textDirection: TextDirection.ltr)
+      ..layout();
+    tp.paint(canvas, pos);
+  }
+
+  void _drawXTicks(Canvas canvas, Size size, double minX, double maxX) {
+    const count = 4;
+    final interval = (maxX - minX) / count;
+    final style = TextStyle(
+      color: AppColors.textMuted,
+      fontSize: 9,
+      fontWeight: FontWeight.w500,
+    );
+    for (var i = 0; i <= count; i++) {
+      final v = minX + i * interval;
+      final x = _mx(v, minX, maxX, size.width);
+      final tp = TextPainter(
+        text: TextSpan(text: v.toStringAsFixed(0), style: style),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      tp.paint(canvas, Offset(x - tp.width / 2, size.height - tp.height - 2));
     }
   }
 
-  String _formatCurrency(double v) {
-    if (v.abs() >= 1000) {
-      return '\$${(v / 1000).toStringAsFixed(1)}k';
+  void _drawYTicks(Canvas canvas, Size size, double minY, double maxY) {
+    const count = 4;
+    final interval = (maxY - minY) / count;
+    final style = TextStyle(
+      color: AppColors.textMuted,
+      fontSize: 9,
+      fontWeight: FontWeight.w500,
+    );
+    for (var i = 0; i <= count; i++) {
+      final v = minY + i * interval;
+      final y = _my(v, minY, maxY, size.height);
+      final label = v.abs() >= 1000
+          ? '\$${(v / 1000).toStringAsFixed(1)}k'
+          : '\$${v.toStringAsFixed(0)}';
+      final tp = TextPainter(
+        text: TextSpan(text: label, style: style),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      tp.paint(canvas, Offset(2, y - tp.height / 2));
     }
-    return '\$${v.toStringAsFixed(0)}';
+  }
+
+  double _mx(double x, double minX, double maxX, double w) {
+    if (maxX == minX) return 0;
+    return ((x - minX) / (maxX - minX)) * w;
+  }
+
+  double _my(double y, double minY, double maxY, double h) {
+    if (maxY == minY) return h / 2;
+    return h - ((y - minY) / (maxY - minY)) * h;
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _PayoffPainter old) =>
+      old.curve != curve ||
+      old.breakeven != breakeven ||
+      old.lineColor != lineColor ||
+      old.regimes != regimes;
 }
-

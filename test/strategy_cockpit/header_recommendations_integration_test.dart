@@ -29,7 +29,11 @@ class FakeVm extends ChangeNotifier implements StrategyCockpitViewModel {
   @override
   StrategyNarrative? narrative;
 
-  FakeVm({required this.strategyId, required this.strategy, this.recommendations}) {
+  FakeVm({
+    required this.strategyId,
+    required this.strategy,
+    this.recommendations,
+  }) {
     health = null;
     latestBacktest = null;
     currentRegime = null;
@@ -43,11 +47,15 @@ class FakeVm extends ChangeNotifier implements StrategyCockpitViewModel {
   @override
   Future<void> retireStrategy({String? reason}) async {}
   @override
-  void dispose() { super.dispose(); }
+  void dispose() {
+    super.dispose();
+  }
 }
 
 void main() {
-  testWidgets('Header shows RecommendationsPanel when VM has recommendations', (tester) async {
+  testWidgets('Header shows RecommendationsPanel when VM has recommendations', (
+    tester,
+  ) async {
     final strat = Strategy(
       id: 's1',
       name: 'Test Strategy',
@@ -60,13 +68,27 @@ void main() {
     final bundle = StrategyRecommendationsBundle(
       generatedAt: DateTime.now(),
       recommendations: [
-        StrategyRecommendation(category: 'risk', message: 'Reduce size by 20%', priority: 1),
+        StrategyRecommendation(
+          category: 'risk',
+          message: 'Reduce size by 20%',
+          priority: 1,
+        ),
       ],
     );
 
-    final vm = FakeVm(strategyId: 's1', strategy: strat, recommendations: bundle);
+    final vm = FakeVm(
+      strategyId: 's1',
+      strategy: strat,
+      recommendations: bundle,
+    );
 
-    await tester.pumpWidget(MaterialApp(home: Scaffold(body: StrategyHeader(strategyId: 's1', viewModel: vm))));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: StrategyHeader(strategyId: 's1', viewModel: vm),
+        ),
+      ),
+    );
 
     expect(find.text('Recommendations'), findsOneWidget);
     expect(find.text('Reduce size by 20%'), findsOneWidget);

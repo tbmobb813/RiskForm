@@ -6,15 +6,22 @@ void main() {
     final ctx = StrategyContext(
       healthScore: 55,
       pnlTrend: [-0.02, -0.01, 0.01, 0.02],
-      disciplineTrend: [80, 75,  fiftyMinus() /* placeholder replaced below */],
+      disciplineTrend: [80, 75, fiftyMinus() /* placeholder replaced below */],
       recentCycles: [
         CycleSummary(disciplineScore: 50, pnl: -100.0, regime: 'downtrend'),
         CycleSummary(disciplineScore: 45, pnl: -50.0, regime: 'downtrend'),
       ],
-      constraints: Constraints(maxRisk: 100, maxPositions: 10, allowedDteRange: [10, 60], allowedDeltaRange: [0.05, 0.5]),
+      constraints: Constraints(
+        maxRisk: 100,
+        maxPositions: 10,
+        allowedDteRange: [10, 60],
+        allowedDeltaRange: [0.05, 0.5],
+      ),
       currentRegime: 'downtrend',
       drawdown: 0.2,
-      backtestComparison: BacktestSummary(bestConfig: {'dte': 30, 'delta': 0.18, 'width': 'standard'}),
+      backtestComparison: BacktestSummary(
+        bestConfig: {'dte': 30, 'delta': 0.18, 'width': 'standard'},
+      ),
     );
 
     final bundle = generateRecommendations(ctx);

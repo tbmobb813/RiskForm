@@ -7,14 +7,21 @@ void main() {
     final root = Directory('lib');
     final regexSingle = RegExp(r"type\s*:\s*'share'");
     final regexDouble = RegExp(r'type\s*:\s*"share"');
-    final allowedEndsWith = <String>['lib/strategy_cockpit/strategies/leg.dart'];
+    final allowedEndsWith = <String>[
+      'lib/strategy_cockpit/strategies/leg.dart',
+    ];
 
     final violations = <String>[];
 
     for (final entity in root.listSync(recursive: true)) {
       if (entity is File && entity.path.endsWith('.dart')) {
         // skip allowed files
-        final relative = entity.path.replaceFirst('${Directory.current.path}${Platform.pathSeparator}', '').replaceAll('\\', '/');
+        final relative = entity.path
+            .replaceFirst(
+              '${Directory.current.path}${Platform.pathSeparator}',
+              '',
+            )
+            .replaceAll('\\', '/');
         if (allowedEndsWith.any((s) => relative.endsWith(s))) continue;
 
         final content = entity.readAsStringSync();
@@ -25,7 +32,9 @@ void main() {
     }
 
     if (violations.isNotEmpty) {
-      fail('Found manual OptionContract share constructions in:\n${violations.join('\n')}');
+      fail(
+        'Found manual OptionContract share constructions in:\n${violations.join('\n')}',
+      );
     }
   });
 }

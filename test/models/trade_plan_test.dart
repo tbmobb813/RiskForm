@@ -7,8 +7,18 @@ import 'package:riskform/models/risk_result.dart';
 void main() {
   test('TradePlan toJson contains expected keys and values', () {
     final inputs = TradeInputs(strike: 50.0);
-    final payoff = PayoffResult(maxGain: 100.0, maxLoss: 0.0, breakeven: 50.0, capitalRequired: 5000.0);
-    final risk = RiskResult(riskPercentOfAccount: 5.0, assignmentExposure: false, capitalLocked: 500.0, warnings: []);
+    final payoff = PayoffResult(
+      maxGain: 100.0,
+      maxLoss: 0.0,
+      breakeven: 50.0,
+      capitalRequired: 5000.0,
+    );
+    final risk = RiskResult(
+      riskPercentOfAccount: 5.0,
+      assignmentExposure: false,
+      capitalLocked: 500.0,
+      warnings: [],
+    );
 
     final plan = TradePlan(
       id: '1',

@@ -20,7 +20,11 @@ void main() {
   });
 
   test('Credit spread payoff calculation', () async {
-    final inputs = TradeInputs(shortStrike: 55.0, longStrike: 50.0, netCredit: 1.0);
+    final inputs = TradeInputs(
+      shortStrike: 55.0,
+      longStrike: 50.0,
+      netCredit: 1.0,
+    );
     final p = await engine.compute(strategyId: 'credit_spread', inputs: inputs);
 
     expect(p.maxGain, 1.0 * PayoffEngine.contractSize);

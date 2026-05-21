@@ -13,7 +13,8 @@ class StrategyDisciplineAnalyzer {
   // Returns: { 'adherence': x, 'timing': y, 'risk': z }
   // ------------------------------------------------------------
   static Map<String, int> computeViolationBreakdown(
-      StrategyHealthSnapshot snapshot) {
+    StrategyHealthSnapshot snapshot,
+  ) {
     final cycles = snapshot.cycleSummaries;
     if (cycles.isEmpty) {
       return {'adherence': 0, 'timing': 0, 'risk': 0};
@@ -30,11 +31,7 @@ class StrategyDisciplineAnalyzer {
       risk += (breakdown['risk'] ?? 0) < 20 ? 1 : 0;
     }
 
-    return {
-      'adherence': adherence,
-      'timing': timing,
-      'risk': risk,
-    };
+    return {'adherence': adherence, 'timing': timing, 'risk': risk};
   }
 
   // ------------------------------------------------------------
@@ -102,7 +99,8 @@ class StrategyDisciplineAnalyzer {
   // Recent Discipline Events (last 5 cycles)
   // ------------------------------------------------------------
   static List<Map<String, dynamic>> recentDisciplineEvents(
-      StrategyHealthSnapshot snapshot) {
+    StrategyHealthSnapshot snapshot,
+  ) {
     return snapshot.cycleSummaries.take(5).toList();
   }
 
@@ -110,8 +108,7 @@ class StrategyDisciplineAnalyzer {
   // Most Common Violation Type
   // Returns: "adherence" | "timing" | "risk" | "none"
   // ------------------------------------------------------------
-  static String computeMostCommonViolation(
-      StrategyHealthSnapshot snapshot) {
+  static String computeMostCommonViolation(StrategyHealthSnapshot snapshot) {
     final breakdown = computeViolationBreakdown(snapshot);
 
     if (breakdown.values.every((v) => v == 0)) {
@@ -155,6 +152,7 @@ class StrategyDisciplineAnalyzer {
     );
   }
 }
+
 class CycleDisciplineResult {
   final double score;
   final Map<String, dynamic> violations;

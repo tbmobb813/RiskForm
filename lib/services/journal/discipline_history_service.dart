@@ -8,16 +8,31 @@ class DisciplineHistoryService {
   DisciplineHistoryService({required this.scorer});
 
   /// Compute daily discipline scores for the past [days] (including today).
-  List<DailyDiscipline> computeHistory(List<JournalEntry> entries, {int days = 30}) {
+  List<DailyDiscipline> computeHistory(
+    List<JournalEntry> entries, {
+    int days = 30,
+  }) {
     final now = DateTime.now();
     final List<DailyDiscipline> out = [];
 
     for (var i = 0; i < days; i++) {
-      final day = DateTime(now.year, now.month, now.day).subtract(Duration(days: i));
+      final day = DateTime(
+        now.year,
+        now.month,
+        now.day,
+      ).subtract(Duration(days: i));
       final dayStart = DateTime(day.year, day.month, day.day);
       final dayEnd = dayStart.add(const Duration(days: 1));
 
-      final dayEntries = entries.where((e) => e.timestamp.isAfter(dayStart.subtract(const Duration(microseconds: 1))) && e.timestamp.isBefore(dayEnd)).toList();
+      final dayEntries = entries
+          .where(
+            (e) =>
+                e.timestamp.isAfter(
+                  dayStart.subtract(const Duration(microseconds: 1)),
+                ) &&
+                e.timestamp.isBefore(dayEnd),
+          )
+          .toList();
       final score = scorer.compute(dayEntries);
       out.add(DailyDiscipline(date: dayStart, score: score));
     }
@@ -41,7 +56,9 @@ class DisciplineHistoryService {
 
   double average(List<DailyDiscipline> history, {int lastN = 7}) {
     if (history.isEmpty) return 0.0;
-    final slice = history.sublist(history.length - lastN < 0 ? 0 : history.length - lastN);
+    final slice = history.sublist(
+      history.length - lastN < 0 ? 0 : history.length - lastN,
+    );
     final sum = slice.fold<double>(0.0, (a, d) => a + d.score.score);
     return sum / slice.length;
   }

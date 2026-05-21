@@ -66,9 +66,7 @@ class _InputSectionState extends State<InputSection> {
   }
 
   void _emitInputs() {
-    widget.onInputsChanged(
-      TradeInputs.fromControllers(controllers),
-    );
+    widget.onInputsChanged(TradeInputs.fromControllers(controllers));
   }
 
   String _labelFor(String key) {

@@ -41,12 +41,15 @@ class CloudBacktestEngine {
       switch (state) {
         case 'idle':
           final strike = price;
-          final premium = _blackScholesPut(price, strike, 0.25, 30 / 365.0) * 100;
+          final premium =
+              _blackScholesPut(price, strike, 0.25, 30 / 365.0) * 100;
           capital += premium;
           cspStrike = strike;
           cspDte = 30;
           state = 'cspOpen';
-          notes.add('Sold CSP @ ${strike.toStringAsFixed(2)}, premium ${premium.toStringAsFixed(2)}');
+          notes.add(
+            'Sold CSP @ ${strike.toStringAsFixed(2)}, premium ${premium.toStringAsFixed(2)}',
+          );
           break;
 
         case 'cspOpen':
@@ -62,7 +65,9 @@ class CloudBacktestEngine {
               shares = 100;
               costBasis = cspStrike;
               capital -= cspStrike * 100;
-              notes.add('CSP expired ITM, assigned @ ${cspStrike.toStringAsFixed(2)}');
+              notes.add(
+                'CSP expired ITM, assigned @ ${cspStrike.toStringAsFixed(2)}',
+              );
               cycleHadAssignment = true;
               state = 'assigned';
             } else {
@@ -75,18 +80,23 @@ class CloudBacktestEngine {
           break;
 
         case 'assigned':
-          notes.add('Shares confirmed at cost basis ${costBasis.toStringAsFixed(2)}');
+          notes.add(
+            'Shares confirmed at cost basis ${costBasis.toStringAsFixed(2)}',
+          );
           state = 'sharesOwned';
           break;
 
         case 'sharesOwned':
           final strike = price * 1.02;
-          final premium = _blackScholesCall(price, strike, 0.25, 30 / 365.0) * 100;
+          final premium =
+              _blackScholesCall(price, strike, 0.25, 30 / 365.0) * 100;
           capital += premium;
           ccStrike = strike;
           ccDte = 30;
           state = 'ccOpen';
-          notes.add('Sold CC @ ${strike.toStringAsFixed(2)}, premium ${premium.toStringAsFixed(2)}');
+          notes.add(
+            'Sold CC @ ${strike.toStringAsFixed(2)}, premium ${premium.toStringAsFixed(2)}',
+          );
           break;
 
         case 'ccOpen':
@@ -119,7 +129,9 @@ class CloudBacktestEngine {
               resetCycleThisIteration = true;
               cycleHadAssignment = false;
 
-              notes.add('CC expired ITM, called away @ ${ccStrike.toStringAsFixed(2)}');
+              notes.add(
+                'CC expired ITM, called away @ ${ccStrike.toStringAsFixed(2)}',
+              );
               state = 'idle';
             } else {
               notes.add('CC expired OTM, keeping shares');
@@ -153,11 +165,20 @@ class CloudBacktestEngine {
     }
 
     final avgCycleReturn = cycles.isNotEmpty
-        ? cycles.map((c) => ((c['endEquity'] as double) - (c['startEquity'] as double)) / (c['startEquity'] as double)).reduce((a, b) => a + b) / cycles.length
+        ? cycles
+                .map(
+                  (c) =>
+                      ((c['endEquity'] as double) -
+                          (c['startEquity'] as double)) /
+                      (c['startEquity'] as double),
+                )
+                .reduce((a, b) => a + b) /
+            cycles.length
         : 0.0;
 
     final avgCycleDuration = cycles.isNotEmpty
-        ? cycles.map((c) => c['durationDays'] as int).reduce((a, b) => a + b) / cycles.length
+        ? cycles.map((c) => c['durationDays'] as int).reduce((a, b) => a + b) /
+            cycles.length
         : 0.0;
 
     final assignmentRate = cycles.isNotEmpty
@@ -199,7 +220,9 @@ class CloudBacktestEngine {
     final d2 = d1 - denom;
     final price = S * _cdf(d1) - K * _cdf(d2);
     if (price.isNaN || price.isInfinite || price < 0) {
-      throw StateError('Invalid Black-Scholes call price computed: $price (S=$S K=$K sigma=$sigma T=$T)');
+      throw StateError(
+        'Invalid Black-Scholes call price computed: $price (S=$S K=$K sigma=$sigma T=$T)',
+      );
     }
     return price;
   }
@@ -217,7 +240,9 @@ class CloudBacktestEngine {
     final d2 = d1 - denom;
     final price = K * _cdf(-d2) - S * _cdf(-d1);
     if (price.isNaN || price.isInfinite || price < 0) {
-      throw StateError('Invalid Black-Scholes put price computed: $price (S=$S K=$K sigma=$sigma T=$T)');
+      throw StateError(
+        'Invalid Black-Scholes put price computed: $price (S=$S K=$K sigma=$sigma T=$T)',
+      );
     }
     return price;
   }
@@ -234,11 +259,14 @@ class CloudBacktestEngine {
     x = x.abs() / sqrt(2);
 
     final t = 1.0 / (1.0 + p * x);
-    final y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * exp(-x * x);
+    final y = 1.0 -
+        (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * exp(-x * x);
 
     return 0.5 * (1.0 + sign * y);
   }
 
-  double priceCall(double S, double K, double sigma, double T) => _blackScholesCall(S, K, sigma, T);
-  double pricePut(double S, double K, double sigma, double T) => _blackScholesPut(S, K, sigma, T);
+  double priceCall(double S, double K, double sigma, double T) =>
+      _blackScholesCall(S, K, sigma, T);
+  double pricePut(double S, double K, double sigma, double T) =>
+      _blackScholesPut(S, K, sigma, T);
 }

@@ -1,7 +1,7 @@
 class StrategyCycleRegime {
   final String? dominantRegime;
-  final double regimeScore;      // 0–100, how well it fits the regime
-  final double regimeAlignment;  // -1 to +1, negative = fights regime
+  final double regimeScore; // 0–100, how well it fits the regime
+  final double regimeAlignment; // -1 to +1, negative = fights regime
 
   const StrategyCycleRegime({
     required this.dominantRegime,

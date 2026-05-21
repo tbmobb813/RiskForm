@@ -44,11 +44,31 @@ class DefaultOptionsChainService implements OptionsChainService {
           type: 'put',
         );
 
-        calls.add(ChainOption(contract: callContract, bid: bid, ask: ask, volume: vol, openInterest: oi, delta: deltaCall));
-        puts.add(ChainOption(contract: putContract, bid: bid, ask: ask, volume: vol, openInterest: oi, delta: deltaPut));
+        calls.add(
+          ChainOption(
+            contract: callContract,
+            bid: bid,
+            ask: ask,
+            volume: vol,
+            openInterest: oi,
+            delta: deltaCall,
+          ),
+        );
+        puts.add(
+          ChainOption(
+            contract: putContract,
+            bid: bid,
+            ask: ask,
+            volume: vol,
+            openInterest: oi,
+            delta: deltaPut,
+          ),
+        );
       }
 
-      expiries.add(OptionExpiry(expiry: expiryDate, dte: dte, calls: calls, puts: puts));
+      expiries.add(
+        OptionExpiry(expiry: expiryDate, dte: dte, calls: calls, puts: puts),
+      );
     }
 
     return OptionChain(expirations: expiries);

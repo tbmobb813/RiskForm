@@ -22,11 +22,17 @@ class CockpitController extends StateNotifier<CockpitState> {
   final String? Function()? _getUid;
   final RegimeService? _regimeService;
 
-  CockpitController(this._ref, {CockpitDataClient? dataClient, String? Function()? getUid, RegimeService? regimeService})
-      : _dataClient = dataClient ?? DefaultCockpitDataClient(_ref.read(positionServiceProvider)),
-        _getUid = getUid,
-        _regimeService = regimeService,
-        super(CockpitState.initial());
+  CockpitController(
+    this._ref, {
+    CockpitDataClient? dataClient,
+    String? Function()? getUid,
+    RegimeService? regimeService,
+  }) : _dataClient =
+           dataClient ??
+           DefaultCockpitDataClient(_ref.read(positionServiceProvider)),
+       _getUid = getUid,
+       _regimeService = regimeService,
+       super(CockpitState.initial());
 
   /// Refresh cockpit data by loading from Firestore and local services.
   Future<void> refresh() async {
@@ -74,11 +80,15 @@ class CockpitController extends StateNotifier<CockpitState> {
       final scores = <int>[];
       final adherence = <int>[];
       for (final d in recent) {
-        final s = (d['disciplineScore'] is num) ? (d['disciplineScore'] as num).toInt() : null;
+        final s = (d['disciplineScore'] is num)
+            ? (d['disciplineScore'] as num).toInt()
+            : null;
         if (s != null) {
           scores.add(s);
         }
-        final a = (d['disciplineBreakdown'] is Map && (d['disciplineBreakdown']['adherence'] is num))
+        final a =
+            (d['disciplineBreakdown'] is Map &&
+                (d['disciplineBreakdown']['adherence'] is num))
             ? (d['disciplineBreakdown']['adherence'] as num).toInt()
             : null;
         if (a != null) {
@@ -86,7 +96,9 @@ class CockpitController extends StateNotifier<CockpitState> {
         }
       }
 
-      final avgScore = scores.isNotEmpty ? (scores.reduce((a, b) => a + b) ~/ scores.length) : 0;
+      final avgScore = scores.isNotEmpty
+          ? (scores.reduce((a, b) => a + b) ~/ scores.length)
+          : 0;
 
       int cleanStreak = 0;
       for (final s in scores) {
@@ -116,7 +128,11 @@ class CockpitController extends StateNotifier<CockpitState> {
       // Account snapshot from app providers
       final balance = _ref.read(accountBalanceProvider);
       final riskDeployed = _ref.read(riskDeployedProvider);
-      final account = AccountSnapshot.fromBalance(balance: balance, riskDeployed: riskDeployed, openPositions: positions.length);
+      final account = AccountSnapshot.fromBalance(
+        balance: balance,
+        riskDeployed: riskDeployed,
+        openPositions: positions.length,
+      );
 
       // Weekly summary (placeholder)
       final weekSummary = WeeklySummary.empty();
@@ -170,7 +186,9 @@ class CockpitController extends StateNotifier<CockpitState> {
 
   /// Remove a pending journal by position id
   Future<void> removePendingJournal(String positionId) async {
-    final list = state.pendingJournals.where((p) => p.positionId != positionId).toList();
+    final list = state.pendingJournals
+        .where((p) => p.positionId != positionId)
+        .toList();
     state = state.copyWith(pendingJournals: list);
   }
 
@@ -190,6 +208,7 @@ class CockpitController extends StateNotifier<CockpitState> {
   }
 }
 
-final cockpitControllerProvider = StateNotifierProvider<CockpitController, CockpitState>((ref) {
-  return CockpitController(ref);
-});
+final cockpitControllerProvider =
+    StateNotifierProvider<CockpitController, CockpitState>((ref) {
+      return CockpitController(ref);
+    });

@@ -77,10 +77,7 @@ class _TagsSectionState extends State<TagsSection> {
             spacing: 8,
             runSpacing: 8,
             children: _tags.map((tag) {
-              return Chip(
-                label: Text(tag),
-                onDeleted: () => _removeTag(tag),
-              );
+              return Chip(label: Text(tag), onDeleted: () => _removeTag(tag));
             }).toList(),
           ),
         if (_tags.isNotEmpty) const SizedBox(height: 12),
@@ -101,15 +98,11 @@ class _TagsSectionState extends State<TagsSection> {
         // Show available tag suggestions
         Wrap(
           spacing: 8,
-          children: availableTags
-              .where((tag) => !_tags.contains(tag))
-              .map((tag) {
-                return ActionChip(
-                  label: Text(tag),
-                  onPressed: () => _addTag(tag),
-                );
-              })
-              .toList(),
+          children: availableTags.where((tag) => !_tags.contains(tag)).map((
+            tag,
+          ) {
+            return ActionChip(label: Text(tag), onPressed: () => _addTag(tag));
+          }).toList(),
         ),
       ],
     );

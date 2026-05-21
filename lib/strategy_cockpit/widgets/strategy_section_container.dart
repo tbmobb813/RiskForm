@@ -4,7 +4,11 @@ class StrategySectionContainer extends StatelessWidget {
   final String title;
   final Widget child;
 
-  const StrategySectionContainer({super.key, required this.title, required this.child});
+  const StrategySectionContainer({
+    super.key,
+    required this.title,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {

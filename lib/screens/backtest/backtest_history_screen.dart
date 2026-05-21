@@ -23,7 +23,9 @@ class BacktestHistoryScreen extends ConsumerWidget {
                 return Card(
                   child: ListTile(
                     title: Text(e.label),
-                    subtitle: Text('${e.timestamp.toLocal()} • ${e.result.strategyId} • v${e.result.engineVersion}'),
+                    subtitle: Text(
+                      '${e.timestamp.toLocal()} • ${e.result.strategyId} • v${e.result.engineVersion}',
+                    ),
                     trailing: IconButton(
                       icon: const Icon(Icons.chevron_right),
                       onPressed: () {
@@ -32,9 +34,14 @@ class BacktestHistoryScreen extends ConsumerWidget {
                           context: context,
                           builder: (c) => AlertDialog(
                             title: Text(e.label),
-                            content: Text('Cycles: ${e.result.cyclesCompleted}\nTotal Return: ${(e.result.totalReturn * 100).toStringAsFixed(2)}%'),
+                            content: Text(
+                              'Cycles: ${e.result.cyclesCompleted}\nTotal Return: ${(e.result.totalReturn * 100).toStringAsFixed(2)}%',
+                            ),
                             actions: [
-                              TextButton(onPressed: () => Navigator.of(c).pop(), child: const Text('Close')),
+                              TextButton(
+                                onPressed: () => Navigator.of(c).pop(),
+                                child: const Text('Close'),
+                              ),
                             ],
                           ),
                         );

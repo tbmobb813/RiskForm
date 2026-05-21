@@ -32,7 +32,12 @@ class FakeWheelCycleService implements WheelCycleService {
   Future<WheelCycle?> getCycle(String uid) async => null;
 
   @override
-  Future<WheelCycle> updateCycle({required String uid, WheelCycle? previous, required List<Position> positions, bool persist = true}) async {
+  Future<WheelCycle> updateCycle({
+    required String uid,
+    WheelCycle? previous,
+    required List<Position> positions,
+    bool persist = true,
+  }) async {
     return previous ?? WheelCycle(state: WheelCycleState.idle);
   }
 
@@ -65,12 +70,18 @@ class FakeAuth implements AuthService {
   Future<void> signOut() async {}
 
   @override
-  Future<UserCredential> signInWithEmail({required String email, required String password}) async {
+  Future<UserCredential> signInWithEmail({
+    required String email,
+    required String password,
+  }) async {
     return FakeUserCredential();
   }
 
   @override
-  Future<UserCredential> signUpWithEmail({required String email, required String password}) async {
+  Future<UserCredential> signUpWithEmail({
+    required String email,
+    required String password,
+  }) async {
     return FakeUserCredential();
   }
 
@@ -108,8 +119,18 @@ void main() {
       strategyId: 'csp',
       strategyName: 'Cash Secured Put',
       inputs: TradeInputs(strike: 50.0),
-      payoff: PayoffResult(maxGain: 100, maxLoss: 0, breakeven: 50, capitalRequired: 5000),
-      risk: RiskResult(riskPercentOfAccount: 1.0, assignmentExposure: false, capitalLocked: 10.0, warnings: []),
+      payoff: PayoffResult(
+        maxGain: 100,
+        maxLoss: 0,
+        breakeven: 50,
+        capitalRequired: 5000,
+      ),
+      risk: RiskResult(
+        riskPercentOfAccount: 1.0,
+        assignmentExposure: false,
+        capitalLocked: 10.0,
+        warnings: [],
+      ),
       notes: '',
       tags: [],
       createdAt: DateTime.now(),
@@ -131,8 +152,18 @@ void main() {
       strategyId: 'csp',
       strategyName: 'Cash Secured Put',
       inputs: TradeInputs(strike: 51.0),
-      payoff: PayoffResult(maxGain: 100, maxLoss: 0, breakeven: 50, capitalRequired: 5000),
-      risk: RiskResult(riskPercentOfAccount: 1.0, assignmentExposure: false, capitalLocked: 10.0, warnings: []),
+      payoff: PayoffResult(
+        maxGain: 100,
+        maxLoss: 0,
+        breakeven: 50,
+        capitalRequired: 5000,
+      ),
+      risk: RiskResult(
+        riskPercentOfAccount: 1.0,
+        assignmentExposure: false,
+        capitalLocked: 10.0,
+        warnings: [],
+      ),
       notes: '',
       tags: [],
       createdAt: DateTime.now(),

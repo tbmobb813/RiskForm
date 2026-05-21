@@ -91,7 +91,9 @@ class StrategyHealthSnapshot {
       healthScore: (data['healthScore'] as num?)?.toDouble(),
       healthTrend: data['healthTrend'] == null
           ? null
-          : List<double>.from((data['healthTrend'] as List).map((v) => (v as num).toDouble())),
+          : List<double>.from(
+              (data['healthTrend'] as List).map((v) => (v as num).toDouble()),
+            ),
       healthLabel: data['healthLabel'],
     );
   }

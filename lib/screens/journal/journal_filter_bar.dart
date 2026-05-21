@@ -4,7 +4,11 @@ class JournalFilterBar extends StatelessWidget {
   final String selectedType;
   final void Function(String) onChanged;
 
-  const JournalFilterBar({super.key, required this.selectedType, required this.onChanged});
+  const JournalFilterBar({
+    super.key,
+    required this.selectedType,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {

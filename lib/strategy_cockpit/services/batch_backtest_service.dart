@@ -3,9 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class BatchBacktestService {
   final FirebaseFirestore _firestore;
 
-  BatchBacktestService({
-    FirebaseFirestore? firestore,
-  }) : _firestore = firestore ?? FirebaseFirestore.instance;
+  BatchBacktestService({FirebaseFirestore? firestore})
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> _batches(String strategyId) =>
       _firestore
@@ -83,18 +82,13 @@ class BatchBacktestService {
 
     final completedRuns = runDocs
         .where((d) => (d.data()?['status'] == 'complete'))
-        .map((d) => {
-              'runId': d.id,
-              ...?d.data(),
-            })
+        .map((d) => {'runId': d.id, ...?d.data()})
         .toList();
 
     if (completedRuns.isEmpty) {
       await batchRef.update({
         'status': 'failed',
-        'summary': {
-          'summaryNote': 'No completed runs.',
-        },
+        'summary': {'summaryNote': 'No completed runs.'},
       });
       return;
     }
@@ -138,9 +132,11 @@ class BatchBacktestService {
     regimePnl.forEach((regime, total) {
       final avg = total / (regimeCount[regime] ?? 1);
       if (avg < 0) {
-        regimeWeaknesses[regime] = 'Strategy tends to lose in $regime conditions.';
+        regimeWeaknesses[regime] =
+            'Strategy tends to lose in $regime conditions.';
       } else if (avg > 0) {
-        regimeWeaknesses[regime] = 'Strategy tends to perform well in $regime conditions.';
+        regimeWeaknesses[regime] =
+            'Strategy tends to perform well in $regime conditions.';
       }
     });
 

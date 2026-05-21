@@ -39,14 +39,20 @@ class FakeAuth implements AuthService {
 
   @override
   @override
-  Future<UserCredential> signInWithEmail({required String email, required String password}) async {
+  Future<UserCredential> signInWithEmail({
+    required String email,
+    required String password,
+  }) async {
     // Tests in this file don't rely on the returned credential; return
     // a lightweight fake credential so callers can await safely.
     return FakeUserCredential();
   }
 
   @override
-  Future<UserCredential> signUpWithEmail({required String email, required String password}) async {
+  Future<UserCredential> signUpWithEmail({
+    required String email,
+    required String password,
+  }) async {
     return FakeUserCredential();
   }
 
@@ -67,9 +73,18 @@ class FakeWheel implements WheelCycleService {
   bool updated = false;
 
   @override
-  Future<WheelCycle> updateCycle({required String uid, WheelCycle? previous, required positions, bool persist = true}) async {
+  Future<WheelCycle> updateCycle({
+    required String uid,
+    WheelCycle? previous,
+    required positions,
+    bool persist = true,
+  }) async {
     updated = true;
-    return WheelCycle(state: WheelCycleState.idle, lastTransition: null, cycleCount: 0);
+    return WheelCycle(
+      state: WheelCycleState.idle,
+      lastTransition: null,
+      cycleCount: 0,
+    );
   }
 
   @override
@@ -97,28 +112,41 @@ class FakeUserCredential implements UserCredential {
 }
 
 void main() {
-  test('savePlanAndUpdateWheel persists and calls wheel update when positions inferred', () async {
-    final service = FakeService();
-    final auth = FakeAuth('u1');
-    final wheel = FakeWheel();
+  test(
+    'savePlanAndUpdateWheel persists and calls wheel update when positions inferred',
+    () async {
+      final service = FakeService();
+      final auth = FakeAuth('u1');
+      final wheel = FakeWheel();
 
-    final repo = TradePlanRepository(service, auth, wheel);
+      final repo = TradePlanRepository(service, auth, wheel);
 
-    final plan = TradePlan(
-      id: 'p1',
-      strategyId: 'csp',
-      strategyName: 'S',
-      inputs: const TradeInputs(sharesOwned: 1),
-      payoff: PayoffResult(maxGain: 1, maxLoss: -1, breakeven: 0, capitalRequired: 0),
-      risk: RiskResult(riskPercentOfAccount:0.1, assignmentExposure:false, capitalLocked:0.0, warnings: []),
-      notes: '',
-      tags: [],
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
+      final plan = TradePlan(
+        id: 'p1',
+        strategyId: 'csp',
+        strategyName: 'S',
+        inputs: const TradeInputs(sharesOwned: 1),
+        payoff: PayoffResult(
+          maxGain: 1,
+          maxLoss: -1,
+          breakeven: 0,
+          capitalRequired: 0,
+        ),
+        risk: RiskResult(
+          riskPercentOfAccount: 0.1,
+          assignmentExposure: false,
+          capitalLocked: 0.0,
+          warnings: [],
+        ),
+        notes: '',
+        tags: [],
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
 
-    await repo.savePlanAndUpdateWheel(plan, persistPlan: true);
-    expect(service.saved, isTrue);
-    expect(wheel.updated, isTrue);
-  });
+      await repo.savePlanAndUpdateWheel(plan, persistPlan: true);
+      expect(service.saved, isTrue);
+      expect(wheel.updated, isTrue);
+    },
+  );
 }

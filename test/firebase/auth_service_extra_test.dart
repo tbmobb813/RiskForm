@@ -18,7 +18,9 @@ void main() {
 
   test('sendPasswordResetEmail maps network error', () async {
     final mock = MockFirebaseAuth();
-    when(() => mock.sendPasswordResetEmail(email: any(named: 'email'))).thenThrow(
+    when(
+      () => mock.sendPasswordResetEmail(email: any(named: 'email')),
+    ).thenThrow(
       FirebaseAuthException(code: 'network-request-failed', message: 'network'),
     );
 

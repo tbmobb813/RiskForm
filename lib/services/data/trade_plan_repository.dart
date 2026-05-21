@@ -22,11 +22,15 @@ class TradePlanRepository {
   final WheelCycleService _wheelService;
   final RepositoryInterface<Position> _positionsRepository;
 
-  TradePlanRepository(TradePlanService service, AuthService auth, [WheelCycleService? wheel, RepositoryInterface<Position>? positions])
-      : _service = service,
-        _auth = auth,
-        _wheelService = wheel ?? WheelCycleService(),
-        _positionsRepository = positions ?? _InMemoryPositionRepository();
+  TradePlanRepository(
+    TradePlanService service,
+    AuthService auth, [
+    WheelCycleService? wheel,
+    RepositoryInterface<Position>? positions,
+  ]) : _service = service,
+       _auth = auth,
+       _wheelService = wheel ?? WheelCycleService(),
+       _positionsRepository = positions ?? _InMemoryPositionRepository();
 
   Future<void> savePlan(TradePlan plan) async {
     final uid = _auth.currentUserId;
@@ -38,7 +42,10 @@ class TradePlanRepository {
   /// Save the plan and recompute the wheel cycle.
   /// If [persistPlan] is false, the method will only run the wheel update
   /// (useful when the plan was already persisted by another path).
-  Future<void> savePlanAndUpdateWheel(TradePlan plan, {bool persistPlan = true}) async {
+  Future<void> savePlanAndUpdateWheel(
+    TradePlan plan, {
+    bool persistPlan = true,
+  }) async {
     final uid = _auth.currentUserId;
     if (uid == null) throw Exception("User not logged in.");
 
@@ -54,23 +61,27 @@ class TradePlanRepository {
     if (positions.isEmpty) {
       final inferred = <Position>[];
       if (plan.strategyId == "csp") {
-        inferred.add(Position(
-          type: PositionType.csp,
-          symbol: plan.strategyName,
-          strategy: plan.strategyName,
-          quantity: plan.inputs.sharesOwned ?? 0,
-          expiration: plan.inputs.expiration ?? DateTime.now(),
-          isOpen: true,
-        ));
+        inferred.add(
+          Position(
+            type: PositionType.csp,
+            symbol: plan.strategyName,
+            strategy: plan.strategyName,
+            quantity: plan.inputs.sharesOwned ?? 0,
+            expiration: plan.inputs.expiration ?? DateTime.now(),
+            isOpen: true,
+          ),
+        );
       } else if (plan.strategyId == "cc") {
-        inferred.add(Position(
-          type: PositionType.coveredCall,
-          symbol: plan.strategyName,
-          strategy: plan.strategyName,
-          quantity: plan.inputs.sharesOwned ?? 0,
-          expiration: plan.inputs.expiration ?? DateTime.now(),
-          isOpen: true,
-        ));
+        inferred.add(
+          Position(
+            type: PositionType.coveredCall,
+            symbol: plan.strategyName,
+            strategy: plan.strategyName,
+            quantity: plan.inputs.sharesOwned ?? 0,
+            expiration: plan.inputs.expiration ?? DateTime.now(),
+            isOpen: true,
+          ),
+        );
       }
 
       positions = inferred;
@@ -78,12 +89,15 @@ class TradePlanRepository {
 
     if (positions.isEmpty) return;
 
-    final previous = await _wheelService.getCycle(uid) ??
+    final previous =
+        await _wheelService.getCycle(uid) ??
         WheelCycle(state: WheelCycleState.idle);
 
     // If positions were inferred (from planner intent) we compute the new
     // wheel cycle for UI feedback but avoid persisting it to Firestore.
-    final inferred = _positionsRepository.listAll().then((list) => list.isEmpty);
+    final inferred = _positionsRepository.listAll().then(
+      (list) => list.isEmpty,
+    );
     final bool positionsWereInferred = await inferred;
 
     await _wheelService.updateCycle(

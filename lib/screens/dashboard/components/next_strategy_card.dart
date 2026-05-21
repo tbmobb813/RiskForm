@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../state/meta_strategy_snapshot_provider.dart';
+import '../../../widgets/skeleton_card.dart';
 
 class NextStrategyCard extends ConsumerWidget {
   const NextStrategyCard({super.key});
@@ -10,11 +11,10 @@ class NextStrategyCard extends ConsumerWidget {
     final recommendation = ref.watch(metaStrategySnapshotProvider);
 
     return recommendation.when(
-      loading: () => const Card(
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Text("Evaluating next strategy..."),
-        ),
+      loading: () => const SkeletonCard(
+        title: 'Next Logical Action',
+        lines: 3,
+        titleWidth: 0.55,
       ),
       error: (e, _) => Card(
         child: Padding(
@@ -26,10 +26,7 @@ class NextStrategyCard extends ConsumerWidget {
               const SizedBox(height: 8),
               Text(
                 'Details: ${e.toString()}',
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.white70,
-                ),
+                style: const TextStyle(fontSize: 12, color: Colors.white70),
               ),
             ],
           ),
@@ -46,15 +43,9 @@ class NextStrategyCard extends ConsumerWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
-              Text(
-                rec.action,
-                style: const TextStyle(fontSize: 16),
-              ),
+              Text(rec.action, style: const TextStyle(fontSize: 16)),
               const SizedBox(height: 8),
-              Text(
-                rec.reason,
-                style: const TextStyle(color: Colors.white70),
-              ),
+              Text(rec.reason, style: const TextStyle(color: Colors.white70)),
             ],
           ),
         ),

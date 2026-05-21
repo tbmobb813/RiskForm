@@ -41,7 +41,9 @@ class Position {
       openedAt: opened,
       strategyId: data['strategyId'] as String? ?? 'unknown',
       planId: data['planId'] as String? ?? '',
-      entryPrice: (data['entryPrice'] is num) ? (data['entryPrice'] as num).toDouble() : 0.0,
+      entryPrice: (data['entryPrice'] is num)
+          ? (data['entryPrice'] as num).toDouble()
+          : 0.0,
       contracts: data['contracts'] as int? ?? 0,
       cycleState: data['cycleState'] as String? ?? 'opened',
     );

@@ -9,35 +9,53 @@ import 'package:riskform/strategy_cockpit/services/strategy_health_service.dart'
 import 'package:riskform/models/strategy_health_snapshot.dart';
 
 class FakeDisciplineHealthService implements StrategyHealthService {
-  final StreamController<StrategyHealthSnapshot?> _ctrl = StreamController.broadcast();
+  final StreamController<StrategyHealthSnapshot?> _ctrl =
+      StreamController.broadcast();
 
   @override
-  Stream<StrategyHealthSnapshot?> watchHealth(String strategyId) => _ctrl.stream;
+  Stream<StrategyHealthSnapshot?> watchHealth(String strategyId) =>
+      _ctrl.stream;
 
   void add(StrategyHealthSnapshot? s) => _ctrl.add(s);
 
   Future<void> close() async => await _ctrl.close();
 
   @override
-  Future<StrategyHealthSnapshot?> fetchLatestHealth(String strategyId) async => null;
+  Future<StrategyHealthSnapshot?> fetchLatestHealth(String strategyId) async =>
+      null;
   @override
   Future<void> saveHealthSnapshot(StrategyHealthSnapshot snapshot) async {}
   @override
-  Future<void> updateHealthFields({required String strategyId, Map<String, dynamic>? fields}) async {}
+  Future<void> updateHealthFields({
+    required String strategyId,
+    Map<String, dynamic>? fields,
+  }) async {}
   @override
-  Future<void> markHealthDirtyInTx({required dynamic tx, required String strategyId}) async {}
+  Future<void> markHealthDirtyInTx({
+    required dynamic tx,
+    required String strategyId,
+  }) async {}
   @override
   Future<void> recomputeHealth(String strategyId) async {}
 }
 
 void main() {
-  testWidgets('Discipline section displays streaks and events', (WidgetTester tester) async {
+  testWidgets('Discipline section displays streaks and events', (
+    WidgetTester tester,
+  ) async {
     final fake = FakeDisciplineHealthService();
-    final vm = StrategyDisciplineViewModel(strategyId: 's1', healthService: fake);
+    final vm = StrategyDisciplineViewModel(
+      strategyId: 's1',
+      healthService: fake,
+    );
 
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(body: StrategyDisciplineSection(strategyId: 's1', viewModel: vm)),
-    ));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: StrategyDisciplineSection(strategyId: 's1', viewModel: vm),
+        ),
+      ),
+    );
 
     // Initially loading
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
