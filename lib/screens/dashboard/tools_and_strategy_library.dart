@@ -132,20 +132,17 @@ class ToolsAndStrategyLibrary extends ConsumerWidget {
         const SizedBox(height: 8),
         StrategyTile(
           name: "Cash-Secured Put",
-          category: "Income",
-          color: Colors.greenAccent,
+          strategyId: "csp",
           onTap: () => GoRouter.of(context).pushNamed("planner", extra: "csp"),
         ),
         StrategyTile(
           name: "Covered Call",
-          category: "Income",
-          color: Colors.greenAccent,
+          strategyId: "cc",
           onTap: () => GoRouter.of(context).pushNamed("planner", extra: "cc"),
         ),
         StrategyTile(
           name: "Credit Spread",
-          category: "Income",
-          color: Colors.greenAccent,
+          strategyId: "credit_spread",
           onTap: () =>
               GoRouter.of(context).pushNamed("planner", extra: "credit_spread"),
         ),
@@ -157,16 +154,14 @@ class ToolsAndStrategyLibrary extends ConsumerWidget {
         const SizedBox(height: 8),
         StrategyTile(
           name: "Protective Put",
-          category: "Hedging",
-          color: Colors.yellowAccent,
+          strategyId: "protective_put",
           onTap: () => GoRouter.of(
             context,
           ).pushNamed("planner", extra: "protective_put"),
         ),
         StrategyTile(
           name: "Collar",
-          category: "Hedging",
-          color: Colors.yellowAccent,
+          strategyId: "collar",
           onTap: () =>
               GoRouter.of(context).pushNamed("planner", extra: "collar"),
         ),
@@ -181,22 +176,19 @@ class ToolsAndStrategyLibrary extends ConsumerWidget {
         const SizedBox(height: 8),
         StrategyTile(
           name: "Long Call",
-          category: "Speculation",
-          color: Colors.blueAccent,
+          strategyId: "long_call",
           onTap: () =>
               GoRouter.of(context).pushNamed("planner", extra: "long_call"),
         ),
         StrategyTile(
           name: "Long Put",
-          category: "Speculation",
-          color: Colors.blueAccent,
+          strategyId: "long_put",
           onTap: () =>
               GoRouter.of(context).pushNamed("planner", extra: "long_put"),
         ),
         StrategyTile(
           name: "Debit Spread",
-          category: "Speculation",
-          color: Colors.blueAccent,
+          strategyId: "debit_spread",
           onTap: () =>
               GoRouter.of(context).pushNamed("planner", extra: "debit_spread"),
         ),

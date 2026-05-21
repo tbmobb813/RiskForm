@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riskform/app.dart';
 import '../../../models/signal_planner_preset.dart';
 import '../../../state/planner_notifier.dart';
 import '../../dashboard/strategy_tile.dart';
@@ -27,7 +28,6 @@ class _StrategySelectorScreenState
     super.initState();
     final preset = widget.preset;
     if (preset != null) {
-      // Apply after first frame so the notifier is fully initialised
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         final planner = ref.read(plannerNotifierProvider.notifier);
@@ -38,7 +38,6 @@ class _StrategySelectorScreenState
           symbol: preset.ticker,
         );
         planner.updateInputs(preset.inputs);
-        // Skip the selector and go straight to the pre-filled planner form
         context.pushNamed('trade_planner');
       });
     }
@@ -53,7 +52,7 @@ class _StrategySelectorScreenState
     final preset = widget.preset;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Select Strategy"), elevation: 0),
+      appBar: AppBar(title: const Text('Select Strategy')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -69,17 +68,13 @@ class _StrategySelectorScreenState
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0D1A14),
-                    border: Border.all(color: const Color(0x2200FF88)),
-                    borderRadius: BorderRadius.circular(6),
+                    color: AppColors.signalDim,
+                    border: Border.all(color: AppColors.signal.withAlpha(60)),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
                     children: [
-                      const Icon(
-                        Icons.bolt,
-                        size: 16,
-                        color: Color(0xFF00FF88),
-                      ),
+                      const Icon(Icons.bolt, size: 16, color: AppColors.signal),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Column(
@@ -87,18 +82,16 @@ class _StrategySelectorScreenState
                           children: [
                             Text(
                               'Pre-filled from Signal Engine · ${preset.ticker}',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: Color(0xFF00FF88),
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: AppTextStyles.body(
+                                11,
+                                weight: FontWeight.w600,
+                              ).copyWith(color: AppColors.signal),
                             ),
                             Text(
                               preset.signalSummary,
-                              style: const TextStyle(
-                                fontSize: 10,
-                                color: Color(0xFF888888),
-                              ),
+                              style: AppTextStyles.body(
+                                10,
+                              ).copyWith(color: AppColors.textSecondary),
                             ),
                           ],
                         ),
@@ -108,158 +101,156 @@ class _StrategySelectorScreenState
                 ),
                 const SizedBox(height: 16),
               ],
-              const Text(
-                "Choose Your Objective",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-              ),
+
+              Text('Choose Your Objective', style: AppTextStyles.display(20)),
               const SizedBox(height: 4),
-              const Text(
-                "Start with intent. Risk comes first.",
-                style: TextStyle(color: Colors.white70),
+              Text(
+                'Start with intent. Risk comes first.',
+                style: AppTextStyles.body(
+                  13,
+                ).copyWith(color: AppColors.textSecondary),
               ),
-
               const SizedBox(height: 24),
 
-              // Income Strategies
-              const Text(
-                "Income",
-                style: TextStyle(fontWeight: FontWeight.w600),
+              _SectionHeader('Income'),
+              const SizedBox(height: 8),
+              StrategyTile(
+                name: 'Cash-Secured Put',
+                strategyId: 'csp',
+                onTap: () {
+                  planner.setStrategy(
+                    'csp',
+                    'Cash-Secured Put',
+                    'Sell a put and set aside cash for assignment.',
+                    symbol: symbolFromUrl,
+                  );
+                  context.pushNamed('trade_planner');
+                },
               ),
               const SizedBox(height: 8),
               StrategyTile(
-                name: "Cash-Secured Put",
-                category: "Income",
-                color: Colors.greenAccent,
+                name: 'Covered Call',
+                strategyId: 'cc',
                 onTap: () {
                   planner.setStrategy(
-                    "csp",
-                    "Cash-Secured Put",
-                    "Sell a put and set aside cash for assignment.",
+                    'cc',
+                    'Covered Call',
+                    'Sell a call against shares you already own.',
                     symbol: symbolFromUrl,
                   );
-                  context.pushNamed("trade_planner");
+                  context.pushNamed('trade_planner');
                 },
               ),
+              const SizedBox(height: 8),
               StrategyTile(
-                name: "Covered Call",
-                category: "Income",
-                color: Colors.greenAccent,
+                name: 'Credit Spread',
+                strategyId: 'credit_spread',
                 onTap: () {
                   planner.setStrategy(
-                    "cc",
-                    "Covered Call",
-                    "Sell a call against shares you already own.",
+                    'credit_spread',
+                    'Credit Spread',
+                    'Sell a put and buy a lower strike put to define risk.',
                     symbol: symbolFromUrl,
                   );
-                  context.pushNamed("trade_planner");
-                },
-              ),
-              StrategyTile(
-                name: "Credit Spread",
-                category: "Income",
-                color: Colors.greenAccent,
-                onTap: () {
-                  planner.setStrategy(
-                    "credit_spread",
-                    "Credit Spread",
-                    "Sell a put and buy a lower strike put to define risk.",
-                    symbol: symbolFromUrl,
-                  );
-                  context.pushNamed("trade_planner");
+                  context.pushNamed('trade_planner');
                 },
               ),
 
               const SizedBox(height: 24),
-
-              // Hedging Strategies
-              const Text(
-                "Hedging",
-                style: TextStyle(fontWeight: FontWeight.w600),
+              _SectionHeader('Hedging'),
+              const SizedBox(height: 8),
+              StrategyTile(
+                name: 'Protective Put',
+                strategyId: 'protective_put',
+                onTap: () {
+                  planner.setStrategy(
+                    'protective_put',
+                    'Protective Put',
+                    'Buy a put to limit downside risk.',
+                    symbol: symbolFromUrl,
+                  );
+                  context.pushNamed('trade_planner');
+                },
               ),
               const SizedBox(height: 8),
               StrategyTile(
-                name: "Protective Put",
-                category: "Hedging",
-                color: Colors.yellowAccent,
+                name: 'Collar',
+                strategyId: 'collar',
                 onTap: () {
                   planner.setStrategy(
-                    "protective_put",
-                    "Protective Put",
-                    "Buy a put to limit downside risk.",
+                    'collar',
+                    'Collar',
+                    'Sell a call and buy a put to cap upside and limit downside.',
                     symbol: symbolFromUrl,
                   );
-                  context.pushNamed("trade_planner");
-                },
-              ),
-              StrategyTile(
-                name: "Collar",
-                category: "Hedging",
-                color: Colors.yellowAccent,
-                onTap: () {
-                  planner.setStrategy(
-                    "collar",
-                    "Collar",
-                    "Sell a call and buy a put to cap upside and limit downside.",
-                    symbol: symbolFromUrl,
-                  );
-                  context.pushNamed("trade_planner");
+                  context.pushNamed('trade_planner');
                 },
               ),
 
               const SizedBox(height: 24),
-
-              // Speculation Strategies
-              const Text(
-                "Speculation",
-                style: TextStyle(fontWeight: FontWeight.w600),
+              _SectionHeader('Speculation'),
+              const SizedBox(height: 8),
+              StrategyTile(
+                name: 'Long Call',
+                strategyId: 'long_call',
+                onTap: () {
+                  planner.setStrategy(
+                    'long_call',
+                    'Long Call',
+                    'Buy a call for directional upside exposure.',
+                    symbol: symbolFromUrl,
+                  );
+                  context.pushNamed('trade_planner');
+                },
               ),
               const SizedBox(height: 8),
               StrategyTile(
-                name: "Long Call",
-                category: "Speculation",
-                color: Colors.blueAccent,
+                name: 'Long Put',
+                strategyId: 'long_put',
                 onTap: () {
                   planner.setStrategy(
-                    "long_call",
-                    "Long Call",
-                    "Buy a call for directional upside exposure.",
+                    'long_put',
+                    'Long Put',
+                    'Buy a put for directional downside exposure.',
                     symbol: symbolFromUrl,
                   );
-                  context.pushNamed("trade_planner");
+                  context.pushNamed('trade_planner');
                 },
               ),
+              const SizedBox(height: 8),
               StrategyTile(
-                name: "Long Put",
-                category: "Speculation",
-                color: Colors.blueAccent,
+                name: 'Debit Spread',
+                strategyId: 'debit_spread',
                 onTap: () {
                   planner.setStrategy(
-                    "long_put",
-                    "Long Put",
-                    "Buy a put for directional downside exposure.",
+                    'debit_spread',
+                    'Debit Spread',
+                    'Buy a call and sell a higher strike call to reduce cost.',
                     symbol: symbolFromUrl,
                   );
-                  context.pushNamed("trade_planner");
-                },
-              ),
-              StrategyTile(
-                name: "Debit Spread",
-                category: "Speculation",
-                color: Colors.blueAccent,
-                onTap: () {
-                  planner.setStrategy(
-                    "debit_spread",
-                    "Debit Spread",
-                    "Buy a call and sell a higher strike call to reduce cost.",
-                    symbol: symbolFromUrl,
-                  );
-                  context.pushNamed("trade_planner");
+                  context.pushNamed('trade_planner');
                 },
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String label;
+  const _SectionHeader(this.label);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label.toUpperCase(),
+      style: AppTextStyles.body(
+        11,
+        weight: FontWeight.w700,
+      ).copyWith(color: AppColors.textMuted, letterSpacing: 1.2),
     );
   }
 }

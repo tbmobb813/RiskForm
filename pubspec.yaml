@@ -24,6 +24,9 @@ dependencies:
   uuid: ^4.5.1
   file_picker: ^8.1.7
   csv: ^6.0.0
+  google_fonts: ^6.2.1
+  flutter_animate: ^4.5.0
+  shimmer: ^3.0.0
   riskform_core:
     path: packages/riskform_core
   riskform_cloud_worker:

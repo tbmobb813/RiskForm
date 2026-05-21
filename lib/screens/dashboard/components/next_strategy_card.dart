@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../state/meta_strategy_snapshot_provider.dart';
+import '../../../widgets/skeleton_card.dart';
 
 class NextStrategyCard extends ConsumerWidget {
   const NextStrategyCard({super.key});
@@ -10,11 +11,10 @@ class NextStrategyCard extends ConsumerWidget {
     final recommendation = ref.watch(metaStrategySnapshotProvider);
 
     return recommendation.when(
-      loading: () => const Card(
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Text("Evaluating next strategy..."),
-        ),
+      loading: () => const SkeletonCard(
+        title: 'Next Logical Action',
+        lines: 3,
+        titleWidth: 0.55,
       ),
       error: (e, _) => Card(
         child: Padding(

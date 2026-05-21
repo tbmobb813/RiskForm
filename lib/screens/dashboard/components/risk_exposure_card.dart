@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../state/risk_exposure_provider.dart';
 import '../../../models/risk_exposure.dart';
+import '../../../widgets/skeleton_card.dart';
 
 class RiskExposureCard extends ConsumerWidget {
   const RiskExposureCard({super.key});
@@ -64,11 +65,10 @@ class _LoadingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Card(
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Text("Calculating risk exposure..."),
-      ),
+    return const SkeletonCard(
+      title: 'Risk Exposure',
+      lines: 4,
+      titleWidth: 0.45,
     );
   }
 }
