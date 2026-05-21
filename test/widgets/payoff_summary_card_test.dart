@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riskform/screens/planner/components/payoff_summary_card.dart';
 import 'package:riskform/models/payoff_result.dart';
 
@@ -13,8 +14,10 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(body: PayoffSummaryCard(payoff: payoff)),
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(body: PayoffSummaryCard(payoff: payoff)),
+        ),
       ),
     );
 
