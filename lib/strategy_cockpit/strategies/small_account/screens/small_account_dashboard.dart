@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:riskform/state/strategy_controller.dart';
-// Navigation uses named routes; concrete screens are constructed via router with extras when needed.
 
 // Simple account providers (placeholders already present elsewhere in the app)
 import 'package:riskform/state/account_providers.dart';
@@ -129,7 +129,10 @@ class _ToolsSectionState extends ConsumerState<ToolsSection> {
             if (!mounted) return;
             if (ticker == null || ticker.isEmpty) return;
             // ignore: use_build_context_synchronously
-            Navigator.of(context).pushNamed('/small_account/scanner/$ticker');
+            context.pushNamed(
+              'small_account_scanner',
+              pathParameters: {'ticker': ticker},
+            );
           },
         ),
 
@@ -143,10 +146,11 @@ class _ToolsSectionState extends ConsumerState<ToolsSection> {
             final ticker = await _promptTicker();
             if (!mounted) return;
             if (ticker == null || ticker.isEmpty) return;
-            Navigator.of(
-              // ignore: use_build_context_synchronously
-              context,
-            ).pushNamed('/small_account/spread_builder/$ticker');
+            // ignore: use_build_context_synchronously
+            context.pushNamed(
+              'small_account_spread_builder',
+              pathParameters: {'ticker': ticker},
+            );
           },
         ),
       ],
@@ -216,10 +220,8 @@ class ActiveStrategySection extends ConsumerWidget {
             const SizedBox(height: 16),
 
             ElevatedButton(
-              onPressed: () => Navigator.pushNamed(
-                context,
-                '/small_account/strategy_dashboard',
-              ),
+              onPressed: () =>
+                  context.pushNamed('small_account_strategy_dashboard'),
               child: const Text('Open Strategy Dashboard'),
             ),
           ],

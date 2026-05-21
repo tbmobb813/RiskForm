@@ -207,5 +207,8 @@ class _PayoffPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _PayoffPainter old) =>
+      old.curve != curve ||
+      old.breakeven != breakeven ||
+      old.regimes != regimes;
 }

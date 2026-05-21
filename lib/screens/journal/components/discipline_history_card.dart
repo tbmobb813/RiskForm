@@ -45,7 +45,7 @@ class DisciplineHistoryCard extends StatelessWidget {
                     enabled: true,
                     handleBuiltInTouches: true,
                     touchTooltipData: LineTouchTooltipData(
-                      tooltipBgColor: Colors.black87,
+                      getTooltipColor: (_) => Colors.black87,
                       tooltipRoundedRadius: 6,
                       getTooltipItems: (touchedSpots) {
                         return touchedSpots.map((t) {
