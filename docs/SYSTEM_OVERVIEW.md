@@ -1,3 +1,5 @@
+> **Positioning note:** This is a technical architecture doc, still accurate on system internals. For current product positioning and business-phase status, see the root [`README.md`](../README.md) and [`ROADMAP.md`](../ROADMAP.md) — treat any phase numbering here as historical/internal design context, not active roadmap status.
+
 # SYSTEM OVERVIEW DOCUMENT
 ## A Unified Architecture for a Real-Time, Self-Improving Trading Intelligence System
 

@@ -1,3 +1,5 @@
+> **Positioning note:** This document is stale — it predates the RiskForm pivot and stops before Phase 4. For current product positioning and business-phase status, see the root [`README.md`](../README.md) and [`ROADMAP.md`](../ROADMAP.md).
+
 # Project Overview & Phase Summary
 
 This document provides a high‑level overview of the Planner MVP, including the vision, phases, architecture, and the major decisions made before and during implementation.

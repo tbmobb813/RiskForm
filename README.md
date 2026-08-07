@@ -1,39 +1,38 @@
-# Planner MVP — Wheel Strategy Simulator & Discipline Engine
+# RiskForm
 
-A discipline‑first trading platform designed to help small‑account traders execute the Wheel strategy with clarity, structure, and behavioral reinforcement.  
-This project models **time, state, and discipline**, not hype or prediction.
+**An options scenario simulator — stress-test your strategy before you risk capital.**
+
+RiskForm lets systematic options traders run a strategy through historical market regimes (uptrend, downtrend, sideways) before putting real money behind it. It models **time, state, and risk**, not hype or prediction.
 
 The system includes:
 
-- A full Wheel lifecycle simulator  
-- Realistic option pricing & assignment logic  
-- Regime‑aware analytics  
-- Strategy comparison  
-- Automated journaling  
-- Discipline scoring  
-- Habit tracking  
-- A calm, cockpit‑style UI  
+- A full Wheel lifecycle simulator
+- Realistic option pricing & assignment logic
+- Regime-aware analytics and historical-regime replay
+- Strategy comparison
+- Live regime, planner-hint, recommendation, and narrative engines
+- Automated journaling with sim-driven discipline scoring
+- A calm, cockpit-style UI
 
-This README provides an overview of the architecture, features, and development phases.
+This README provides an overview of the architecture, current state, and where the product is headed. For the phased business roadmap, see [`ROADMAP.md`](./ROADMAP.md).
 
 ---
 
 ## 🚀 Project Vision
 
-The Planner MVP is built around a simple philosophy:
+RiskForm is built around a simple philosophy:
 
-> **Trading success is a behavioral problem, not a P/L problem.**
+> **Know how a strategy behaves before you fund it.**
 
 The app helps traders:
 
-- plan trades  
-- simulate realistic outcomes  
-- understand regime‑dependent behavior  
-- track discipline  
-- compare strategies  
-- build long‑term habits  
+- simulate realistic Wheel campaign outcomes
+- replay a strategy against historical regime windows
+- understand regime-dependent behavior (assignment rates, cycle returns, drawdowns)
+- compare strategies side by side
+- see how simulated discipline compares to actual behavior
 
-The goal is not to predict markets — it’s to **reinforce disciplined execution**.
+The goal is not to predict markets — it's to give traders a rigorous way to **stress-test a strategy against how markets have actually behaved**, before capital is at risk.
 
 ---
 
@@ -43,40 +42,40 @@ The system is organized into five pillars:
 
 ### **1. Engines**
 
-- Pricing engine  
-- Assignment engine  
-- Lifecycle engine  
-- Backtest engine  
-- Regime classifier  
+- Pricing engine
+- Assignment engine
+- Lifecycle engine
+- Backtest engine
+- Regime classifier
 
 ### **2. State & Persistence**
 
-- Planner state  
-- Backtest state  
-- Firestore persistence  
-- Account context  
+- Planner state
+- Backtest state
+- Firestore persistence
+- Account context
 
 ### **3. Analytics**
 
-- Cycle‑level analytics  
-- Performance dashboard  
-- Regime segmentation  
-- Strategy comparison  
+- Cycle-level analytics
+- Performance dashboard
+- Regime segmentation
+- Strategy comparison
 
 ### **4. Journal**
 
-- Automated sim entries  
-- Live‑trade ingestion  
-- Discipline scoring  
-- Streaks & habits  
+- Automated sim entries
+- Live-trade ingestion (CSV import from major brokers)
+- Discipline scoring
+- Streaks & habits
 
 ### **5. UI**
 
-- Planner  
-- Dashboard  
-- Journal  
-- Comparison  
-- Discipline analytics  
+- Planner
+- Dashboard
+- Journal
+- Comparison
+- Discipline analytics
 
 ---
 
@@ -84,68 +83,13 @@ The system is organized into five pillars:
 
 lib/ models/ backtest/ analytics/ journal/ trade/ services/ engines/ analytics/ journal/ state/ screens/ planner/ performance/ comparison/ journal/ widgets/ charts/
 
-This structure is optimized for scalability and Phase 4 cloud execution.
-
 ---
 
-## 🧭 Development Phases
+## 🧭 Current State
 
-## **Phase 1 — Planner, Engines, Persistence**
+Engines, regime classification, analytics, journal, and strategy comparison are built and complete. Beyond that, the system already has **live** regime classification, planner hints, a strategy recommendations engine, and a strategy narrative engine running against real-time data (see `docs/SYSTEM_OVERVIEW.md` for the full technical picture).
 
-Core foundations.
-
-### Completed
-
-- Planner UI  
-- State management  
-- Pricing engine  
-- Lifecycle engine  
-- Payoff chart  
-- Firestore persistence  
-- Folder structure  
-- Account context provider  
-
----
-
-## **Phase 2 — Wheel Lifecycle, Dashboard, Risk**
-
-Full Wheel modeling + risk exposure.
-
-### Completed
-
-- CSP → assignment → CC → called away  
-- Cycle modeling  
-- Assignment & expiration logic  
-- Dashboard risk exposure  
-- Strategy recommendations  
-- Initial journal automation  
-
----
-
-## **Phase 3 — Analytics, Behavior, Comparison**
-
-Intelligence + behavior modeling.
-
-### Completed
-
-- Realistic option pricing  
-- Realistic assignment & expiration  
-- Cycle‑by‑cycle analytics  
-- Performance dashboard  
-- Strategy comparison  
-- Regime segmentation  
-- Journal automation  
-- Journal UI  
-- Discipline scoring  
-- Discipline streaks  
-- Habit tracking  
-- Pre‑Phase‑4 enhancements:
-  - Config snapshot  
-  - Cycle IDs  
-  - CycleOutcome enum  
-  - Backtest labels  
-
-Phase 3 is fully complete.
+The forward-looking business roadmap — what gets built next, in what order, and what's explicitly deprioritized — lives in [`ROADMAP.md`](./ROADMAP.md), not here. That file is the current source of truth for phase planning; treat any other phase numbering in `/docs` as historical design context, not active status.
 
 ---
 
@@ -153,47 +97,48 @@ Phase 3 is fully complete.
 
 ## **Wheel Strategy Simulator**
 
-- Realistic CSP/CC lifecycle  
-- Assignment & expiration logic  
-- Premium modeling  
-- Cycle detection  
-- Equity & drawdown curves  
+- Realistic CSP/CC lifecycle
+- Assignment & expiration logic
+- Premium modeling
+- Cycle detection
+- Equity & drawdown curves
 
-## **Regime‑Aware Analytics**
+## **Regime-Aware Analytics**
 
-- Uptrend / Downtrend / Sideways segmentation  
-- Regime‑specific cycle returns  
-- Regime‑specific assignment rates  
+- Uptrend / Downtrend / Sideways segmentation
+- Regime-specific cycle returns
+- Regime-specific assignment rates
+- Historical-regime replay: pick a past regime window and run a hypothetical campaign through it
 
 ## **Performance Dashboard**
 
-- Total return  
-- Max drawdown  
-- Cycle stats  
-- Equity curve  
-- Drawdown curve  
-- Regime breakdown  
+- Total return
+- Max drawdown
+- Cycle stats
+- Equity curve
+- Drawdown curve
+- Regime breakdown
 
 ## **Strategy Comparison**
 
-- Compare multiple configs  
-- Side‑by‑side metrics  
-- Multi‑curve equity chart  
+- Compare multiple configs
+- Side-by-side metrics
+- Multi-curve equity chart
 
 ## **Journal System**
 
-- Automated sim entries  
-- Live‑trade ingestion  
-- Unified journal structure  
-- Entry detail view  
-- Filtering by type  
+- Automated sim entries
+- Live-trade ingestion
+- Unified journal structure
+- Entry detail view
+- Filtering by type
 
 ## **Discipline Engine**
 
-- Discipline scoring  
-- Daily snapshots  
-- Streaks  
-- Habit tracking  
+- Discipline scoring derived from simulated-vs-actual behavior
+- Daily snapshots
+- Streaks
+- Habit tracking
 
 ---
 
@@ -219,18 +164,18 @@ The Wheel is treated as a deterministic state machine:
 
 Market behavior affects strategy behavior:
 
-- Uptrend  
-- Downtrend  
-- Sideways  
+- Uptrend
+- Downtrend
+- Sideways
 
-### **Behavioral Reinforcement**
+### **Sim-Driven Discipline**
 
 The system tracks:
 
-- discipline  
-- habits  
-- streaks  
-- adherence to plan  
+- discipline (derived automatically from simulated vs. actual behavior, not manual mood logs)
+- habits
+- streaks
+- adherence to plan
 
 ### **Unified Journal**
 
@@ -238,59 +183,39 @@ Sim + live trades share the same schema.
 
 ---
 
-## 📘 Documentation
+## 🌐 Platform
 
-All technical documentation for Phases 1–3 is available in:
-
-- `/docs/phase1-3-technical.md`  
-- `/docs/project-overview.md`  
-
-These include:
-
-- Backtest Engine Specification  
-- Cycle Lifecycle Specification  
-- Journal Specification  
-- Discipline Model  
-- Strategy Comparison Specification  
-- Regime Classification Rules  
+Web is the active build/deploy target (Flutter web, deployed via Firebase Hosting). Android, iOS, macOS, Linux, and Windows build targets exist in this repo but are **deprioritized and frozen** — no active CI or development investment goes into them for now. See `ROADMAP.md` for the platform-consolidation decision.
 
 ---
 
-## 🛣️ Next Steps (Phase 4 Preview)
+## 🧊 Frozen / Out of Scope
 
-Phase 4 will introduce:
+The following are explicitly **not** getting further investment right now:
 
-### **1. Cloud Backtesting Engine**
+- **Cloud distributed backtesting** — built and deployed (`cloud_worker/` on Google Cloud Run), but frozen: no new features, no roadmap dependency on it until a later phase's gate clears.
+- **Live broker execution sync** — not built. Only CSV import from broker exports exists today.
+- **Multi-strategy orchestration** — not built beyond docs-level design notes.
 
-- Distributed jobs  
-- Multi‑symbol  
-- Multi‑strategy  
-- Persistent results  
+Full detail and rationale in [`ROADMAP.md`](./ROADMAP.md).
 
-### **2. Pro Analytics**
+---
 
-- Volatility clustering  
-- Heatmaps  
-- Assignment risk curves  
-- Capital efficiency scoring  
+## 💳 Pricing
 
-### **3. Multi‑Strategy Orchestration**
+The simulator core is free. Deeper regime-scenario analysis and strategy comparison are planned to sit behind a future Pro tier once willingness-to-pay is validated — see `ROADMAP.md` Phase 2 for the pricing plan and gating approach. No billing exists yet.
 
-- Wheel + CSP ladder  
-- Wheel + PMCC  
-- Wheel + covered strangle  
+---
 
-### **4. Live Trading Integration**
+## 📘 Documentation
 
-- Broker sync  
-- Real‑time journal ingestion  
-- Sim vs live behavior comparison  
+Technical documentation lives in `/docs`, including phase-by-phase specs for the engines, regime classification, cloud worker, and live intelligence systems built to date. For current product positioning and business phase status, `README.md` (this file) and `ROADMAP.md` are authoritative; treat phase numbering inside individual `/docs` files as historical design context.
 
 ---
 
 ## 🧑‍💻 Contributing
 
-This project is currently under active development by the founder.  
+This project is currently under active development by the founder.
 External contributions may be opened in future phases.
 
 ---
