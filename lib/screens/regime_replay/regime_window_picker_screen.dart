@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riskform_core/models/backtest/backtest_config.dart';
 
+import '../../app.dart';
 import '../../models/analytics/regime_segment.dart';
 import '../../models/backtest/regime_replay_context.dart';
 import '../../services/historical/regime_window_catalog.dart';
@@ -95,9 +97,12 @@ class _RegimeWindowPickerScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Pick a historical regime window and replay a hypothetical '
               'Wheel campaign through it.',
+              style: AppTextStyles.body(
+                13,
+              ).copyWith(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 16),
             TextField(
@@ -141,26 +146,63 @@ class _RegimeWindowPickerScreenState
                       final segment = catalog.windows[index];
                       final days =
                           segment.endDate.difference(segment.startDate).inDays;
+                      final color = regimeColor(segment.regime);
                       return Card(
                         child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: regimeColor(segment.regime),
+                          leading: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: color.withValues(alpha: 0.15),
+                              boxShadow: AppGradients.glow(
+                                color,
+                                blur: 10,
+                                opacity: 0.3,
+                              ),
+                            ),
+                            alignment: Alignment.center,
                             child: Text(
                               regimeLabel(segment.regime)[0],
-                              style: const TextStyle(color: Colors.white),
+                              style: AppTextStyles.body(
+                                14,
+                                weight: FontWeight.w700,
+                              ).copyWith(color: color),
                             ),
                           ),
                           title: Text(
                             '${regimeLabel(segment.regime)} · $_symbol',
+                            style: AppTextStyles.body(
+                              14,
+                              weight: FontWeight.w600,
+                            ),
                           ),
                           subtitle: Text(
                             '${_formatDate(segment.startDate)} – '
                             '${_formatDate(segment.endDate)} ($days days)',
+                            style: AppTextStyles.mono(
+                              12,
+                              color: AppColors.textSecondary,
+                            ),
                           ),
-                          trailing: const Icon(Icons.chevron_right),
+                          trailing: const Icon(
+                            Icons.chevron_right,
+                            color: AppColors.textMuted,
+                          ),
                           onTap: () => _selectWindow(catalog, segment),
                         ),
-                      );
+                      )
+                          .animate(delay: Duration(milliseconds: 40 * index))
+                          .fadeIn(
+                            duration: const Duration(milliseconds: 280),
+                            curve: Curves.easeOut,
+                          )
+                          .slideY(
+                            begin: 0.12,
+                            end: 0,
+                            duration: const Duration(milliseconds: 280),
+                            curve: Curves.easeOut,
+                          );
                     },
                   );
                 },

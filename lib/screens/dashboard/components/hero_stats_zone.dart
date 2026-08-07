@@ -23,13 +23,19 @@ class HeroStatsZone extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: const BoxDecoration(
+        gradient: AppGradients.hero,
         color: AppColors.surface1,
         border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
       child: Row(
         children: [
           Expanded(
-            child: _CountUpTile(label: 'BALANCE', value: balance, prefix: '\$'),
+            child: _CountUpTile(
+              label: 'BALANCE',
+              value: balance,
+              prefix: '\$',
+              hero: true,
+            ),
           ),
           _divider(),
           Expanded(
@@ -72,16 +78,19 @@ class _CountUpTile extends StatelessWidget {
   final double value;
   final String prefix;
   final Color? valueColor;
+  final bool hero;
 
   const _CountUpTile({
     required this.label,
     required this.value,
     this.prefix = '',
     this.valueColor,
+    this.hero = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final color = valueColor ?? AppColors.textPrimary;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Column(
@@ -102,8 +111,10 @@ class _CountUpTile extends StatelessWidget {
             builder: (_, v, _) => Text(
               '$prefix${v.toStringAsFixed(2)}',
               style: AppTextStyles.mono(
-                14,
-                color: valueColor ?? AppColors.textPrimary,
+                hero ? 22 : 14,
+                color: color,
+              ).copyWith(
+                shadows: hero ? AppGradients.glow(color, opacity: 0.5) : null,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

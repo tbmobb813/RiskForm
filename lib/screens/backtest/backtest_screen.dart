@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riskform_core/models/backtest/backtest_config.dart';
 import 'package:riskform_core/models/backtest/backtest_result.dart';
 
+import '../../app.dart';
 import '../../state/backtest_engine_provider.dart';
 import '../../services/firebase/auth_service.dart';
 import '../../state/backtest_providers.dart';
@@ -278,23 +279,29 @@ class _RegimeReplayBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = regimeColor(replayContext.regime);
-    return Card(
-      color: color.withValues(alpha: 0.1),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            Icon(Icons.history, color: color),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Replaying ${replayContext.symbol} · ${regimeLabel(replayContext.regime)} · '
-                '${_formatDate(replayContext.startDate)} – ${_formatDate(replayContext.endDate)}',
-                style: TextStyle(color: color, fontWeight: FontWeight.w600),
-              ),
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+        boxShadow: AppGradients.glow(color, blur: 14, opacity: 0.18),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.history, color: color),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Replaying ${replayContext.symbol} · ${regimeLabel(replayContext.regime)} · '
+              '${_formatDate(replayContext.startDate)} – ${_formatDate(replayContext.endDate)}',
+              style: AppTextStyles.body(
+                14,
+                weight: FontWeight.w600,
+              ).copyWith(color: color),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
