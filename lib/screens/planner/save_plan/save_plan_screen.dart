@@ -159,7 +159,18 @@ class SavePlanScreen extends ConsumerWidget {
                     ElevatedButton(
                       onPressed: () async {
                         final ok = await planner.savePlan();
-                        if (!ok) return;
+                        if (!ok) {
+                          if (!context.mounted) return;
+                          final message = ref
+                              .read(plannerNotifierProvider)
+                              .errorMessage;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(message ?? "Failed to save plan."),
+                            ),
+                          );
+                          return;
+                        }
 
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(

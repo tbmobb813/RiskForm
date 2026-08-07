@@ -73,7 +73,17 @@ void main() {
     final payoffEngine = FakePayoffEngine();
     final riskEngine = FakeRiskEngine();
 
-    final notifier = PlannerNotifier(repo, payoffEngine, riskEngine);
+    final notifier = PlannerNotifier(
+      repo,
+      payoffEngine,
+      riskEngine,
+      null, // regimeEngine
+      null, // hintsService
+      null, // executionService
+      null, // liveSyncManager
+      null, // journalRepo
+      () => 'test-uid', // getUid
+    );
 
     notifier.setStrategy('csp', 'Cash Secured Put', 'desc');
     notifier.updateInputs(TradeInputs(strike: 50.0, premiumReceived: 2.0));
