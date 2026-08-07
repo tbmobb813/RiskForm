@@ -1,3 +1,5 @@
+> **Positioning note:** This document describes an earlier internal rebrand narrative that isn't the current external positioning. For current product positioning and business-phase status, see the root [`README.md`](../README.md) and [`ROADMAP.md`](../ROADMAP.md). The engineering philosophy below (risk-as-primary-abstraction, engines, guardrails) is still accurate design context.
+
 # RiskForm
 
 **RiskForm is a deterministic risk-first strategy framework for systematic options income.**
