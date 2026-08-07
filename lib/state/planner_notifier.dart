@@ -356,6 +356,13 @@ class PlannerNotifier extends StateNotifier<PlannerState> {
       return false;
     }
 
+    if (_safeUid() == null) {
+      state = state.copyWith(
+        errorMessage: "Sign in to save your trade plan.",
+      );
+      return false;
+    }
+
     state = state.copyWith(isLoading: true, clearError: true);
 
     try {
