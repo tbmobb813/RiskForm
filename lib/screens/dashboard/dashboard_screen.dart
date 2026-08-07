@@ -10,6 +10,8 @@ import 'components/risk_exposure_card.dart';
 import 'components/backtest_results_card.dart';
 import 'components/status_banner.dart';
 import 'active_positions_section.dart';
+import 'package:riskform/services/firebase/auth_service.dart';
+import 'package:riskform/screens/settings/settings_screen.dart';
 import 'package:riskform/state/strategy_controller.dart';
 import 'package:riskform/strategy_cockpit/strategies/small_account/screens/small_account_dashboard.dart'
     show SmallAccountDashboardBody;
@@ -21,11 +23,24 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(strategyControllerProvider);
     final ctl = ref.read(strategyControllerProvider.notifier);
+    final isSignedIn = ref.watch(currentUserIdProvider) != null;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('RiskForm'),
         actions: [
+          IconButton(
+            tooltip: isSignedIn ? 'Account' : 'Sign in to save your plans',
+            icon: Icon(
+              isSignedIn
+                  ? Icons.account_circle
+                  : Icons.account_circle_outlined,
+            ),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: SegmentedButton<AccountMode>(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../services/firebase/auth_service.dart';
 import '../../../state/planner_notifier.dart';
 import '../../backtest/backtest_screen.dart';
 import '../../../models/backtest/backtest_config.dart';
@@ -10,10 +11,22 @@ import '../../../models/comparison/comparison_config.dart';
 import '../../../services/engines/comparison_helper.dart';
 import '../../comparison/comparison_screen.dart';
 import '../../journal/journal_screen.dart';
+import '../../settings/sign_in_screen.dart';
 // trade plan persistence handled by PlannerNotifier
 import '../components/confirmation_summary_card.dart';
 import '../components/notes_field.dart';
 import '../components/tags_section.dart';
+
+SnackBarAction? _signInAction(BuildContext context, WidgetRef ref) {
+  if (ref.read(authServiceProvider).isAuthenticated) return null;
+  return SnackBarAction(
+    label: 'Sign In',
+    onPressed: () => Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const SignInScreen()),
+    ),
+  );
+}
 
 class SavePlanScreen extends ConsumerWidget {
   const SavePlanScreen({super.key});
@@ -167,6 +180,7 @@ class SavePlanScreen extends ConsumerWidget {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(message ?? "Failed to save plan."),
+                              action: _signInAction(context, ref),
                             ),
                           );
                           return;
@@ -191,11 +205,13 @@ class SavePlanScreen extends ConsumerWidget {
                         final ok = await planner.executeTrade();
                         if (!ok) {
                           if (!context.mounted) return;
+                          final message = ref
+                              .read(plannerNotifierProvider)
+                              .errorMessage;
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(
-                                state.errorMessage ?? 'Execution failed',
-                              ),
+                              content: Text(message ?? 'Execution failed'),
+                              action: _signInAction(context, ref),
                             ),
                           );
                           return;
