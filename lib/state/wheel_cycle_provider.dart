@@ -7,7 +7,11 @@ import '../screens/dashboard/active_positions_section.dart';
 final wheelCycleProvider = FutureProvider<WheelCycle>((ref) async {
   final auth = ref.read(authServiceProvider);
   final uid = auth.currentUserId;
-  if (uid == null) throw Exception('No user logged in');
+  // Signed-out users get the same idle default a first-time signed-in user
+  // would see, matching how accountContextProvider/riskProfileProvider
+  // already handle "no user" - only writes (saving a plan, saving a risk
+  // profile) require auth, not reading a default view.
+  if (uid == null) return WheelCycle(state: WheelCycleState.idle);
 
   final service = ref.read(wheelCycleServiceProvider);
 
