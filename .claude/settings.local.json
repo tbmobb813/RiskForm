@@ -7,7 +7,9 @@
       "Bash(gcloud services enable:*)",
       "Bash(git -C \"c:\\\\Users\\\\jsnni\\\\Projects\\\\RiskForm\" status)",
       "Bash(find:*)",
-      "Bash(flutter pub get:*)"
+      "Bash(flutter pub get:*)",
+      "mcp__Claude_Code_Remote__subscribe_pr_activity",
+      "mcp__Claude_Code_Remote__send_later"
     ]
   }
 }
