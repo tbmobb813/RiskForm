@@ -153,6 +153,15 @@ class _ToolsSectionState extends ConsumerState<ToolsSection> {
             );
           },
         ),
+
+        const SizedBox(height: 12),
+
+        ToolCard(
+          title: 'Regime Replay',
+          subtitle: 'Replay a Wheel campaign through a historical regime',
+          icon: Icons.history,
+          onTap: () => context.pushNamed('regime_replay'),
+        ),
       ],
     );
   }
