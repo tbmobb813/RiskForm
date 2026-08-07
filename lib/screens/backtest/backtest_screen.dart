@@ -9,6 +9,8 @@ import '../../state/backtest_engine_provider.dart';
 import '../../services/firebase/auth_service.dart';
 import '../../state/backtest_providers.dart';
 import '../../models/cloud/cloud_backtest_job.dart';
+import '../../models/backtest/regime_replay_context.dart';
+import '../regime_replay/regime_display.dart';
 import 'cloud_job_status_screen.dart';
 import '../../state/comparison_provider.dart';
 import '../../models/comparison/comparison_config.dart';
@@ -20,7 +22,8 @@ import 'components/backtest_log_list.dart';
 
 class BacktestScreen extends ConsumerStatefulWidget {
   final BacktestConfig config;
-  const BacktestScreen({super.key, required this.config});
+  final RegimeReplayContext? regimeContext;
+  const BacktestScreen({super.key, required this.config, this.regimeContext});
 
   @override
   ConsumerState<BacktestScreen> createState() => _BacktestScreenState();
@@ -127,6 +130,10 @@ class _BacktestScreenState extends ConsumerState<BacktestScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (widget.regimeContext != null) ...[
+              _RegimeReplayBanner(replayContext: widget.regimeContext!),
+              const SizedBox(height: 12),
+            ],
             Row(
               children: [
                 ElevatedButton(
@@ -259,5 +266,36 @@ class _BacktestScreenState extends ConsumerState<BacktestScreen> {
     _cloudJobSub?.cancel();
     _cloudJobSub = null;
     super.dispose();
+  }
+}
+
+class _RegimeReplayBanner extends StatelessWidget {
+  final RegimeReplayContext replayContext;
+  const _RegimeReplayBanner({required this.replayContext});
+
+  String _formatDate(DateTime d) => '${d.month}/${d.day}/${d.year}';
+
+  @override
+  Widget build(BuildContext context) {
+    final color = regimeColor(replayContext.regime);
+    return Card(
+      color: color.withValues(alpha: 0.1),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Icon(Icons.history, color: color),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Replaying ${replayContext.symbol} · ${regimeLabel(replayContext.regime)} · '
+                '${_formatDate(replayContext.startDate)} – ${_formatDate(replayContext.endDate)}',
+                style: TextStyle(color: color, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

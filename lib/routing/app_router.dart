@@ -20,6 +20,7 @@ import '../screens/planner/risk_summary/risk_summary_screen.dart';
 import '../screens/planner/save_plan/save_plan_screen.dart';
 import '../screens/planner/strategy_selector/strategy_selector_screen.dart';
 import '../screens/planner/trade_planner/trade_planner_screen.dart';
+import '../screens/regime_replay/regime_window_picker_screen.dart';
 import '../screens/signals/signal_engine_screen.dart';
 import 'app_shell.dart';
 import 'package:riskform/strategy_cockpit/strategies/small_account/screens/diagonal_builder_screen.dart';
@@ -192,6 +193,11 @@ final GoRouter appRouter = GoRouter(
               path: '/best-opps',
               name: 'best_opps',
               builder: (context, state) => const BestOppsScreen(),
+            ),
+            GoRoute(
+              path: '/regime-replay',
+              name: 'regime_replay',
+              builder: (context, state) => const RegimeWindowPickerScreen(),
             ),
             GoRoute(
               path: '/cloud/history/:userId',

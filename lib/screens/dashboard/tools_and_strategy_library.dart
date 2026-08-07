@@ -47,6 +47,11 @@ class ToolsAndStrategyLibrary extends ConsumerWidget {
               onTap: () => GoRouter.of(context).pushNamed('import_trades'),
             ),
             ToolTile(
+              label: "Regime Replay",
+              icon: Icons.history,
+              onTap: () => GoRouter.of(context).pushNamed('regime_replay'),
+            ),
+            ToolTile(
               label: "Payoff Visualizer",
               icon: Icons.show_chart,
               onTap: () {
