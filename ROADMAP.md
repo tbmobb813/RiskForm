@@ -44,10 +44,16 @@ RiskForm's Phase 6 work already shipped a **live recommendations engine** and a 
 
 ## Phase 1 — Wheel-only regime simulator MVP (Months 1–4)
 
-- Repackage what's already built (pricing/assignment/lifecycle engines, regime classifier — further along than a from-scratch plan would assume, see `docs/SYSTEM_OVERVIEW.md`) into the new frame: "run this CSP/CC campaign through Uptrend/Downtrend/Sideways regimes and see the outcome."
-- New feature, not cosmetic: let a user pick a historical regime window and replay a hypothetical Wheel campaign through it — this is the wedge no Wheel tracker offers.
-- Ship free, web, no-login-friction version. Launch on r/thetagang with the simulator framing, not the tracker framing.
-- **Gate:** 500 signups / 25+ weekly-engaged users within 90 days. Miss this badly → the demand assumption is wrong, stop before Phase 2.
+**Status: engineering substantially done; launch not yet started.**
+
+- ✅ Repackaged what's already built (pricing/assignment/lifecycle engines, regime classifier) into the new frame: "run this CSP/CC campaign through Uptrend/Downtrend/Sideways regimes and see the outcome." Reflected in `README.md`'s positioning.
+- ✅ Historical-regime replay wedge feature shipped: pick a real historical regime window for a symbol and replay a hypothetical Wheel campaign through it, using actual historical closes (`lib/screens/regime_replay/`, `lib/services/historical/regime_window_catalog.dart`).
+- ✅ No-login-friction core verified: the simulator (planner, backtest, regime replay) works fully signed-out. Verified end-to-end.
+- ✅ **Gate-blocker found and fixed**: there was no sign-up/sign-in screen anywhere in the app before this pass — `AuthService` had the methods but nothing in the UI called them, making the 500-signups gate below literally unmeasurable. Added `SignInScreen`/`SettingsScreen`, reachable via a persistent (not forced) account icon on the Home dashboard.
+- ✅ Fixed a related bug found during this pass: the Wheel-mode dashboard's "Next Logical Action" and "Wheel Cycle" cards hung indefinitely loading for signed-out users (100% of users, pre-sign-up) — one provider in the chain threw instead of defaulting, unlike its siblings. Fixed to match the established pattern (reads default gracefully; only writes require auth).
+- ⬜ **Not yet done**: signup/engagement analytics. Nothing currently tracks signups or weekly-active usage, so the gate below can't actually be measured yet even though sign-up now works.
+- ⬜ **Not yet done**: the actual r/thetagang launch, with the simulator framing (not the tracker framing). This is a marketing/timing decision, not an engineering task.
+- **Gate:** 500 signups / 25+ weekly-engaged users within 90 days **of actually launching** — the 90-day clock hasn't started yet. Miss this badly → the demand assumption is wrong, stop before Phase 2.
 
 ## Phase 2 — Validate willingness-to-pay (Months 4–9)
 

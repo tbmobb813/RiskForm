@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:riskform_core/models/backtest/backtest_result.dart';
 
+import '../../../app.dart';
+
 class BacktestMetricsCard extends StatelessWidget {
   final BacktestResult result;
 
@@ -8,21 +10,49 @@ class BacktestMetricsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isProfit = result.totalReturn >= 0;
+    final returnColor = isProfit ? AppColors.profit : AppColors.loss;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Performance Summary',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text('Performance Summary', style: AppTextStyles.display(16)),
+            const SizedBox(height: 12),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '${isProfit ? '+' : ''}${(result.totalReturn * 100).toStringAsFixed(1)}%',
+                  style: AppTextStyles.mono(28, color: returnColor).copyWith(
+                    fontWeight: FontWeight.w700,
+                    shadows: AppGradients.glow(returnColor, opacity: 0.4),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Icon(
+                    isProfit ? Icons.trending_up : Icons.trending_down,
+                    color: returnColor,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Text(
+                    'Total Return',
+                    style: AppTextStyles.body(
+                      12,
+                    ).copyWith(color: AppColors.textSecondary),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
-            _row(
-              'Total Return',
-              '${(result.totalReturn * 100).toStringAsFixed(1)}%',
-            ),
             _row(
               'Max Drawdown',
               '${(result.maxDrawdown * 100).toStringAsFixed(1)}%',
@@ -53,8 +83,13 @@ class BacktestMetricsCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(
+            label,
+            style: AppTextStyles.body(
+              13,
+            ).copyWith(color: AppColors.textSecondary),
+          ),
+          Text(value, style: AppTextStyles.mono(13, color: AppColors.textPrimary)),
         ],
       ),
     );

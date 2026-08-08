@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:riskform/app.dart';
 
 import '../../models/analytics/market_regime.dart';
 
 Color regimeColor(MarketRegime regime) {
   switch (regime) {
     case MarketRegime.uptrend:
-      return Colors.green;
+      return AppColors.profit;
     case MarketRegime.downtrend:
-      return Colors.red;
+      return AppColors.loss;
     case MarketRegime.sideways:
-      return Colors.grey;
+      return AppColors.textMuted;
   }
 }
 

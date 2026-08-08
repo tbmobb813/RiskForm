@@ -64,6 +64,39 @@ class AppTextStyles {
       );
 }
 
+// ── Gradients & glow ──────────────────────────────────────────────────────────
+
+class AppGradients {
+  AppGradients._();
+
+  // Subtle violet-tinted wash for hero surfaces.
+  static const hero = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [AppColors.primaryDim, Colors.transparent],
+  );
+
+  // Soft colored glow, e.g. behind badges, banners, and primary actions.
+  static List<BoxShadow> glow(
+    Color color, {
+    double blur = 16,
+    double opacity = 0.35,
+  }) => [
+    BoxShadow(
+      color: color.withValues(alpha: opacity),
+      blurRadius: blur,
+      spreadRadius: 1,
+    ),
+  ];
+
+  // Fade-to-transparent fill for chart areas under a line.
+  static LinearGradient chartFill(Color color) => LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [color.withValues(alpha: 0.3), color.withValues(alpha: 0.0)],
+  );
+}
+
 // ── Strategy color taxonomy ───────────────────────────────────────────────────
 
 class StrategyTheme {

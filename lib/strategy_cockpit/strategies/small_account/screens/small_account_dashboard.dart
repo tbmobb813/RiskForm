@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riskform/app.dart';
 import 'package:riskform/state/strategy_controller.dart';
 
 // Simple account providers (placeholders already present elsewhere in the app)
@@ -114,16 +116,15 @@ class _ToolsSectionState extends ConsumerState<ToolsSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Tools',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
+        Text('Tools', style: AppTextStyles.display(18)),
         const SizedBox(height: 12),
 
         ToolCard(
           title: 'Cheap Options Scanner',
           subtitle: 'Find affordable long calls and puts',
           icon: Icons.search,
+          color: AppColors.primary,
+          index: 0,
           onTap: () async {
             final ticker = await _promptTicker();
             if (!mounted) return;
@@ -142,6 +143,8 @@ class _ToolsSectionState extends ConsumerState<ToolsSection> {
           title: 'Debit Spread Builder',
           subtitle: 'Build defined-risk bullish spreads',
           icon: Icons.timeline,
+          color: AppColors.signal,
+          index: 1,
           onTap: () async {
             final ticker = await _promptTicker();
             if (!mounted) return;
@@ -160,6 +163,8 @@ class _ToolsSectionState extends ConsumerState<ToolsSection> {
           title: 'Regime Replay',
           subtitle: 'Replay a Wheel campaign through a historical regime',
           icon: Icons.history,
+          color: AppColors.profit,
+          index: 2,
           onTap: () => context.pushNamed('regime_replay'),
         ),
       ],
@@ -174,6 +179,8 @@ class ToolCard extends StatelessWidget {
   final String subtitle;
   final IconData icon;
   final VoidCallback onTap;
+  final Color color;
+  final int index;
 
   const ToolCard({
     super.key,
@@ -181,18 +188,43 @@ class ToolCard extends StatelessWidget {
     required this.subtitle,
     required this.icon,
     required this.onTap,
+    this.color = AppColors.primary,
+    this.index = 0,
   });
 
   @override
   Widget build(BuildContext context) {
     return Card(
       child: ListTile(
-        leading: Icon(icon, size: 32),
-        title: Text(title),
-        subtitle: Text(subtitle),
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: color, size: 20),
+        ),
+        title: Text(title, style: AppTextStyles.body(14, weight: FontWeight.w600)),
+        subtitle: Text(
+          subtitle,
+          style: AppTextStyles.body(12).copyWith(color: AppColors.textSecondary),
+        ),
+        trailing: const Icon(
+          Icons.chevron_right,
+          color: AppColors.textMuted,
+        ),
         onTap: onTap,
       ),
-    );
+    ).animate(delay: Duration(milliseconds: 60 * index)).fadeIn(
+          duration: const Duration(milliseconds: 320),
+          curve: Curves.easeOut,
+        ).slideY(
+          begin: 0.18,
+          end: 0,
+          duration: const Duration(milliseconds: 320),
+          curve: Curves.easeOut,
+        );
   }
 }
 
