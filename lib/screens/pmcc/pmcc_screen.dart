@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../services/engines/pmcc_engine.dart';
+import '../../widgets/tools/tool_widgets.dart';
 
 class PmccScreen extends StatefulWidget {
   const PmccScreen({super.key});
@@ -116,13 +117,10 @@ class _PmccScreenState extends State<PmccScreen> {
   );
 
   Widget _plain(TextEditingController c, String label, {bool decimal = true}) =>
-      TextField(
+      ToolField(
         controller: c,
-        keyboardType: TextInputType.numberWithOptions(decimal: decimal),
-        decoration: InputDecoration(
-          labelText: label,
-          border: const OutlineInputBorder(),
-        ),
+        label: label,
+        kind: decimal ? ToolFieldKind.decimal : ToolFieldKind.integer,
         onChanged: (_) => setState(() {}),
       );
 }
@@ -160,28 +158,31 @@ class _ResultView extends StatelessWidget {
               ),
             ),
           ),
-        _section(theme, 'Your cost', [
-          _row('Synthetic stock cost', _money(r.syntheticStockCost)),
-          _row('Net cost after premiums', _money(r.netDebit)),
-          _row('Effective cost basis', _money(r.effectiveBasis)),
+        ResultSection('Your cost', [
+          ResultRow('Synthetic stock cost', _money(r.syntheticStockCost)),
+          ResultRow('Net cost after premiums', _money(r.netDebit)),
+          ResultRow('Effective cost basis', _money(r.effectiveBasis)),
         ]),
-        _section(theme, 'LEAPS value', [
-          _row('Intrinsic value', _money(r.intrinsicValue)),
-          _row('Time value', _money(r.extrinsicValue)),
-          _row('Time value share of cost', _pct(r.extrinsicPercentOfCost)),
+        ResultSection('LEAPS value', [
+          ResultRow('Intrinsic value', _money(r.intrinsicValue)),
+          ResultRow('Time value', _money(r.extrinsicValue)),
+          ResultRow('Time value share of cost', _pct(r.extrinsicPercentOfCost)),
         ]),
-        _section(theme, 'If assigned at the short strike', [
-          _row('Strike gap', _money(r.width)),
-          _row('Best-case profit / share', _money(r.maxProfitPerShare)),
-          _row('Best-case profit / contract', _money(r.maxProfitPerContract)),
-          _row('Max loss / contract', _money(r.maxLossPerContract)),
+        ResultSection('If assigned at the short strike', [
+          ResultRow('Strike gap', _money(r.width)),
+          ResultRow('Best-case profit / share', _money(r.maxProfitPerShare)),
+          ResultRow(
+            'Best-case profit / contract',
+            _money(r.maxProfitPerContract),
+          ),
+          ResultRow('Max loss / contract', _money(r.maxLossPerContract)),
         ]),
-        _section(theme, 'Versus owning 100 shares', [
-          _row('Shares cost', _money(r.sharesCapitalPerContract)),
-          _row('LEAPS cost', _money(r.leapsCapitalPerContract)),
-          _row('Capital saved', _pct(r.capitalSavingsPercent)),
-          _row('This cycle: LEAPS', _pct(r.cycleReturnPercent)),
-          _row('This cycle: shares', _pct(r.sharesCycleReturnPercent)),
+        ResultSection('Versus owning 100 shares', [
+          ResultRow('Shares cost', _money(r.sharesCapitalPerContract)),
+          ResultRow('LEAPS cost', _money(r.leapsCapitalPerContract)),
+          ResultRow('Capital saved', _pct(r.capitalSavingsPercent)),
+          ResultRow('This cycle: LEAPS', _pct(r.cycleReturnPercent)),
+          ResultRow('This cycle: shares', _pct(r.sharesCycleReturnPercent)),
         ]),
         Padding(
           padding: const EdgeInsets.only(top: 4),
@@ -194,30 +195,4 @@ class _ResultView extends StatelessWidget {
       ],
     );
   }
-
-  Widget _section(ThemeData theme, String title, List<Widget> rows) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: theme.textTheme.titleMedium),
-          const SizedBox(height: 8),
-          ...rows,
-        ],
-      ),
-    ),
-  );
-
-  Widget _row(String label, String value) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 2),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Flexible(child: Text(label)),
-        const SizedBox(width: 8),
-        Text(value),
-      ],
-    ),
-  );
 }

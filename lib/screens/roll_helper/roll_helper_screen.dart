@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../services/engines/roll_decision_engine.dart';
+import '../../widgets/tools/tool_widgets.dart';
 
 class _CandidateFields {
   final strike = TextEditingController();
@@ -173,13 +174,10 @@ class _RollHelperScreenState extends State<RollHelperScreen> {
     TextEditingController c,
     String label, {
     bool decimal = true,
-  }) => TextField(
+  }) => ToolField(
     controller: c,
-    keyboardType: TextInputType.numberWithOptions(decimal: decimal),
-    decoration: InputDecoration(
-      labelText: label,
-      border: const OutlineInputBorder(),
-    ),
+    label: label,
+    kind: decimal ? ToolFieldKind.decimal : ToolFieldKind.integer,
     onChanged: (_) => setState(() {}),
   );
 }
@@ -215,17 +213,17 @@ class _ResultView extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(result.reason),
                 const Divider(height: 24),
-                _row(
+                ResultRow(
                   'In the money',
                   result.inTheMoney
                       ? '${result.inTheMoneyPercent.toStringAsFixed(1)}%'
                       : 'No',
                 ),
-                _row(
+                ResultRow(
                   'Premium captured',
                   '${result.premiumCapturedPercent.toStringAsFixed(0)}%',
                 ),
-                _row(
+                ResultRow(
                   isPut ? 'Cost basis if assigned' : 'Sale price if called',
                   '\$${result.assignmentPrice.toStringAsFixed(2)}',
                 ),
@@ -262,16 +260,19 @@ class _ResultView extends StatelessWidget {
               style: theme.textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
-            _row('Net credit / share', _signed(r.netCredit)),
-            _row('Net credit / contract', _signed(r.netCreditPerContract)),
-            _row(
+            ResultRow('Net credit / share', _signed(r.netCredit)),
+            ResultRow('Net credit / contract', _signed(r.netCreditPerContract)),
+            ResultRow(
               isPut ? 'New effective cost basis' : 'New effective sale price',
               '\$${r.effectivePrice.toStringAsFixed(2)}',
             ),
-            _row('Vs. assignment now', _signed(r.improvementVsAssignment)),
-            _row('Extra days', '${r.extraDays}'),
+            ResultRow('Vs. assignment now', _signed(r.improvementVsAssignment)),
+            ResultRow('Extra days', '${r.extraDays}'),
             if (isPut)
-              _row('Collateral change', _signed(r.capitalDeltaPerContract)),
+              ResultRow(
+                'Collateral change',
+                _signed(r.capitalDeltaPerContract),
+              ),
             for (final note in r.notes)
               Padding(
                 padding: const EdgeInsets.only(top: 6),
@@ -285,15 +286,4 @@ class _ResultView extends StatelessWidget {
       ),
     );
   }
-
-  Widget _row(String label, String value) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 2),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Flexible(child: Text(label)),
-        Text(value),
-      ],
-    ),
-  );
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../services/engines/probability_engine.dart';
+import '../../widgets/tools/tool_widgets.dart';
 
 class ProbabilityScreen extends StatefulWidget {
   const ProbabilityScreen({super.key});
@@ -108,17 +109,12 @@ class _ProbabilityScreenState extends State<ProbabilityScreen> {
   }
 
   Widget _field(TextEditingController c, String label, {bool decimal = true}) =>
-      Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: TextField(
-          controller: c,
-          keyboardType: TextInputType.numberWithOptions(decimal: decimal),
-          decoration: InputDecoration(
-            labelText: label,
-            border: const OutlineInputBorder(),
-          ),
-          onChanged: (_) => setState(() {}),
-        ),
+      ToolField(
+        controller: c,
+        label: label,
+        kind: decimal ? ToolFieldKind.decimal : ToolFieldKind.integer,
+        padded: true,
+        onChanged: (_) => setState(() {}),
       );
 }
 
@@ -145,36 +141,39 @@ class _ResultCard extends StatelessWidget {
               style: theme.textTheme.headlineSmall,
             ),
             const SizedBox(height: 12),
-            _row('Chance of assignment', _pct(r.probabilityInTheMoney)),
-            _row('Chance of keeping full credit', _pct(r.probabilityMaxProfit)),
+            ResultRow('Chance of assignment', _pct(r.probabilityInTheMoney)),
+            ResultRow(
+              'Chance of keeping full credit',
+              _pct(r.probabilityMaxProfit),
+            ),
             const Divider(height: 24),
-            _row('Breakeven', _money(r.breakeven)),
-            _row(
+            ResultRow('Breakeven', _money(r.breakeven)),
+            ResultRow(
               'Breakeven from stock price',
               '${r.breakevenDistancePercent.toStringAsFixed(1)}%',
             ),
-            _row(
+            ResultRow(
               'Strike from stock price',
               '${r.strikeDistancePercent.toStringAsFixed(1)}%',
             ),
-            _row(
+            ResultRow(
               'Strike distance',
               '${r.strikeSigmaDistance.toStringAsFixed(2)} std devs',
             ),
-            _row(
+            ResultRow(
               'Expected move (1 std dev)',
               '±${_money(r.expectedMove)}  (${_money(r.lowerBound)} to ${_money(r.upperBound)})',
             ),
             const Divider(height: 24),
-            _row('Max profit', _money(r.maxProfitPerContract)),
-            _row(
+            ResultRow('Max profit', _money(r.maxProfitPerContract)),
+            ResultRow(
               'Max loss',
               r.maxLossPerContract == null
                   ? 'Unlimited without shares'
                   : _money(r.maxLossPerContract!),
             ),
             if (r.returnOnRiskPercent != null)
-              _row(
+              ResultRow(
                 'Return on risk',
                 '${r.returnOnRiskPercent!.toStringAsFixed(1)}%',
               ),
@@ -183,17 +182,4 @@ class _ResultCard extends StatelessWidget {
       ),
     );
   }
-
-  Widget _row(String label, String value) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 2),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Flexible(child: Text(label)),
-        const SizedBox(width: 8),
-        Flexible(child: Text(value, textAlign: TextAlign.end)),
-      ],
-    ),
-  );
 }

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../services/engines/capital_allocation_engine.dart';
 import '../../services/engines/position_allocation_mapper.dart';
 import '../../state/account_context_provider.dart';
+import '../../widgets/tools/tool_widgets.dart';
 import '../dashboard/active_positions_section.dart';
 
 class _HoldingFields {
@@ -270,18 +271,12 @@ class _CapitalAllocationScreenState
     String label, {
     bool decimal = true,
     bool text = false,
-  }) => TextField(
+  }) => ToolField(
     controller: c,
-    keyboardType: text
-        ? TextInputType.text
-        : TextInputType.numberWithOptions(decimal: decimal),
-    textCapitalization: text
-        ? TextCapitalization.characters
-        : TextCapitalization.none,
-    decoration: InputDecoration(
-      labelText: label,
-      border: const OutlineInputBorder(),
-    ),
+    label: label,
+    kind: text
+        ? ToolFieldKind.text
+        : (decimal ? ToolFieldKind.decimal : ToolFieldKind.integer),
     onChanged: (_) => setState(() {}),
   );
 }
@@ -321,12 +316,12 @@ class _ResultView extends StatelessWidget {
                 const SizedBox(height: 12),
                 _bar(theme, palette),
                 const SizedBox(height: 12),
-                _row('Capital deployed', _money(r.totalDeployed)),
-                _row(
+                ResultRow('Capital deployed', _money(r.totalDeployed)),
+                ResultRow(
                   'Free cash',
                   '${_money(r.freeCash)} (${_pct(r.freeCashPercent)})',
                 ),
-                _row('Budget for next trade', _money(r.newPositionBudget)),
+                ResultRow('Budget for next trade', _money(r.newPositionBudget)),
                 if (r.newPositionBudget > 0)
                   Align(
                     alignment: Alignment.centerRight,
@@ -339,14 +334,17 @@ class _ResultView extends StatelessWidget {
                       label: const Text('Size a trade with this budget'),
                     ),
                   ),
-                _row(
+                ResultRow(
                   'Weighted annualized return',
                   r.weightedAnnualizedReturnPercent == null
                       ? 'n/a'
                       : _pct(r.weightedAnnualizedReturnPercent!),
                 ),
-                _row('Premium collected', _money(r.totalPremium)),
-                _row('Idle-cash alternative', _money(r.totalOpportunityCost)),
+                ResultRow('Premium collected', _money(r.totalPremium)),
+                ResultRow(
+                  'Idle-cash alternative',
+                  _money(r.totalOpportunityCost),
+                ),
                 for (final w in r.warnings)
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
@@ -360,59 +358,29 @@ class _ResultView extends StatelessWidget {
           ),
         ),
         if (r.symbols.isNotEmpty)
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('By symbol', style: theme.textTheme.titleMedium),
-                  const SizedBox(height: 8),
-                  for (final s in r.symbols)
-                    _row(
-                      s.symbol,
-                      '${_money(s.capital)} · ${_pct(s.percentOfAccount)}'
-                      '${s.overLimit ? '  over limit' : ''}',
-                    ),
-                ],
+          ResultSection('By symbol', [
+            for (final s in r.symbols)
+              ResultRow(
+                s.symbol,
+                '${_money(s.capital)} · ${_pct(s.percentOfAccount)}'
+                '${s.overLimit ? '  over limit' : ''}',
               ),
-            ),
-          ),
+          ]),
         if (r.holdings.isNotEmpty)
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('By position', style: theme.textTheme.titleMedium),
-                  const SizedBox(height: 8),
-                  for (final m in r.holdings)
-                    _row(
-                      '${m.holding.symbol.trim().isEmpty ? '(unnamed)' : m.holding.symbol.trim().toUpperCase()} '
-                          '${m.holding.strategy.label}',
-                      '${m.annualizedReturnPercent == null ? 'n/a' : _pct(m.annualizedReturnPercent!)}'
-                          '${m.underearning ? '  below cash' : ''}',
-                    ),
-                ],
+          ResultSection('By position', [
+            for (final m in r.holdings)
+              ResultRow(
+                '${m.holding.symbol.trim().isEmpty ? '(unnamed)' : m.holding.symbol.trim().toUpperCase()} '
+                    '${m.holding.strategy.label}',
+                '${m.annualizedReturnPercent == null ? 'n/a' : _pct(m.annualizedReturnPercent!)}'
+                    '${m.underearning ? '  below cash' : ''}',
               ),
-            ),
-          ),
+          ]),
         if (r.holdings.isNotEmpty)
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Capital freed', style: theme.textTheme.titleMedium),
-                  const SizedBox(height: 8),
-                  for (final e in r.capitalFreedWithin.entries)
-                    _row('Within ${e.key} days', _money(e.value)),
-                ],
-              ),
-            ),
-          ),
+          ResultSection('Capital freed', [
+            for (final e in r.capitalFreedWithin.entries)
+              ResultRow('Within ${e.key} days', _money(e.value)),
+          ]),
       ],
     );
   }
@@ -446,16 +414,4 @@ class _ResultView extends StatelessWidget {
       child: SizedBox(height: 16, child: Row(children: segments)),
     );
   }
-
-  Widget _row(String label, String value) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 2),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Flexible(child: Text(label)),
-        const SizedBox(width: 8),
-        Text(value),
-      ],
-    ),
-  );
 }
