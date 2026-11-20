@@ -1,7 +1,21 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { defineSecret } from "firebase-functions/params";
+import { consumeHourlyQuota } from "./rateLimit";
 
 const anthropicKey = defineSecret("ANTHROPIC_API_KEY");
+
+/** Most signals one user may generate per hour. Each one runs a web search. */
+const SIGNALS_PER_HOUR = 20;
+
+/** Replaced in tests so they do not need Firestore. */
+export const signalDeps = {
+  consumeQuota: (uid: string) =>
+    consumeHourlyQuota({
+      collection: "signalUsage",
+      uid,
+      limit: SIGNALS_PER_HOUR,
+    }),
+};
 
 const SIGNAL_SYSTEM_PROMPT = `You are an elite quantitative trading analyst and signal generation engine. You have expertise in:
 - Options flow analysis and Greeks interpretation
@@ -64,9 +78,23 @@ function parseSignalJson(text: string): Record<string, unknown> | null {
 export const generateSignal = onCall(
   { secrets: [anthropicKey], timeoutSeconds: 120 },
   async (request) => {
+    // Every call spends the Anthropic key, so only signed-in users may make one.
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "Sign in to generate signals.");
+    }
+    const uid = request.auth.uid;
+
     const ticker = request.data?.ticker;
     if (typeof ticker !== "string" || !ticker.trim()) {
       throw new HttpsError("invalid-argument", "ticker is required");
+    }
+
+    if (!(await signalDeps.consumeQuota(uid))) {
+      throw new HttpsError(
+        "resource-exhausted",
+        "You have reached the hourly limit for generating signals. " +
+          "Try again later."
+      );
     }
 
     const apiKey = anthropicKey.value();

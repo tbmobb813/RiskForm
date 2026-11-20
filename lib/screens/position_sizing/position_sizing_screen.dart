@@ -3,12 +3,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../services/engines/position_sizing_engine.dart';
 import '../../state/account_context_provider.dart';
+import '../../widgets/tools/tool_widgets.dart';
 
 class PositionSizingScreen extends ConsumerStatefulWidget {
   /// Overrides the buying power otherwise taken from the saved account.
   final double? initialBuyingPower;
+  final double? initialStrike;
 
-  const PositionSizingScreen({super.key, this.initialBuyingPower});
+  /// Premium per share.
+  final double? initialPremium;
+
+  const PositionSizingScreen({
+    super.key,
+    this.initialBuyingPower,
+    this.initialStrike,
+    this.initialPremium,
+  });
 
   @override
   ConsumerState<PositionSizingScreen> createState() =>
@@ -34,6 +44,14 @@ class _PositionSizingScreenState extends ConsumerState<PositionSizingScreen> {
     super.initState();
     final bp = widget.initialBuyingPower;
     if (bp != null) _buyingPower.text = bp.toStringAsFixed(0);
+    final strike = widget.initialStrike;
+    if (strike != null) {
+      _strike.text = strike == strike.roundToDouble()
+          ? strike.toStringAsFixed(0)
+          : strike.toStringAsFixed(2);
+    }
+    final premium = widget.initialPremium;
+    if (premium != null) _premium.text = premium.toStringAsFixed(2);
   }
 
   void _applyAccount(double size, double buyingPower) {
@@ -135,17 +153,11 @@ class _PositionSizingScreenState extends ConsumerState<PositionSizingScreen> {
     );
   }
 
-  Widget _field(TextEditingController c, String label) => Padding(
-    padding: const EdgeInsets.only(bottom: 12),
-    child: TextField(
-      controller: c,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      decoration: InputDecoration(
-        labelText: label,
-        border: const OutlineInputBorder(),
-      ),
-      onChanged: (_) => setState(() {}),
-    ),
+  Widget _field(TextEditingController c, String label) => ToolField(
+    controller: c,
+    label: label,
+    padded: true,
+    onChanged: (_) => setState(() {}),
   );
 }
 
@@ -179,24 +191,24 @@ class _ResultCard extends StatelessWidget {
                 style: theme.textTheme.bodySmall,
               ),
             const Divider(height: 24),
-            _row('Capital per contract', _money(r.capitalPerContract)),
-            _row('Max loss per contract', _money(r.maxLossPerContract)),
-            _row('Premium per contract', _money(r.premiumPerContract)),
-            _row(
+            ResultRow('Capital per contract', _money(r.capitalPerContract)),
+            ResultRow('Max loss per contract', _money(r.maxLossPerContract)),
+            ResultRow('Premium per contract', _money(r.premiumPerContract)),
+            ResultRow(
               'Return on capital',
               '${r.returnOnCapitalPercent.toStringAsFixed(2)}%',
             ),
             const Divider(height: 24),
-            _row('Max by capital', '${r.maxContractsByCapital}'),
-            _row('Max by risk', '${r.maxContractsByRisk}'),
-            _row('Total capital used', _money(r.totalCapital)),
-            _row(
+            ResultRow('Max by capital', '${r.maxContractsByCapital}'),
+            ResultRow('Max by risk', '${r.maxContractsByRisk}'),
+            ResultRow('Total capital used', _money(r.totalCapital)),
+            ResultRow(
               'Share of account',
               '${r.capitalPercentOfAccount.toStringAsFixed(1)}%',
             ),
-            _row('Total premium', _money(r.totalPremium)),
-            _row('Total max loss', _money(r.totalMaxLoss)),
-            _row(
+            ResultRow('Total premium', _money(r.totalPremium)),
+            ResultRow('Total max loss', _money(r.totalMaxLoss)),
+            ResultRow(
               'Min account for 1 contract',
               _money(r.minAccountForOneContract),
             ),
@@ -213,12 +225,4 @@ class _ResultCard extends StatelessWidget {
       ),
     );
   }
-
-  Widget _row(String label, String value) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 2),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [Text(label), Text(value)],
-    ),
-  );
 }

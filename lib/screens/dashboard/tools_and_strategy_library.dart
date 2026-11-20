@@ -47,6 +47,21 @@ class ToolsAndStrategyLibrary extends ConsumerWidget {
               onTap: () => GoRouter.of(context).pushNamed('position_sizing'),
             ),
             ToolTile(
+              label: "CSP Screener",
+              icon: Icons.filter_list,
+              onTap: () => GoRouter.of(context).pushNamed('csp_screener'),
+            ),
+            ToolTile(
+              label: "Poor Man's CC",
+              icon: Icons.compare_arrows,
+              onTap: () => GoRouter.of(context).pushNamed('pmcc'),
+            ),
+            ToolTile(
+              label: "Probability",
+              icon: Icons.percent,
+              onTap: () => GoRouter.of(context).pushNamed('probability'),
+            ),
+            ToolTile(
               label: "Roll Helper",
               icon: Icons.autorenew,
               onTap: () => GoRouter.of(context).pushNamed('roll_helper'),

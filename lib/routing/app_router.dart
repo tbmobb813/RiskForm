@@ -12,12 +12,16 @@ import '../screens/best_opps/best_opps_screen.dart';
 import '../screens/capital_allocation/capital_allocation_screen.dart';
 import '../screens/cockpit/debug/cockpit_debug_screen.dart';
 import '../screens/cockpit/small_account_cockpit_screen.dart';
+import '../screens/csp_screener/csp_screener_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
 import '../screens/import/import_screen.dart';
 import '../screens/journal/attach_screenshot_screen.dart';
 import '../screens/journal/journal_screen.dart';
 import '../screens/planner/payoff/payoff_screen.dart';
+import '../screens/pmcc/pmcc_screen.dart';
+import '../screens/position_sizing/position_sizing_args.dart';
 import '../screens/position_sizing/position_sizing_screen.dart';
+import '../screens/probability/probability_screen.dart';
 import '../screens/planner/risk_summary/risk_summary_screen.dart';
 import '../screens/planner/save_plan/save_plan_screen.dart';
 import '../screens/planner/strategy_selector/strategy_selector_screen.dart';
@@ -202,10 +206,28 @@ final GoRouter appRouter = GoRouter(
               name: 'position_sizing',
               builder: (context, state) {
                 final extra = state.extra;
+                final args = extra is PositionSizingArgs ? extra : null;
                 return PositionSizingScreen(
-                  initialBuyingPower: extra is num ? extra.toDouble() : null,
+                  initialBuyingPower: args?.buyingPower,
+                  initialStrike: args?.strike,
+                  initialPremium: args?.premium,
                 );
               },
+            ),
+            GoRoute(
+              path: '/csp-screener',
+              name: 'csp_screener',
+              builder: (context, state) => const CspScreenerScreen(),
+            ),
+            GoRoute(
+              path: '/pmcc',
+              name: 'pmcc',
+              builder: (context, state) => const PmccScreen(),
+            ),
+            GoRoute(
+              path: '/probability',
+              name: 'probability',
+              builder: (context, state) => const ProbabilityScreen(),
             ),
             GoRoute(
               path: '/roll-helper',
