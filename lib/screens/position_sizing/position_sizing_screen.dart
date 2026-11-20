@@ -1,0 +1,211 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../services/engines/position_sizing_engine.dart';
+import '../../state/account_context_provider.dart';
+
+class PositionSizingScreen extends ConsumerStatefulWidget {
+  const PositionSizingScreen({super.key});
+
+  @override
+  ConsumerState<PositionSizingScreen> createState() =>
+      _PositionSizingScreenState();
+}
+
+class _PositionSizingScreenState extends ConsumerState<PositionSizingScreen> {
+  static const _engine = PositionSizingEngine();
+
+  final _strike = TextEditingController();
+  final _premium = TextEditingController();
+  final _width = TextEditingController();
+  final _account = TextEditingController();
+  final _buyingPower = TextEditingController();
+  final _maxCapital = TextEditingController(text: '30');
+  final _maxLoss = TextEditingController(text: '10');
+
+  SizingStrategy _strategy = SizingStrategy.csp;
+  bool _prefilled = false;
+
+  @override
+  void dispose() {
+    for (final c in [
+      _strike,
+      _premium,
+      _width,
+      _account,
+      _buyingPower,
+      _maxCapital,
+      _maxLoss,
+    ]) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  double _num(TextEditingController c) => double.tryParse(c.text.trim()) ?? 0;
+
+  @override
+  Widget build(BuildContext context) {
+    ref.listen(accountContextProvider, (_, next) {
+      final acct = next.asData?.value;
+      if (acct != null && !_prefilled && acct.accountSize > 0) {
+        _prefilled = true;
+        setState(() {
+          _account.text = acct.accountSize.toStringAsFixed(0);
+          _buyingPower.text = acct.buyingPower.toStringAsFixed(0);
+        });
+      }
+    });
+    final existing = ref.read(accountContextProvider).asData?.value;
+    if (!_prefilled && existing != null && existing.accountSize > 0) {
+      _prefilled = true;
+      _account.text = existing.accountSize.toStringAsFixed(0);
+      _buyingPower.text = existing.buyingPower.toStringAsFixed(0);
+    }
+
+    final result = _engine.size(
+      PositionSizingInput(
+        strategy: _strategy,
+        strike: _num(_strike),
+        spreadWidth: _num(_width),
+        premium: _num(_premium),
+        accountSize: _num(_account),
+        buyingPower: _num(_buyingPower),
+        maxCapitalPercent: _num(_maxCapital),
+        maxLossPercent: _num(_maxLoss),
+      ),
+    );
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Position Sizing')),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          SegmentedButton<SizingStrategy>(
+            segments: const [
+              ButtonSegment(
+                value: SizingStrategy.csp,
+                label: Text('Cash-Secured Put'),
+              ),
+              ButtonSegment(
+                value: SizingStrategy.creditSpread,
+                label: Text('Credit Spread'),
+              ),
+            ],
+            selected: {_strategy},
+            onSelectionChanged: (s) => setState(() => _strategy = s.first),
+          ),
+          const SizedBox(height: 16),
+          _field(
+            _strike,
+            _strategy == SizingStrategy.csp ? 'Put strike' : 'Short strike',
+          ),
+          if (_strategy == SizingStrategy.creditSpread)
+            _field(_width, 'Spread width (\$)'),
+          _field(
+            _premium,
+            _strategy == SizingStrategy.csp
+                ? 'Premium per share'
+                : 'Net credit per share',
+          ),
+          _field(_account, 'Account size (\$)'),
+          _field(_buyingPower, 'Buying power (\$)'),
+          _field(_maxCapital, 'Max % of account in this position'),
+          _field(_maxLoss, 'Max % of account at risk'),
+          const SizedBox(height: 16),
+          if (result == null)
+            const Text('Enter valid trade and account details to size a trade.')
+          else
+            _ResultCard(result: result),
+        ],
+      ),
+    );
+  }
+
+  Widget _field(TextEditingController c, String label) => Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: TextField(
+      controller: c,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+      ),
+      onChanged: (_) => setState(() {}),
+    ),
+  );
+}
+
+class _ResultCard extends StatelessWidget {
+  final PositionSizingResult result;
+  const _ResultCard({required this.result});
+
+  String _money(double v) => '\$${v.toStringAsFixed(0)}';
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final r = result;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              r.recommendedContracts == 0
+                  ? 'No contracts fit your limits'
+                  : '${r.recommendedContracts} contract'
+                        '${r.recommendedContracts == 1 ? '' : 's'}',
+              style: theme.textTheme.headlineSmall,
+            ),
+            if (r.recommendedContracts > 0)
+              Text(
+                'Limited by ${r.limitingFactor == SizingLimit.capital ? 'capital' : 'max loss'}',
+                style: theme.textTheme.bodySmall,
+              ),
+            const Divider(height: 24),
+            _row('Capital per contract', _money(r.capitalPerContract)),
+            _row('Max loss per contract', _money(r.maxLossPerContract)),
+            _row('Premium per contract', _money(r.premiumPerContract)),
+            _row(
+              'Return on capital',
+              '${r.returnOnCapitalPercent.toStringAsFixed(2)}%',
+            ),
+            const Divider(height: 24),
+            _row('Max by capital', '${r.maxContractsByCapital}'),
+            _row('Max by risk', '${r.maxContractsByRisk}'),
+            _row('Total capital used', _money(r.totalCapital)),
+            _row(
+              'Share of account',
+              '${r.capitalPercentOfAccount.toStringAsFixed(1)}%',
+            ),
+            _row('Total premium', _money(r.totalPremium)),
+            _row('Total max loss', _money(r.totalMaxLoss)),
+            _row(
+              'Min account for 1 contract',
+              _money(r.minAccountForOneContract),
+            ),
+            for (final w in r.warnings)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  w,
+                  style: TextStyle(color: theme.colorScheme.error),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _row(String label, String value) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 2),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [Text(label), Text(value)],
+    ),
+  );
+}

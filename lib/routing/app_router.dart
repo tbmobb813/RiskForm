@@ -16,6 +16,7 @@ import '../screens/import/import_screen.dart';
 import '../screens/journal/attach_screenshot_screen.dart';
 import '../screens/journal/journal_screen.dart';
 import '../screens/planner/payoff/payoff_screen.dart';
+import '../screens/position_sizing/position_sizing_screen.dart';
 import '../screens/planner/risk_summary/risk_summary_screen.dart';
 import '../screens/planner/save_plan/save_plan_screen.dart';
 import '../screens/planner/strategy_selector/strategy_selector_screen.dart';
@@ -193,6 +194,11 @@ final GoRouter appRouter = GoRouter(
               path: '/best-opps',
               name: 'best_opps',
               builder: (context, state) => const BestOppsScreen(),
+            ),
+            GoRoute(
+              path: '/position-sizing',
+              name: 'position_sizing',
+              builder: (context, state) => const PositionSizingScreen(),
             ),
             GoRoute(
               path: '/regime-replay',
