@@ -64,6 +64,11 @@ function parseSignalJson(text: string): Record<string, unknown> | null {
 export const generateSignal = onCall(
   { secrets: [anthropicKey], timeoutSeconds: 120 },
   async (request) => {
+    // Every call spends the Anthropic key, so only signed-in users may make one.
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "Sign in to generate signals.");
+    }
+
     const ticker = request.data?.ticker;
     if (typeof ticker !== "string" || !ticker.trim()) {
       throw new HttpsError("invalid-argument", "ticker is required");
