@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../exceptions/app_exceptions.dart';
+import '../analytics/analytics_service.dart';
 
 final authServiceProvider = Provider<AuthService>((ref) => AuthService());
 
@@ -78,10 +79,12 @@ class AuthService {
       if (_auth == null) {
         throw FirebaseAuthException(code: 'no-app', message: 'No Firebase');
       }
-      return await _auth.createUserWithEmailAndPassword(
+      final cred = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
+      AnalyticsService.logSignUp();
+      return cred;
     } on FirebaseAuthException catch (e) {
       throw _mapFirebaseAuthException(e);
     }

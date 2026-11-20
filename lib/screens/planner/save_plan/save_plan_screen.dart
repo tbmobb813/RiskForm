@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riskform/services/analytics/analytics_service.dart';
 import '../../../services/firebase/auth_service.dart';
 import '../../../state/planner_notifier.dart';
 import '../../backtest/backtest_screen.dart';
@@ -98,6 +99,9 @@ class SavePlanScreen extends ConsumerWidget {
                     final runner = ref.read(comparisonRunnerProvider);
                     final comparisonConfig = ComparisonConfig(configs: configs);
                     final result = await runner.run(comparisonConfig);
+                    AnalyticsService.log(AnalyticsEvents.strategyCompare, {
+                      'strategies': configs.length,
+                    });
 
                     if (context.mounted) {
                       Navigator.of(context).push(

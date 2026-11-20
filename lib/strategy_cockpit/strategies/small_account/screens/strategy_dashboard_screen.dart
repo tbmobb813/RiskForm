@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riskform/services/analytics/analytics_service.dart';
 import 'package:riskform/state/strategy_controller.dart';
 import 'package:riskform/state/option_pricing_provider.dart';
 import 'package:riskform/strategy_cockpit/strategies/payoff_point.dart';
@@ -193,6 +194,9 @@ class StrategyHeaderCard extends ConsumerWidget {
                     endDate: DateTime.now(),
                   );
                   final result = bengine.run(config);
+                  AnalyticsService.log(AnalyticsEvents.simRun, {
+                    'source': 'small_account',
+                  });
                   // Attach summary to journal entry (best-effort) using available fields
                   final enriched = JournalEntry(
                     id: entry.id,
