@@ -9,6 +9,7 @@ import '../screens/backtest/cloud_backtest_history_screen.dart';
 import '../screens/backtest/cloud_backtest_result_screen.dart';
 import '../screens/backtest/cloud_job_status_screen.dart';
 import '../screens/best_opps/best_opps_screen.dart';
+import '../screens/capital_allocation/capital_allocation_screen.dart';
 import '../screens/cockpit/debug/cockpit_debug_screen.dart';
 import '../screens/cockpit/small_account_cockpit_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
@@ -205,6 +206,11 @@ final GoRouter appRouter = GoRouter(
               path: '/roll-helper',
               name: 'roll_helper',
               builder: (context, state) => const RollHelperScreen(),
+            ),
+            GoRoute(
+              path: '/capital-allocation',
+              name: 'capital_allocation',
+              builder: (context, state) => const CapitalAllocationScreen(),
             ),
             GoRoute(
               path: '/regime-replay',
