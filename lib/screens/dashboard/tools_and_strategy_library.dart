@@ -34,7 +34,18 @@ class ToolsAndStrategyLibrary extends ConsumerWidget {
             ToolTile(
               label: "Signal Engine",
               icon: Icons.bolt,
-              onTap: () => GoRouter.of(context).pushNamed('signal_engine'),
+              locked: !signedIn,
+              onTap: () {
+                if (!signedIn) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Sign in to use the Signal Engine'),
+                    ),
+                  );
+                  return;
+                }
+                GoRouter.of(context).pushNamed('signal_engine');
+              },
             ),
             ToolTile(
               label: "Best Opps",
