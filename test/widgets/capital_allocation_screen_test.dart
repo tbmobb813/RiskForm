@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riskform/models/account_context.dart';
 import 'package:riskform/screens/capital_allocation/capital_allocation_screen.dart';
+import 'package:riskform/screens/position_sizing/position_sizing_args.dart';
 import 'package:riskform/screens/position_sizing/position_sizing_screen.dart';
 import 'package:riskform/state/account_context_provider.dart';
 
@@ -64,7 +65,8 @@ void main() {
           path: '/position-sizing',
           name: 'position_sizing',
           builder: (_, state) => PositionSizingScreen(
-            initialBuyingPower: (state.extra as num?)?.toDouble(),
+            initialBuyingPower:
+                (state.extra as PositionSizingArgs?)?.buyingPower,
           ),
         ),
       ],

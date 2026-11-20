@@ -34,6 +34,41 @@ void main() {
     expect(tester.widget<TextField>(fields.at(3)).controller!.text, '1500');
   });
 
+  testWidgets('starting strike and premium fill the form and size the trade', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 3000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          accountContextProvider.overrideWith(
+            (ref) async =>
+                const AccountContext(accountSize: 10000, buyingPower: 8000),
+          ),
+        ],
+        child: const MaterialApp(
+          home: PositionSizingScreen(
+            initialBuyingPower: 10000,
+            initialStrike: 95,
+            initialPremium: 1.9,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final fields = find.byType(TextField);
+    expect(tester.widget<TextField>(fields.at(0)).controller!.text, '95');
+    expect(tester.widget<TextField>(fields.at(1)).controller!.text, '1.90');
+    // 95-strike put needs \$9,500; the 30% position cap is \$3,000.
+    expect(find.text('No contracts fit your limits'), findsOneWidget);
+    expect(find.text('2.00%'), findsOneWidget);
+  });
+
   testWidgets('prefills account and sizes a cash-secured put', (tester) async {
     tester.view.physicalSize = const Size(800, 3000);
     tester.view.devicePixelRatio = 1.0;

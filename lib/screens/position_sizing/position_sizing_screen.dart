@@ -8,8 +8,17 @@ import '../../widgets/tools/tool_widgets.dart';
 class PositionSizingScreen extends ConsumerStatefulWidget {
   /// Overrides the buying power otherwise taken from the saved account.
   final double? initialBuyingPower;
+  final double? initialStrike;
 
-  const PositionSizingScreen({super.key, this.initialBuyingPower});
+  /// Premium per share.
+  final double? initialPremium;
+
+  const PositionSizingScreen({
+    super.key,
+    this.initialBuyingPower,
+    this.initialStrike,
+    this.initialPremium,
+  });
 
   @override
   ConsumerState<PositionSizingScreen> createState() =>
@@ -35,6 +44,14 @@ class _PositionSizingScreenState extends ConsumerState<PositionSizingScreen> {
     super.initState();
     final bp = widget.initialBuyingPower;
     if (bp != null) _buyingPower.text = bp.toStringAsFixed(0);
+    final strike = widget.initialStrike;
+    if (strike != null) {
+      _strike.text = strike == strike.roundToDouble()
+          ? strike.toStringAsFixed(0)
+          : strike.toStringAsFixed(2);
+    }
+    final premium = widget.initialPremium;
+    if (premium != null) _premium.text = premium.toStringAsFixed(2);
   }
 
   void _applyAccount(double size, double buyingPower) {

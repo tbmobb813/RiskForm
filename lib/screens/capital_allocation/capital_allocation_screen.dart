@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../services/engines/capital_allocation_engine.dart';
 import '../../services/engines/position_allocation_mapper.dart';
 import '../../state/account_context_provider.dart';
+import '../position_sizing/position_sizing_args.dart';
 import '../../widgets/tools/tool_widgets.dart';
 import '../dashboard/active_positions_section.dart';
 
@@ -328,7 +329,9 @@ class _ResultView extends StatelessWidget {
                     child: TextButton.icon(
                       onPressed: () => GoRouter.of(context).pushNamed(
                         'position_sizing',
-                        extra: r.newPositionBudget,
+                        extra: PositionSizingArgs(
+                          buyingPower: r.newPositionBudget,
+                        ),
                       ),
                       icon: const Icon(Icons.straighten),
                       label: const Text('Size a trade with this budget'),
