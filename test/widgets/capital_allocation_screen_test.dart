@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:riskform/models/account_context.dart';
 import 'package:riskform/screens/capital_allocation/capital_allocation_screen.dart';
+import 'package:riskform/screens/position_sizing/position_sizing_screen.dart';
 import 'package:riskform/state/account_context_provider.dart';
 
 void main() {
@@ -47,6 +49,47 @@ void main() {
     expect(find.text('\$2500'), findsWidgets);
     expect(find.textContaining('AAPL is 50%'), findsOneWidget);
     expect(find.text('Within 14 days'), findsOneWidget);
+  });
+
+  testWidgets('sends the next-trade budget to position sizing', (tester) async {
+    tester.view.physicalSize = const Size(800, 4000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final router = GoRouter(
+      routes: [
+        GoRoute(path: '/', builder: (_, _) => const CapitalAllocationScreen()),
+        GoRoute(
+          path: '/position-sizing',
+          name: 'position_sizing',
+          builder: (_, state) => PositionSizingScreen(
+            initialBuyingPower: (state.extra as num?)?.toDouble(),
+          ),
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          accountContextProvider.overrideWith(
+            (ref) async =>
+                const AccountContext(accountSize: 10000, buyingPower: 2500),
+          ),
+        ],
+        child: MaterialApp.router(routerConfig: router),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField).at(1), '1800');
+    await tester.pump();
+    await tester.tap(find.text('Size a trade with this budget'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Position Sizing'), findsOneWidget);
+    final fields = find.byType(TextField);
+    expect(tester.widget<TextField>(fields.at(3)).controller!.text, '1800');
   });
 
   testWidgets('add and remove positions', (tester) async {

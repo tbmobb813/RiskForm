@@ -5,7 +5,10 @@ import '../../services/engines/position_sizing_engine.dart';
 import '../../state/account_context_provider.dart';
 
 class PositionSizingScreen extends ConsumerStatefulWidget {
-  const PositionSizingScreen({super.key});
+  /// Overrides the buying power otherwise taken from the saved account.
+  final double? initialBuyingPower;
+
+  const PositionSizingScreen({super.key, this.initialBuyingPower});
 
   @override
   ConsumerState<PositionSizingScreen> createState() =>
@@ -25,6 +28,20 @@ class _PositionSizingScreenState extends ConsumerState<PositionSizingScreen> {
 
   SizingStrategy _strategy = SizingStrategy.csp;
   bool _prefilled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final bp = widget.initialBuyingPower;
+    if (bp != null) _buyingPower.text = bp.toStringAsFixed(0);
+  }
+
+  void _applyAccount(double size, double buyingPower) {
+    _account.text = size.toStringAsFixed(0);
+    if (widget.initialBuyingPower == null) {
+      _buyingPower.text = buyingPower.toStringAsFixed(0);
+    }
+  }
 
   @override
   void dispose() {
@@ -50,17 +67,13 @@ class _PositionSizingScreenState extends ConsumerState<PositionSizingScreen> {
       final acct = next.asData?.value;
       if (acct != null && !_prefilled && acct.accountSize > 0) {
         _prefilled = true;
-        setState(() {
-          _account.text = acct.accountSize.toStringAsFixed(0);
-          _buyingPower.text = acct.buyingPower.toStringAsFixed(0);
-        });
+        setState(() => _applyAccount(acct.accountSize, acct.buyingPower));
       }
     });
     final existing = ref.read(accountContextProvider).asData?.value;
     if (!_prefilled && existing != null && existing.accountSize > 0) {
       _prefilled = true;
-      _account.text = existing.accountSize.toStringAsFixed(0);
-      _buyingPower.text = existing.buyingPower.toStringAsFixed(0);
+      _applyAccount(existing.accountSize, existing.buyingPower);
     }
 
     final result = _engine.size(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../services/engines/capital_allocation_engine.dart';
 import '../../state/account_context_provider.dart';
@@ -262,6 +263,18 @@ class _ResultView extends StatelessWidget {
                   '${_money(r.freeCash)} (${_pct(r.freeCashPercent)})',
                 ),
                 _row('Budget for next trade', _money(r.newPositionBudget)),
+                if (r.newPositionBudget > 0)
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton.icon(
+                      onPressed: () => GoRouter.of(context).pushNamed(
+                        'position_sizing',
+                        extra: r.newPositionBudget,
+                      ),
+                      icon: const Icon(Icons.straighten),
+                      label: const Text('Size a trade with this budget'),
+                    ),
+                  ),
                 _row(
                   'Weighted annualized return',
                   r.weightedAnnualizedReturnPercent == null

@@ -200,7 +200,12 @@ final GoRouter appRouter = GoRouter(
             GoRoute(
               path: '/position-sizing',
               name: 'position_sizing',
-              builder: (context, state) => const PositionSizingScreen(),
+              builder: (context, state) {
+                final extra = state.extra;
+                return PositionSizingScreen(
+                  initialBuyingPower: extra is num ? extra.toDouble() : null,
+                );
+              },
             ),
             GoRoute(
               path: '/roll-helper',
