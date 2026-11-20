@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../services/engines/csp_screener_engine.dart';
 import '../../services/options/chain_parser.dart';
 import '../../services/options/option_chain.dart';
+import '../../services/options/tradier_chain_source.dart';
 import '../../state/account_context_provider.dart';
 import '../../widgets/tools/tool_widgets.dart';
 import '../position_sizing/position_sizing_args.dart';
@@ -41,6 +42,12 @@ class _CspScreenerScreenState extends ConsumerState<CspScreenerScreen> {
   final _minOi = TextEditingController();
 
   bool _prefilled = false;
+  final _symbol = TextEditingController();
+  ChainSnapshot? _live;
+  ({int minDte, int maxDte})? _liveWindow;
+  bool _fetching = false;
+  String? _liveMessage;
+
   ChainParseResult? _parsed;
   CspScreenResult? _result;
   String? _message;
@@ -49,6 +56,7 @@ class _CspScreenerScreenState extends ConsumerState<CspScreenerScreen> {
   void dispose() {
     for (final c in [
       _chain,
+      _symbol,
       _spot,
       _buyingPower,
       _minDte,
@@ -76,10 +84,56 @@ class _CspScreenerScreenState extends ConsumerState<CspScreenerScreen> {
     setState(() {
       _chain.text = _sampleChain;
       _spot.text = '100';
+      _live = null;
+      _liveMessage = null;
       _parsed = null;
       _result = null;
       _message = null;
     });
+  }
+
+  Future<void> _fetchLive() async {
+    final symbol = _symbol.text.trim().toUpperCase();
+    if (symbol.isEmpty) {
+      setState(() => _liveMessage = 'Enter a stock symbol.');
+      return;
+    }
+    final minDte = int.tryParse(_minDte.text.trim()) ?? 21;
+    final maxDte = int.tryParse(_maxDte.text.trim()) ?? 60;
+
+    setState(() {
+      _fetching = true;
+      _liveMessage = null;
+    });
+    try {
+      final snapshot = await ref.read(liveChainFetcherProvider)(
+        symbol,
+        minDte: minDte,
+        maxDte: maxDte,
+      );
+      if (!mounted) return;
+      setState(() {
+        _live = snapshot;
+        _liveWindow = (minDte: minDte, maxDte: maxDte);
+        _spot.text = snapshot.spot.toStringAsFixed(2);
+        _fetching = false;
+        _parsed = null;
+        _result = null;
+        _message = null;
+      });
+    } on LiveChainException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _fetching = false;
+        _liveMessage = e.message;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _fetching = false;
+        _liveMessage = 'Could not load live data.';
+      });
+    }
   }
 
   void _run() {
@@ -102,16 +156,18 @@ class _CspScreenerScreenState extends ConsumerState<CspScreenerScreen> {
       return;
     }
 
-    final asOf = DateTime.now();
-    final parsed = _parser.parse(_chain.text, asOf: asOf);
-    final result = parsed.quotes.isEmpty
+    final live = _live;
+    final asOf = live?.asOf ?? DateTime.now();
+    final parsed = live == null ? _parser.parse(_chain.text, asOf: asOf) : null;
+    final quotes = live?.quotes ?? parsed!.quotes;
+    final result = quotes.isEmpty
         ? null
         : _screener.screen(
             ChainSnapshot(
-              underlying: '',
+              underlying: live?.underlying ?? '',
               spot: spot,
               asOf: asOf,
-              quotes: parsed.quotes,
+              quotes: quotes,
             ),
             CspCriteria(
               buyingPower: buyingPower,
@@ -127,9 +183,12 @@ class _CspScreenerScreenState extends ConsumerState<CspScreenerScreen> {
     setState(() {
       _parsed = parsed;
       _result = result;
-      _message = result == null && parsed.quotes.isNotEmpty
-          ? 'Check your filters: the expiration range looks backwards.'
-          : null;
+      _message = quotes.isEmpty && live != null
+          ? 'The live chain has no quotes in that expiration range. Change '
+                'the range and fetch again.'
+          : (result == null && quotes.isNotEmpty
+                ? 'Check your filters: the expiration range looks backwards.'
+                : null);
     });
   }
 
@@ -137,7 +196,16 @@ class _CspScreenerScreenState extends ConsumerState<CspScreenerScreen> {
     TextEditingController c,
     String label, {
     ToolFieldKind kind = ToolFieldKind.decimal,
-  }) => ToolField(controller: c, label: label, kind: kind);
+  }) => ToolField(
+    controller: c,
+    label: label,
+    kind: kind,
+    // Refresh the live-data status, which compares your range to what was
+    // fetched.
+    onChanged: (_) {
+      if (_live != null) setState(() {});
+    },
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -157,8 +225,43 @@ class _CspScreenerScreenState extends ConsumerState<CspScreenerScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          Text('Live data', style: theme.textTheme.titleMedium),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: ToolField(
+                  controller: _symbol,
+                  label: 'Stock symbol',
+                  kind: ToolFieldKind.text,
+                ),
+              ),
+              const SizedBox(width: 8),
+              FilledButton.tonal(
+                onPressed: _fetching ? null : _fetchLive,
+                child: Text(_fetching ? 'Fetching...' : 'Fetch live chain'),
+              ),
+            ],
+          ),
+          if (_liveMessage != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                _liveMessage!,
+                style: TextStyle(color: theme.colorScheme.error),
+              ),
+            )
+          else if (_live != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                _liveStatus(_live!),
+                style: theme.textTheme.bodySmall,
+              ),
+            ),
+          const SizedBox(height: 16),
           Text(
-            'Paste an option chain as CSV or tab-separated text with a header '
+            'Or paste an option chain as CSV or tab-separated text with a header '
             'row. Needed: strike, bid, and expiration or DTE. Optional: ask, '
             'delta, IV, open interest, and type (put or call).',
             style: theme.textTheme.bodySmall,
@@ -174,6 +277,14 @@ class _CspScreenerScreenState extends ConsumerState<CspScreenerScreen> {
               alignLabelWithHint: true,
               border: OutlineInputBorder(),
             ),
+            onChanged: (_) {
+              if (_live != null) {
+                setState(() {
+                  _live = null;
+                  _liveMessage = null;
+                });
+              }
+            },
           ),
           Align(
             alignment: Alignment.centerLeft,
@@ -246,6 +357,23 @@ class _CspScreenerScreenState extends ConsumerState<CspScreenerScreen> {
         ],
       ),
     );
+  }
+
+  String _liveStatus(ChainSnapshot live) {
+    final t = live.asOf.toLocal();
+    final time =
+        '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+    final w = _liveWindow;
+    final current = (
+      minDte: int.tryParse(_minDte.text.trim()) ?? 0,
+      maxDte: int.tryParse(_maxDte.text.trim()) ?? 365,
+    );
+    final outside =
+        w != null && (current.minDte < w.minDte || current.maxDte > w.maxDte);
+    return 'Using the live chain for ${live.underlying}: '
+        '${live.quotes.length} quotes as of $time'
+        '${w == null ? '' : ' (${w.minDte}-${w.maxDte} DTE)'}.'
+        '${outside ? ' Your range is wider now, so fetch again to cover it.' : ''}';
   }
 
   List<Widget> _parseNotes(ThemeData theme, ChainParseResult parsed) {
