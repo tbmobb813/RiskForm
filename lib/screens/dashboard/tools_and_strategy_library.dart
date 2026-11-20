@@ -42,6 +42,21 @@ class ToolsAndStrategyLibrary extends ConsumerWidget {
               onTap: () => GoRouter.of(context).pushNamed('best_opps'),
             ),
             ToolTile(
+              label: "Position Sizing",
+              icon: Icons.straighten,
+              onTap: () => GoRouter.of(context).pushNamed('position_sizing'),
+            ),
+            ToolTile(
+              label: "Roll Helper",
+              icon: Icons.autorenew,
+              onTap: () => GoRouter.of(context).pushNamed('roll_helper'),
+            ),
+            ToolTile(
+              label: "Capital Allocation",
+              icon: Icons.pie_chart_outline,
+              onTap: () => GoRouter.of(context).pushNamed('capital_allocation'),
+            ),
+            ToolTile(
               label: "Import Trades",
               icon: Icons.upload_file,
               onTap: () => GoRouter.of(context).pushNamed('import_trades'),

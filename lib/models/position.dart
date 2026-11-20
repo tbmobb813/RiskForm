@@ -3,6 +3,8 @@ enum PositionType { csp, coveredCall, shares }
 enum PositionStage { early, mid, late }
 
 class Position {
+  /// Firestore document id. Not part of the stored fields.
+  final String? id;
   final PositionType type;
   final String symbol;
   final String strategy;
@@ -11,7 +13,19 @@ class Position {
   final DateTime expiration;
   final List<String> riskFlags;
 
+  /// Option strike. Null for positions saved before strikes were recorded.
+  final double? strike;
+
+  /// Premium received per share when the position was opened.
+  final double? premium;
+
+  /// Number of option contracts (100 shares each).
+  final int? contracts;
+
+  final DateTime? openedAt;
+
   Position({
+    this.id,
     required this.type,
     required this.symbol,
     required this.strategy,
@@ -19,7 +33,32 @@ class Position {
     required this.expiration,
     required this.isOpen,
     this.riskFlags = const [],
+    this.strike,
+    this.premium,
+    this.contracts,
+    this.openedAt,
   });
+
+  /// Capital tied up by this position, or null when the strike or contract
+  /// count is unknown. For covered calls the strike stands in for the value of
+  /// the shares, so treat it as an approximation. Plain shares return null.
+  double? get capitalLocked {
+    final s = strike;
+    final c = contracts;
+    if (s == null || c == null || c <= 0) return null;
+    return switch (type) {
+      PositionType.csp || PositionType.coveredCall => s * 100 * c,
+      PositionType.shares => null,
+    };
+  }
+
+  /// Total premium collected across all contracts, or null when unknown.
+  double? get totalPremium {
+    final p = premium;
+    final c = contracts;
+    if (p == null || c == null || c <= 0) return null;
+    return p * 100 * c;
+  }
 
   String get expirationDateString =>
       "${expiration.month}/${expiration.day}/${expiration.year}";
@@ -76,12 +115,17 @@ class Position {
       'isOpen': isOpen,
       'expiration': expiration.toIso8601String(),
       'riskFlags': riskFlags,
+      if (strike != null) 'strike': strike,
+      if (premium != null) 'premium': premium,
+      if (contracts != null) 'contracts': contracts,
+      if (openedAt != null) 'openedAt': openedAt!.toIso8601String(),
     };
   }
 
   /// Creates a Position from JSON data.
   factory Position.fromJson(Map<String, dynamic> json) {
     return Position(
+      id: json['id'] as String?,
       type: PositionType.values.firstWhere(
         (e) => e.name == json['type'],
         orElse: () => PositionType.shares,
@@ -94,11 +138,18 @@ class Position {
           ? DateTime.parse(json['expiration'] as String)
           : DateTime.now(),
       riskFlags: (json['riskFlags'] as List<dynamic>?)?.cast<String>() ?? [],
+      strike: (json['strike'] as num?)?.toDouble(),
+      premium: (json['premium'] as num?)?.toDouble(),
+      contracts: (json['contracts'] as num?)?.toInt(),
+      openedAt: json['openedAt'] is String
+          ? DateTime.tryParse(json['openedAt'] as String)
+          : null,
     );
   }
 
   /// Creates a copy with optional field overrides.
   Position copyWith({
+    String? id,
     PositionType? type,
     String? symbol,
     String? strategy,
@@ -106,8 +157,13 @@ class Position {
     bool? isOpen,
     DateTime? expiration,
     List<String>? riskFlags,
+    double? strike,
+    double? premium,
+    int? contracts,
+    DateTime? openedAt,
   }) {
     return Position(
+      id: id ?? this.id,
       type: type ?? this.type,
       symbol: symbol ?? this.symbol,
       strategy: strategy ?? this.strategy,
@@ -115,6 +171,10 @@ class Position {
       isOpen: isOpen ?? this.isOpen,
       expiration: expiration ?? this.expiration,
       riskFlags: riskFlags ?? this.riskFlags,
+      strike: strike ?? this.strike,
+      premium: premium ?? this.premium,
+      contracts: contracts ?? this.contracts,
+      openedAt: openedAt ?? this.openedAt,
     );
   }
 }

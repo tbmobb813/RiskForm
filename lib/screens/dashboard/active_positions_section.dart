@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/position.dart';
+import '../../services/data/position_repository.dart';
+import '../../state/open_positions_provider.dart';
+import 'add_position_sheet.dart';
 import 'position_card.dart';
 
-// Placeholder provider — you will replace this with real logic later.
+/// The signed-in user's open positions; empty while loading or on error.
 final activePositionsProvider = Provider<List<Position>>((ref) {
-  return []; // No positions yet
+  return ref
+      .watch(openPositionsStreamProvider)
+      .maybeWhen(data: (positions) => positions, orElse: () => const []);
 });
 
 class ActivePositionsSection extends ConsumerWidget {
@@ -18,9 +23,19 @@ class ActivePositionsSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          "Active Positions",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              "Active Positions",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            TextButton.icon(
+              onPressed: () => AddPositionSheet.show(context),
+              icon: const Icon(Icons.add),
+              label: const Text('Add'),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
 
@@ -39,7 +54,19 @@ class ActivePositionsSection extends ConsumerWidget {
                 .map(
                   (pos) => Padding(
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: PositionCard(position: pos),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        PositionCard(position: pos),
+                        if (pos.id != null)
+                          TextButton(
+                            onPressed: () => ref
+                                .read(positionRepositoryProvider)
+                                .close(pos.id!),
+                            child: const Text('Mark closed'),
+                          ),
+                      ],
+                    ),
                   ),
                 )
                 .toList(),

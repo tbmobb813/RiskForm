@@ -9,6 +9,7 @@ import '../screens/backtest/cloud_backtest_history_screen.dart';
 import '../screens/backtest/cloud_backtest_result_screen.dart';
 import '../screens/backtest/cloud_job_status_screen.dart';
 import '../screens/best_opps/best_opps_screen.dart';
+import '../screens/capital_allocation/capital_allocation_screen.dart';
 import '../screens/cockpit/debug/cockpit_debug_screen.dart';
 import '../screens/cockpit/small_account_cockpit_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
@@ -16,11 +17,13 @@ import '../screens/import/import_screen.dart';
 import '../screens/journal/attach_screenshot_screen.dart';
 import '../screens/journal/journal_screen.dart';
 import '../screens/planner/payoff/payoff_screen.dart';
+import '../screens/position_sizing/position_sizing_screen.dart';
 import '../screens/planner/risk_summary/risk_summary_screen.dart';
 import '../screens/planner/save_plan/save_plan_screen.dart';
 import '../screens/planner/strategy_selector/strategy_selector_screen.dart';
 import '../screens/planner/trade_planner/trade_planner_screen.dart';
 import '../screens/regime_replay/regime_window_picker_screen.dart';
+import '../screens/roll_helper/roll_helper_screen.dart';
 import '../screens/signals/signal_engine_screen.dart';
 import 'app_shell.dart';
 import 'package:riskform/strategy_cockpit/strategies/small_account/screens/diagonal_builder_screen.dart';
@@ -193,6 +196,26 @@ final GoRouter appRouter = GoRouter(
               path: '/best-opps',
               name: 'best_opps',
               builder: (context, state) => const BestOppsScreen(),
+            ),
+            GoRoute(
+              path: '/position-sizing',
+              name: 'position_sizing',
+              builder: (context, state) {
+                final extra = state.extra;
+                return PositionSizingScreen(
+                  initialBuyingPower: extra is num ? extra.toDouble() : null,
+                );
+              },
+            ),
+            GoRoute(
+              path: '/roll-helper',
+              name: 'roll_helper',
+              builder: (context, state) => const RollHelperScreen(),
+            ),
+            GoRoute(
+              path: '/capital-allocation',
+              name: 'capital_allocation',
+              builder: (context, state) => const CapitalAllocationScreen(),
             ),
             GoRoute(
               path: '/regime-replay',
