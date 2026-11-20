@@ -47,6 +47,11 @@ class ToolsAndStrategyLibrary extends ConsumerWidget {
               onTap: () => GoRouter.of(context).pushNamed('position_sizing'),
             ),
             ToolTile(
+              label: "Probability",
+              icon: Icons.percent,
+              onTap: () => GoRouter.of(context).pushNamed('probability'),
+            ),
+            ToolTile(
               label: "Roll Helper",
               icon: Icons.autorenew,
               onTap: () => GoRouter.of(context).pushNamed('roll_helper'),

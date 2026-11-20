@@ -18,6 +18,7 @@ import '../screens/journal/attach_screenshot_screen.dart';
 import '../screens/journal/journal_screen.dart';
 import '../screens/planner/payoff/payoff_screen.dart';
 import '../screens/position_sizing/position_sizing_screen.dart';
+import '../screens/probability/probability_screen.dart';
 import '../screens/planner/risk_summary/risk_summary_screen.dart';
 import '../screens/planner/save_plan/save_plan_screen.dart';
 import '../screens/planner/strategy_selector/strategy_selector_screen.dart';
@@ -206,6 +207,11 @@ final GoRouter appRouter = GoRouter(
                   initialBuyingPower: extra is num ? extra.toDouble() : null,
                 );
               },
+            ),
+            GoRoute(
+              path: '/probability',
+              name: 'probability',
+              builder: (context, state) => const ProbabilityScreen(),
             ),
             GoRoute(
               path: '/roll-helper',
