@@ -22,6 +22,7 @@ import '../screens/planner/save_plan/save_plan_screen.dart';
 import '../screens/planner/strategy_selector/strategy_selector_screen.dart';
 import '../screens/planner/trade_planner/trade_planner_screen.dart';
 import '../screens/regime_replay/regime_window_picker_screen.dart';
+import '../screens/roll_helper/roll_helper_screen.dart';
 import '../screens/signals/signal_engine_screen.dart';
 import 'app_shell.dart';
 import 'package:riskform/strategy_cockpit/strategies/small_account/screens/diagonal_builder_screen.dart';
@@ -199,6 +200,11 @@ final GoRouter appRouter = GoRouter(
               path: '/position-sizing',
               name: 'position_sizing',
               builder: (context, state) => const PositionSizingScreen(),
+            ),
+            GoRoute(
+              path: '/roll-helper',
+              name: 'roll_helper',
+              builder: (context, state) => const RollHelperScreen(),
             ),
             GoRoute(
               path: '/regime-replay',
