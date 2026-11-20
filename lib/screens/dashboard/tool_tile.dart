@@ -19,7 +19,8 @@ class ToolTile extends StatelessWidget {
     final color = locked ? Colors.white24 : Colors.white;
 
     return GestureDetector(
-      onTap: locked ? null : onTap,
+      // A locked tile still reports taps so its owner can say why it is locked.
+      onTap: onTap,
       child: Container(
         width: 150,
         padding: const EdgeInsets.all(16),
