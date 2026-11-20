@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/imported_trade.dart';
+import '../services/analytics/analytics_service.dart';
 import '../services/import/csv_parsers.dart';
 import '../services/import/trade_import_service.dart';
 
@@ -153,6 +154,7 @@ class ImportNotifier extends Notifier<ImportState> {
     try {
       final count = await _service.saveBatch(userId, toSave);
       state = state.copyWith(step: ImportStep.done, savedCount: count);
+      AnalyticsService.log(AnalyticsEvents.importCsv, {'trades': count});
     } catch (e) {
       state = state.copyWith(
         step: ImportStep.error,

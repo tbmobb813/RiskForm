@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../models/journal/journal_entry.dart';
+import '../analytics/analytics_service.dart';
 
 class JournalRepository extends ChangeNotifier {
   final List<JournalEntry> _entries = [];
@@ -39,6 +40,7 @@ class JournalRepository extends ChangeNotifier {
   Future<void> addEntry(JournalEntry entry) async {
     _entries.insert(0, entry);
     notifyListeners();
+    AnalyticsService.log(AnalyticsEvents.journalEntryCreated);
     if (_firestore != null && _userId != null) {
       try {
         final docRef = _userJournals(_userId).doc(entry.id);

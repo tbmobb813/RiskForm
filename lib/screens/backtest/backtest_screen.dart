@@ -7,6 +7,7 @@ import 'package:riskform_core/models/backtest/backtest_result.dart';
 
 import '../../app.dart';
 import '../../state/backtest_engine_provider.dart';
+import '../../services/analytics/analytics_service.dart';
 import '../../services/firebase/auth_service.dart';
 import '../../state/backtest_providers.dart';
 import '../../models/cloud/cloud_backtest_job.dart';
@@ -46,6 +47,12 @@ class _BacktestScreenState extends ConsumerState<BacktestScreen> {
     try {
       final engine = ref.read(backtestEngineProvider);
       final res = await Future(() => engine.run(widget.config));
+      AnalyticsService.log(
+        widget.regimeContext != null
+            ? AnalyticsEvents.regimeReplayRun
+            : AnalyticsEvents.simRun,
+        {'source': 'backtest'},
+      );
       if (!mounted) return;
       setState(() {
         _result = res;
@@ -115,6 +122,9 @@ class _BacktestScreenState extends ConsumerState<BacktestScreen> {
     final runner = ref.read(comparisonRunnerProvider);
     final comparisonConfig = ComparisonConfig(configs: _comparisonConfigs);
     final result = await runner.run(comparisonConfig);
+    AnalyticsService.log(AnalyticsEvents.strategyCompare, {
+      'strategies': _comparisonConfigs.length,
+    });
     if (!mounted) return;
     Navigator.push(
       context,
