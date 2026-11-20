@@ -17,6 +17,7 @@ import '../screens/import/import_screen.dart';
 import '../screens/journal/attach_screenshot_screen.dart';
 import '../screens/journal/journal_screen.dart';
 import '../screens/planner/payoff/payoff_screen.dart';
+import '../screens/pmcc/pmcc_screen.dart';
 import '../screens/position_sizing/position_sizing_screen.dart';
 import '../screens/probability/probability_screen.dart';
 import '../screens/planner/risk_summary/risk_summary_screen.dart';
@@ -207,6 +208,11 @@ final GoRouter appRouter = GoRouter(
                   initialBuyingPower: extra is num ? extra.toDouble() : null,
                 );
               },
+            ),
+            GoRoute(
+              path: '/pmcc',
+              name: 'pmcc',
+              builder: (context, state) => const PmccScreen(),
             ),
             GoRoute(
               path: '/probability',

@@ -47,6 +47,11 @@ class ToolsAndStrategyLibrary extends ConsumerWidget {
               onTap: () => GoRouter.of(context).pushNamed('position_sizing'),
             ),
             ToolTile(
+              label: "Poor Man's CC",
+              icon: Icons.compare_arrows,
+              onTap: () => GoRouter.of(context).pushNamed('pmcc'),
+            ),
+            ToolTile(
               label: "Probability",
               icon: Icons.percent,
               onTap: () => GoRouter.of(context).pushNamed('probability'),
