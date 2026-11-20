@@ -3,9 +3,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../services/engines/capital_allocation_engine.dart';
+import '../../services/engines/position_allocation_mapper.dart';
 import '../../state/account_context_provider.dart';
+import '../dashboard/active_positions_section.dart';
 
 class _HoldingFields {
+  _HoldingFields();
+
+  factory _HoldingFields.from(AllocationHolding h) {
+    final f = _HoldingFields();
+    f.symbol.text = h.symbol;
+    f.strategy = h.strategy;
+    f.capital.text = h.capital.toStringAsFixed(0);
+    f.premium.text = h.premium.toStringAsFixed(2);
+    f.originalDays.text = '${h.originalDays}';
+    f.dte.text = '${h.dte}';
+    return f;
+  }
+
   final symbol = TextEditingController();
   final capital = TextEditingController();
   final premium = TextEditingController();
@@ -75,6 +90,42 @@ class _CapitalAllocationScreenState
     ),
   );
 
+  void _importPositions() {
+    final imported = holdingsFromPositions(ref.read(activePositionsProvider));
+    final messenger = ScaffoldMessenger.of(context);
+
+    if (imported.holdings.isEmpty) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            imported.skipped > 0
+                ? '${imported.skipped} open position(s) are missing a strike, '
+                      'contracts or premium.'
+                : 'No open positions to import.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      for (final h in _holdings) {
+        h.dispose();
+      }
+      _holdings
+        ..clear()
+        ..addAll(imported.holdings.map(_HoldingFields.from));
+    });
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          'Imported ${imported.holdings.length} position(s)'
+          '${imported.skipped > 0 ? ', skipped ${imported.skipped} without enough data' : ''}.',
+        ),
+      ),
+    );
+  }
+
   void _prefill(double size, double buyingPower) {
     if (_prefilled || size <= 0) return;
     _prefilled = true;
@@ -92,6 +143,9 @@ class _CapitalAllocationScreenState
     });
     final existing = ref.read(accountContextProvider).asData?.value;
     if (existing != null) _prefill(existing.accountSize, existing.buyingPower);
+
+    // Keep the positions stream subscribed so an import has data ready.
+    ref.watch(activePositionsProvider);
 
     final result = _analyze();
 
@@ -118,10 +172,20 @@ class _CapitalAllocationScreenState
           ),
           const SizedBox(height: 8),
           for (var n = 0; n < _holdings.length; n++) _holdingCard(n),
-          TextButton.icon(
-            onPressed: () => setState(() => _holdings.add(_HoldingFields())),
-            icon: const Icon(Icons.add),
-            label: const Text('Add position'),
+          Wrap(
+            children: [
+              TextButton.icon(
+                onPressed: () =>
+                    setState(() => _holdings.add(_HoldingFields())),
+                icon: const Icon(Icons.add),
+                label: const Text('Add position'),
+              ),
+              TextButton.icon(
+                onPressed: _importPositions,
+                icon: const Icon(Icons.download),
+                label: const Text('Import open positions'),
+              ),
+            ],
           ),
           const SizedBox(height: 8),
           if (result == null)

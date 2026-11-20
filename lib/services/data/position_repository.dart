@@ -16,7 +16,8 @@ class PositionRepository implements RepositoryInterface<Position> {
   final AuthService _auth;
 
   /// In-memory cache of position IDs for save operations.
-  /// Maps position identity (symbol + type + expiration) to document ID.
+  /// Maps position identity (symbol, type, expiration, strike, open date) to
+  /// document ID.
   final Map<String, String> _idCache = {};
 
   PositionRepository(this._service, this._auth);
@@ -54,9 +55,11 @@ class PositionRepository implements RepositoryInterface<Position> {
   Future<void> save(Position item) async {
     final uid = _requireAuth();
 
-    // Generate a cache key for this position
+    // Generate a cache key for this position. The strike and open date keep
+    // two puts on the same symbol and expiration from overwriting each other.
     final cacheKey =
-        '${item.symbol}_${item.type.name}_${item.expiration.toIso8601String()}';
+        '${item.symbol}_${item.type.name}_${item.expiration.toIso8601String()}'
+        '_${item.strike}_${item.openedAt?.toIso8601String()}';
 
     // Check if we have a cached ID for this position
     final existingId = _idCache[cacheKey];

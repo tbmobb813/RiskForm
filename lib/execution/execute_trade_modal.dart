@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 
 import '../discipline/discipline_engine.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/position.dart';
+import '../services/firebase/auth_service.dart';
 import '../state/small_account_provider.dart';
 import '../journal/journal_detail_screen.dart';
 
@@ -13,11 +15,15 @@ class ExecuteTradeModal extends StatefulWidget {
   final String strategyId;
   final FirebaseFirestore? firestore;
 
+  /// Owner of the position that gets created. Defaults to the signed-in user.
+  final String? userId;
+
   const ExecuteTradeModal({
     super.key,
     required this.planId,
     required this.strategyId,
     this.firestore,
+    this.userId,
   });
 
   static Future<void> show(
@@ -25,6 +31,7 @@ class ExecuteTradeModal extends StatefulWidget {
     required String planId,
     required String strategyId,
     FirebaseFirestore? firestore,
+    String? userId,
   }) {
     return showModalBottomSheet(
       context: context,
@@ -37,6 +44,7 @@ class ExecuteTradeModal extends StatefulWidget {
           planId: planId,
           strategyId: strategyId,
           firestore: firestore,
+          userId: userId,
         ),
       ),
     );
@@ -63,6 +71,60 @@ class _ExecuteTradeModalState extends State<ExecuteTradeModal> {
     super.dispose();
   }
 
+  String? _signedInUserId() {
+    try {
+      final container = ProviderScope.containerOf(context, listen: false);
+      return container.read(authServiceProvider).currentUserId;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Builds an open position from the planned journal entry, or null when the
+  /// strategy is not a put or call or the plan lacks a symbol, strike or
+  /// expiration.
+  Position? _positionFromPlan({
+    required Map<String, dynamic> planData,
+    required double entryPrice,
+    required int contracts,
+    required DateTime executedAt,
+  }) {
+    final type = switch (widget.strategyId) {
+      'csp' => PositionType.csp,
+      'cc' => PositionType.coveredCall,
+      _ => null,
+    };
+    final symbol = (planData['symbol'] ?? planData['ticker'])
+        ?.toString()
+        .trim();
+    final strike = (planData['strike'] as num?)?.toDouble();
+    final rawExpiration = planData['expiration'];
+    final expiration = rawExpiration is Timestamp
+        ? rawExpiration.toDate()
+        : (rawExpiration is DateTime ? rawExpiration : null);
+
+    if (type == null ||
+        symbol == null ||
+        symbol.isEmpty ||
+        strike == null ||
+        expiration == null) {
+      return null;
+    }
+
+    return Position(
+      type: type,
+      symbol: symbol.toUpperCase(),
+      strategy: type == PositionType.csp ? 'CSP' : 'CC',
+      quantity: contracts,
+      expiration: expiration,
+      isOpen: true,
+      strike: strike,
+      premium: entryPrice,
+      contracts: contracts,
+      openedAt: executedAt,
+    );
+  }
+
   Future<void> _execute() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
@@ -72,6 +134,7 @@ class _ExecuteTradeModalState extends State<ExecuteTradeModal> {
     final notes = _notesCtrl.text.trim();
 
     final firestore = widget.firestore ?? FirebaseFirestore.instance;
+    final uid = widget.userId ?? _signedInUserId();
 
     try {
       // Small-account enforcement (optional): read settings from provider if available
@@ -107,14 +170,18 @@ class _ExecuteTradeModalState extends State<ExecuteTradeModal> {
           return;
         }
 
-        // enforce max open positions by counting existing opened positions for this strategy
+        // Enforce max open positions by counting this user's open positions.
+        // Skipped when nobody is signed in, since there is nothing to count.
         try {
-          final q = await firestore
-              .collection('positions')
-              .where('strategyId', isEqualTo: widget.strategyId)
-              .where('cycleState', isEqualTo: 'opened')
-              .get();
-          final openCount = q.docs.length;
+          final q = uid == null
+              ? null
+              : await firestore
+                    .collection('users')
+                    .doc(uid)
+                    .collection('positions')
+                    .where('isOpen', isEqualTo: true)
+                    .get();
+          final openCount = q?.docs.length ?? 0;
           if (openCount >= sa.maxOpenPositions) {
             if (!mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
@@ -174,21 +241,36 @@ class _ExecuteTradeModalState extends State<ExecuteTradeModal> {
         executedParams: executedParams,
       );
 
-      // 3. Create position
-      // 3. Create position
-      final positionRef = firestore.collection('positions').doc();
-      await positionRef.set({
-        'openedAt': FieldValue.serverTimestamp(),
-        'strategyId': widget.strategyId,
-        'planId': widget.planId,
-        'entryPrice': entryPrice,
-        'contracts': contracts,
-        'cycleState': 'opened',
-      });
+      // 3. Create the position under the signed-in user, when the plan has
+      // enough detail (symbol, strike, expiration) to describe one.
+      final position = uid == null
+          ? null
+          : _positionFromPlan(
+              planData: planData,
+              entryPrice: entryPrice,
+              contracts: contracts,
+              executedAt: executedAt,
+            );
+      String? positionId;
+      if (uid != null && position != null) {
+        final positionRef = firestore
+            .collection('users')
+            .doc(uid)
+            .collection('positions')
+            .doc();
+        await positionRef.set({
+          ...position.toJson(),
+          'planId': widget.planId,
+          'strategyId': widget.strategyId,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+        positionId = positionRef.id;
+      }
 
       // 4. Update journal entry with position and basic state (server will add scoring)
       final updates = <String, dynamic>{
-        'positionId': positionRef.id,
+        if (positionId != null) 'positionId': positionId,
         'cycleState': 'opened',
       };
       if (notes.isNotEmpty) updates['notes'] = notes;
