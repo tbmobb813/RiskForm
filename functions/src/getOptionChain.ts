@@ -1,7 +1,7 @@
-import * as admin from "firebase-admin";
 import {logger} from "firebase-functions";
 import {defineSecret, defineString} from "firebase-functions/params";
 import {onCall} from "firebase-functions/v2/https";
+import {consumeHourlyQuota} from "./rateLimit";
 import {
   PRODUCTION_BASE_URL,
   SANDBOX_BASE_URL,
@@ -21,20 +21,12 @@ const allowedUidsParam = defineString("TRADIER_ALLOWED_UIDS", {default: ""});
 const REQUESTS_PER_HOUR = 30;
 const cache = new TtlCache<OptionChainResult>(60_000, 50);
 
-/** Counts a request against the user's hour. Returns false when over the limit. */
-async function consumeQuota(uid: string): Promise<boolean> {
-  const db = admin.firestore();
-  const hour = Math.floor(Date.now() / 3_600_000);
-  const ref = db.doc(`tradierUsage/${uid}_${hour}`);
-
-  return db.runTransaction(async (tx) => {
-    const snap = await tx.get(ref);
-    const count = (snap.get("count") as number | undefined) ?? 0;
-    if (count >= REQUESTS_PER_HOUR) return false;
-    tx.set(ref, {uid, hour, count: count + 1}, {merge: true});
-    return true;
+const consumeQuota = (uid: string) =>
+  consumeHourlyQuota({
+    collection: "tradierUsage",
+    uid,
+    limit: REQUESTS_PER_HOUR,
   });
-}
 
 /**
  * Loads a stock price and option chains from Tradier for the signed-in user.

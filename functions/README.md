@@ -78,6 +78,13 @@ Set via:
 firebase functions:config:set backtest.cloud_run_url="https://..."
 ```
 
+## Signal generation (`generateSignal`)
+
+Runs an Anthropic web-search analysis for one ticker, which costs money on
+every call. It requires sign-in and allows 20 signals per user per hour,
+counted in the `signalUsage` collection. Invalid requests are not counted.
+Needs the `ANTHROPIC_API_KEY` secret.
+
 ## Live option data (Tradier)
 
 `getOptionChain` is a callable function that loads a stock price and option
@@ -152,6 +159,10 @@ These tests use a fake `fetch` and need no emulator or token.
 
 Written only by the function. Client access stays denied by the Firestore
 rules.
+
+### signalUsage
+
+Same shape as `tradierUsage`, written by `generateSignal`.
 
 ### backtestResults
 
