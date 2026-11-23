@@ -91,3 +91,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local function env files (untracked 2026-11-23; keep on disk, do not commit)
+functions/.env*
